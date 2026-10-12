@@ -44,6 +44,7 @@ namespace FoodServiceApp.Web.Data
         public DbSet<GiaoDichThanhToan> GiaoDichThanhToans => Set<GiaoDichThanhToan>();
         public DbSet<LichSuGiaoHang> LichSuGiaoHangs => Set<LichSuGiaoHang>();
         public DbSet<NhatKyHeThong> NhatKyHeThongs => Set<NhatKyHeThong>();
+        public DbSet<ChienDichQuangCao> ChienDichQuangCaos => Set<ChienDichQuangCao>();
 
         // ---- Thông báo tự động cho khách khi đơn hàng được tạo / đổi trạng thái / thanh toán đổi trạng thái ----
         private bool _dangGhiThongBao;

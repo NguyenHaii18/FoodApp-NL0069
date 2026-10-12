@@ -22,6 +22,15 @@ GO
 USE QuanLyDichVuAnUong;
 GO
 
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET ARITHABORT ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET NUMERIC_ROUNDABORT OFF;
+GO
+
 /* ============================================================
    PHẦN 1: TẠO BẢNG
    ============================================================ */
@@ -571,27 +580,28 @@ INSERT INTO @TenChuQuan (Ten) VALUES
 -- ==============================================================
 -- 100 TÀI KHOẢN KHÁCH HÀNG
 -- ==============================================================
-DECLARE @i INT = 1;
+DECLARE @i INT = 1, @tenDangNhap NVARCHAR(50), @laNam BIT, @hoKH NVARCHAR(20), @tenDem NVARCHAR(20),
+        @ten NVARCHAR(20), @hoTen NVARCHAR(100), @sdt VARCHAR(15), @diaChi NVARCHAR(255), @maTK INT;
 WHILE @i <= 100
 BEGIN
-    DECLARE @tenDangNhap NVARCHAR(50) = N'khachhang' + RIGHT('000' + CAST(@i AS VARCHAR), 3);
-    DECLARE @laNam BIT = @i % 2;
-    DECLARE @ho NVARCHAR(20) = (SELECT Ten FROM @Ho WHERE STT = @i % 16);
-    DECLARE @tenDem NVARCHAR(20) = CASE WHEN @laNam = 1
+    SET @tenDangNhap = N'khachhang' + RIGHT('000' + CAST(@i AS VARCHAR), 3);
+    SET @laNam = @i % 2;
+    SET @hoKH = (SELECT Ten FROM @Ho WHERE STT = @i % 16);
+    SET @tenDem = CASE WHEN @laNam = 1
         THEN (SELECT Ten FROM @TenDemNam WHERE STT = @i % 8)
         ELSE (SELECT Ten FROM @TenDemNu WHERE STT = @i % 8) END;
-    DECLARE @ten NVARCHAR(20) = CASE WHEN @laNam = 1
+    SET @ten = CASE WHEN @laNam = 1
         THEN (SELECT Ten FROM @TenNam WHERE STT = @i % 20)
         ELSE (SELECT Ten FROM @TenNu WHERE STT = @i % 20) END;
-    DECLARE @hoTen NVARCHAR(100) = @ho + N' ' + @tenDem + N' ' + @ten;
-    DECLARE @sdt VARCHAR(15) = '09' + RIGHT('00000000' + CAST(30000000 + @i AS VARCHAR), 8);
-    DECLARE @diaChi NVARCHAR(255) =
+    SET @hoTen = @hoKH + N' ' + @tenDem + N' ' + @ten;
+    SET @sdt = '09' + RIGHT('00000000' + CAST(30000000 + @i AS VARCHAR), 8);
+    SET @diaChi =
         CAST(10 + (@i % 90) AS VARCHAR) + N' Đường ' +
         (SELECT Ten FROM @TenDuong WHERE STT = @i % 15) + N', ' +
         (SELECT Ten FROM @QuanHuyen WHERE STT = @i % 17) + N', TP.HCM';
 
     INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro) VALUES (@tenDangNhap, '123456', N'KhachHang');
-    DECLARE @maTK INT = SCOPE_IDENTITY();
+    SET @maTK = SCOPE_IDENTITY();
 
     INSERT INTO KhachHang (MaTK, HoTen, SDT, Email, DiaChiGiaoHang)
     VALUES (@maTK, @hoTen, @sdt, LOWER(REPLACE(@tenDangNhap, N' ', '')) + '@gmail.com', @diaChi);
@@ -637,30 +647,31 @@ INSERT INTO @TenChuQuan (Ten) VALUES
 (N'Gia Truyền'),(N'Truyền Thống'),(N'Ngon'),(N'Đệ Nhất'),(N'Phố'),(N'Quê'),
 (N'Nhà Làm'),(N'Việt'),(N'Sài Thành'),(N'Ông Địa'),(N'Cây Bàng'),(N'Xóm Nhỏ');
 
-DECLARE @j INT = 1;
+DECLARE @j INT = 1, @tenDN NVARCHAR(50), @tenCuaHang NVARCHAR(150), @diaChiQ NVARCHAR(255),
+        @sdtQ VARCHAR(15), @maTKQ INT, @maGH INT, @maDM INT;
 WHILE @j <= 30
 BEGIN
-    DECLARE @tenDN NVARCHAR(50) = N'gianhang' + RIGHT('000' + CAST(@j AS VARCHAR), 3);
-    DECLARE @tenCuaHang NVARCHAR(150) =
+    SET @tenDN = N'gianhang' + RIGHT('000' + CAST(@j AS VARCHAR), 3);
+    SET @tenCuaHang =
         (SELECT Ten FROM @LoaiQuan WHERE STT = (@j - 1) % 30) + N' ' +
         (SELECT Ten FROM @TenChuQuan WHERE STT = @j % 30);
-    DECLARE @diaChiQ NVARCHAR(255) =
+    SET @diaChiQ =
         CAST(5 + (@j % 200) AS VARCHAR) + N' ' +
         (SELECT Ten FROM @TenDuong WHERE STT = @j % 15) + N', ' +
         (SELECT Ten FROM @QuanHuyen WHERE STT = @j % 17) + N', TP.HCM';
-    DECLARE @sdtQ VARCHAR(15) = '09' + RIGHT('00000000' + CAST(40000000 + @j AS VARCHAR), 8);
+    SET @sdtQ = '09' + RIGHT('00000000' + CAST(40000000 + @j AS VARCHAR), 8);
 
     INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro) VALUES (@tenDN, '123456', N'GianHang');
-    DECLARE @maTKQ INT = SCOPE_IDENTITY();
+    SET @maTKQ = SCOPE_IDENTITY();
 
     INSERT INTO GianHang (MaTK, TenCuaHang, DiaChi, SDT, MoTa, TrangThaiKinhDoanh, TrangThaiDuyet)
     VALUES (@maTKQ, @tenCuaHang, @diaChiQ, @sdtQ, N'Quán ăn phục vụ tận tâm, nguyên liệu tươi mỗi ngày',
             CASE WHEN @j % 10 = 0 THEN N'TamNgung' ELSE N'DangMo' END, N'DaDuyet');
 
     -- Mỗi gian hàng có sẵn 1 danh mục "Món chính" + 3 món ăn cơ bản để không bị trống thực đơn
-    DECLARE @maGH INT = SCOPE_IDENTITY();
+    SET @maGH = SCOPE_IDENTITY();
     INSERT INTO DanhMuc (MaGianHang, TenDanhMuc) VALUES (@maGH, N'Món chính');
-    DECLARE @maDM INT = SCOPE_IDENTITY();
+    SET @maDM = SCOPE_IDENTITY();
 
     INSERT INTO MonAn (MaDanhMuc, TenMon, Gia, TinhTrang) VALUES
     (@maDM, (SELECT Ten FROM @LoaiQuan WHERE STT = (@j - 1) % 30) + N' đặc biệt', 45000 + (@j % 6) * 5000, N'ConHang'),
@@ -694,24 +705,26 @@ INSERT INTO @QuanHuyen2 (Ten) VALUES
 (N'Quận 8'),(N'Quận 10'),(N'Quận 11'),(N'Quận 12'),(N'Bình Thạnh'),(N'Tân Bình'),
 (N'Tân Phú'),(N'Phú Nhuận'),(N'Gò Vấp'),(N'Bình Tân'),(N'Thủ Đức');
 
-DECLARE @k INT = 1;
+DECLARE @k INT = 1, @tenDNTX NVARCHAR(50), @hoTX NVARCHAR(20), @tenDemTX NVARCHAR(20),
+        @tenTX NVARCHAR(20), @hoTenTX NVARCHAR(100), @sdtTX VARCHAR(15), @khuVuc NVARCHAR(150),
+        @phuongTien NVARCHAR(50), @bienSo VARCHAR(20), @maTKTX INT;
 WHILE @k <= 40
 BEGIN
-    DECLARE @tenDNTX NVARCHAR(50) = N'taixe' + RIGHT('000' + CAST(@k AS VARCHAR), 3);
-    DECLARE @hoTX NVARCHAR(20) = (SELECT Ten FROM @Ho2 WHERE STT = @k % 16);
-    DECLARE @tenDemTX NVARCHAR(20) = (SELECT Ten FROM @TenDemNam2 WHERE STT = @k % 8);
-    DECLARE @tenTX NVARCHAR(20) = (SELECT Ten FROM @TenNam2 WHERE STT = @k % 20);
-    DECLARE @hoTenTX NVARCHAR(100) = @hoTX + N' ' + @tenDemTX + N' ' + @tenTX;
-    DECLARE @sdtTX VARCHAR(15) = '09' + RIGHT('00000000' + CAST(50000000 + @k AS VARCHAR), 8);
-    DECLARE @khuVuc NVARCHAR(150) =
+    SET @tenDNTX = N'taixe' + RIGHT('000' + CAST(@k AS VARCHAR), 3);
+    SET @hoTX = (SELECT Ten FROM @Ho2 WHERE STT = @k % 16);
+    SET @tenDemTX = (SELECT Ten FROM @TenDemNam2 WHERE STT = @k % 8);
+    SET @tenTX = (SELECT Ten FROM @TenNam2 WHERE STT = @k % 20);
+    SET @hoTenTX = @hoTX + N' ' + @tenDemTX + N' ' + @tenTX;
+    SET @sdtTX = '09' + RIGHT('00000000' + CAST(50000000 + @k AS VARCHAR), 8);
+    SET @khuVuc =
         (SELECT Ten FROM @QuanHuyen2 WHERE STT = @k % 17) + N', ' +
         (SELECT Ten FROM @QuanHuyen2 WHERE STT = (@k + 3) % 17);
-    DECLARE @phuongTien NVARCHAR(50) = CASE WHEN @k % 5 = 0 THEN N'Xe đạp điện' ELSE N'Xe máy' END;
-    DECLARE @bienSo VARCHAR(20) = N'59-' + CHAR(65 + (@k % 26)) + N'1-' +
+    SET @phuongTien = CASE WHEN @k % 5 = 0 THEN N'Xe đạp điện' ELSE N'Xe máy' END;
+    SET @bienSo = N'59-' + CHAR(65 + (@k % 26)) + N'1-' +
         RIGHT('00000' + CAST(10000 + @k AS VARCHAR), 5);
 
     INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro) VALUES (@tenDNTX, '123456', N'TaiXe');
-    DECLARE @maTKTX INT = SCOPE_IDENTITY();
+    SET @maTKTX = SCOPE_IDENTITY();
 
     INSERT INTO TaiXe (MaTK, HoTen, SDT, PhuongTien, BienSo, KhuVucHoatDong, TrangThai)
     VALUES (@maTKTX, @hoTenTX, @sdtTX, @phuongTien, @bienSo, @khuVuc,
@@ -1662,4 +1675,50 @@ INSERT INTO LichSuGiaoHang (MaGiaoHang, MaDonHang, MaTaiXe, DenTrangThai, ThoiGi
 SELECT g.MaGiaoHang, g.MaDonHang, g.MaTaiXe, g.TrangThai, ISNULL(g.ThoiGianGiao, ISNULL(g.ThoiGianNhan, GETDATE()))
 FROM GiaoHang g
 WHERE NOT EXISTS (SELECT 1 FROM LichSuGiaoHang l WHERE l.MaGiaoHang = g.MaGiaoHang);
+GO
+
+/* ============================================================
+   NÂNG CẤP V16: CHIẾN DỊCH QUẢNG CÁO GIAN HÀNG
+   ============================================================ */
+IF COL_LENGTH(N'dbo.DanhMuc', N'DaAn') IS NULL
+    ALTER TABLE dbo.DanhMuc ADD DaAn BIT NOT NULL CONSTRAINT DF_DanhMuc_DaAn DEFAULT 0;
+GO
+
+IF OBJECT_ID(N'dbo.ChienDichQuangCao', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ChienDichQuangCao (
+        MaChienDich   INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_ChienDichQuangCao PRIMARY KEY,
+        MaGianHang    INT NOT NULL,
+        TenChienDich  NVARCHAR(150) NOT NULL,
+        LoaiViTri     NVARCHAR(20) NOT NULL CONSTRAINT DF_ChienDichQuangCao_LoaiViTri DEFAULT N'NoiBat',
+        TieuDe        NVARCHAR(150) NOT NULL,
+        NoiDung       NVARCHAR(500) NULL,
+        HinhAnh       NVARCHAR(500) NULL,
+        NgayBatDau    DATETIME2 NOT NULL,
+        NgayKetThuc   DATETIME2 NOT NULL,
+        NganSach      DECIMAL(12,0) NOT NULL CONSTRAINT DF_ChienDichQuangCao_NganSach DEFAULT 0,
+        TrangThai     NVARCHAR(20) NOT NULL CONSTRAINT DF_ChienDichQuangCao_TrangThai DEFAULT N'BanNhap',
+        LuotHienThi   INT NOT NULL CONSTRAINT DF_ChienDichQuangCao_LuotHienThi DEFAULT 0,
+        LuotTuongTac  INT NOT NULL CONSTRAINT DF_ChienDichQuangCao_LuotTuongTac DEFAULT 0,
+        NgayTao       DATETIME2 NOT NULL CONSTRAINT DF_ChienDichQuangCao_NgayTao DEFAULT GETDATE(),
+        CONSTRAINT FK_ChienDichQuangCao_GianHang FOREIGN KEY (MaGianHang)
+            REFERENCES dbo.GianHang(MaGianHang) ON DELETE CASCADE,
+        CONSTRAINT CK_ChienDichQuangCao_LoaiViTri CHECK (LoaiViTri IN (N'Banner', N'NoiBat', N'GoiY')),
+        CONSTRAINT CK_ChienDichQuangCao_TrangThai CHECK (TrangThai IN (N'BanNhap', N'DangChay', N'TamDung')),
+        CONSTRAINT CK_ChienDichQuangCao_ThoiGian CHECK (NgayKetThuc > NgayBatDau),
+        CONSTRAINT CK_ChienDichQuangCao_NganSach CHECK (NganSach >= 0)
+    );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.ChienDichQuangCao', N'U') IS NOT NULL
+   AND NOT EXISTS (
+       SELECT 1 FROM sys.indexes
+       WHERE object_id = OBJECT_ID(N'dbo.ChienDichQuangCao')
+         AND name = N'IX_ChienDichQuangCao_MaGianHang_TrangThai_ThoiGian'
+   )
+BEGIN
+    CREATE INDEX IX_ChienDichQuangCao_MaGianHang_TrangThai_ThoiGian
+        ON dbo.ChienDichQuangCao(MaGianHang, TrangThai, NgayBatDau, NgayKetThuc);
+END;
 GO

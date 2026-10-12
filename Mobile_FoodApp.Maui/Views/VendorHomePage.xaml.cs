@@ -127,6 +127,7 @@ public partial class VendorHomePage : ContentPage
     private async void OnXemDanhGiaTapped(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(VendorReviewsPage));
     private async void OnXemTaiChinhTapped(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(VendorFinancePage));
     private async void OnXemThongBaoTapped(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(VendorNotificationsPage));
+    private async void OnXemChienDichTapped(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(VendorCampaignsPage));
 
     private void OnRefreshing(object? sender, EventArgs e)
     {

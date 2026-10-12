@@ -1,0 +1,8 @@
+@model List<FoodServiceApp.Web.Models.Entities.ChienDichQuangCao>
+@{ ViewData["Title"] = "Chiến dịch quảng cáo"; }
+<div class="topbar"><div><h2>Chiến dịch quảng cáo</h2><div class="text-muted">Quảng bá cửa hàng tại banner, khu nổi bật hoặc phần gợi ý.</div></div><a asp-action="Create" class="btn btn-accent">+ Tạo chiến dịch</a></div>
+@if (!Model.Any()) { <div class="card"><div class="empty-state">Chưa có chiến dịch quảng cáo.</div></div> }
+else { <div class="card"><table class="data-table"><thead><tr><th>Chiến dịch</th><th>Vị trí</th><th>Thời gian</th><th>Ngân sách</th><th>Hiệu quả</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+@foreach (var x in Model) { var expired = x.NgayKetThuc <= DateTime.Now; var running = x.TrangThai == "DangChay" && !expired;
+<tr><td><strong>@x.TenChienDich</strong><div class="text-muted">@x.TieuDe</div></td><td>@x.LoaiViTri</td><td>@x.NgayBatDau.ToString("dd/MM/yy") – @x.NgayKetThuc.ToString("dd/MM/yy")</td><td>@x.NganSach.ToString("N0")đ</td><td>@x.LuotHienThi lượt xem<br/><strong>@x.LuotTuongTac tương tác</strong></td><td><span class="badge @(running ? "badge-success" : expired ? "badge-danger" : "badge-grey")">@(expired ? "Hết hạn" : running ? "Đang chạy" : x.TrangThai)</span></td><td style="white-space:nowrap"><a asp-action="Edit" asp-route-id="@x.MaChienDich" class="btn btn-outline btn-sm">Sửa</a> <form asp-action="Toggle" asp-route-id="@x.MaChienDich" method="post" style="display:inline"><button class="btn btn-outline btn-sm">@(running ? "Tạm dừng" : "Bật")</button></form> <form asp-action="Delete" asp-route-id="@x.MaChienDich" method="post" style="display:inline" onsubmit="return confirm('Xóa chiến dịch này?')"><button class="btn btn-danger btn-sm">Xóa</button></form></td></tr> }
+</tbody></table></div> }

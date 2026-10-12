@@ -1,0 +1,13 @@
+@model FoodServiceApp.Web.Models.ViewModels.AdvertisingCampaignViewModel
+@{ int? id = ViewBag.Id; ViewData["Title"] = id == null ? "Tạo chiến dịch" : "Sửa chiến dịch"; }
+<div class="topbar"><h2>@ViewData["Title"]</h2><a asp-action="Index" class="btn btn-outline">Quay lại</a></div>
+<form method="post" asp-action="@(id == null ? "Create" : "Edit")" asp-route-id="@id" class="card" style="max-width:820px">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div class="grid-2"><div class="form-group"><label asp-for="TenChienDich">Tên chiến dịch</label><input asp-for="TenChienDich" class="form-control" /><span asp-validation-for="TenChienDich"></span></div><div class="form-group"><label asp-for="LoaiViTri">Vị trí quảng cáo</label><select asp-for="LoaiViTri" class="form-control"><option value="Banner">Banner</option><option value="NoiBat">Khu nổi bật</option><option value="GoiY">Gợi ý cho khách</option></select></div></div>
+    <div class="form-group"><label asp-for="TieuDe">Tiêu đề hiển thị</label><input asp-for="TieuDe" class="form-control" /><span asp-validation-for="TieuDe"></span></div>
+    <div class="form-group"><label asp-for="NoiDung">Nội dung</label><textarea asp-for="NoiDung" class="form-control"></textarea></div>
+    <div class="form-group"><label asp-for="HinhAnh">Đường dẫn ảnh</label><input asp-for="HinhAnh" class="form-control" placeholder="https://... hoặc /uploads/..." /></div>
+    <div class="grid-3"><div class="form-group"><label asp-for="NgayBatDau">Bắt đầu</label><input asp-for="NgayBatDau" type="datetime-local" class="form-control" /></div><div class="form-group"><label asp-for="NgayKetThuc">Kết thúc</label><input asp-for="NgayKetThuc" type="datetime-local" class="form-control" /></div><div class="form-group"><label asp-for="NganSach">Ngân sách (đ)</label><input asp-for="NganSach" type="number" min="0" class="form-control" /></div></div>
+    <div class="form-group"><label><input asp-for="KichHoat" /> Kích hoạt ngay</label></div>
+    <button class="btn btn-primary">Lưu chiến dịch</button>
+</form>

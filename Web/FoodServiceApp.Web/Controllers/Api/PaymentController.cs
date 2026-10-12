@@ -42,7 +42,7 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         // GET /api/payment/vnpay/return — VNPay redirect trình duyệt/WebView người dùng về đây
         [HttpGet("vnpay/return")]
-        public async Task<IActionResult> VnPayReturn()
+        public IActionResult VnPayReturn()
         {
             var result = _vnPayService.ValidateCallback(Request.Query);
 

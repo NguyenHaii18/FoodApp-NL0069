@@ -324,6 +324,23 @@ public class KhuyenMai
         : MockData.DanhSachGianHang.FirstOrDefault(g => g.Id == GianHangId)?.TenGianHang ?? "Gian hàng";
 }
 
+public class ChienDichQuangCao
+{
+    public int MaChienDich { get; set; }
+    public int MaGianHang { get; set; }
+    public string TenChienDich { get; set; } = "";
+    public string LoaiViTri { get; set; } = "NoiBat";
+    public string TieuDe { get; set; } = "";
+    public string? NoiDung { get; set; }
+    public string? HinhAnh { get; set; }
+    public DateTime NgayBatDau { get; set; }
+    public DateTime NgayKetThuc { get; set; }
+    public decimal NganSach { get; set; }
+    public string TrangThai { get; set; } = "BanNhap";
+    public int LuotHienThi { get; set; }
+    public int LuotTuongTac { get; set; }
+}
+
 public class MucGioHang
 {
     public MonAn MonAn { get; set; } = null!;

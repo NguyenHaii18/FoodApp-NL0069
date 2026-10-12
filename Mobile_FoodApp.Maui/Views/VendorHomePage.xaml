@@ -52,7 +52,7 @@
                 </Frame>
 
                 <!-- Lưới điều hướng nhanh -->
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
                     <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource CardFrame}">
                         <VerticalStackLayout Spacing="4">
                             <Label Text="📦" FontSize="22" />
@@ -137,6 +137,18 @@
                         </Grid>
                         <Frame.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnXemThongBaoTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource CardFrame}">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Label Grid.Column="0" Text="📣" FontSize="22" VerticalOptions="Center" Margin="0,0,10,0" />
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="Chiến dịch quảng cáo" FontAttributes="Bold" FontSize="14" />
+                                <Label Text="Quảng bá gian hàng tại banner và khu gợi ý" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnXemChienDichTapped" />
                         </Frame.GestureRecognizers>
                     </Frame>
                 </Grid>

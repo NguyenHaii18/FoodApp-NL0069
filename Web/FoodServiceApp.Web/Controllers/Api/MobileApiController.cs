@@ -226,7 +226,7 @@ namespace FoodServiceApp.Web.Controllers.Api
             var tk = new TaiKhoan
             {
                 TenDangNhap = email,
-                MatKhau = MatKhauHelper.Hash(request.MatKhau),
+                MatKhau = MatKhauHelper.Hash(request.MatKhau!),
                 VaiTro = "KhachHang",
                 TrangThai = true,
             };
@@ -300,7 +300,7 @@ namespace FoodServiceApp.Web.Controllers.Api
             var tk = new TaiKhoan
             {
                 TenDangNhap = request.Email.Trim(),
-                MatKhau = MatKhauHelper.Hash(request.MatKhau),
+                MatKhau = MatKhauHelper.Hash(request.MatKhau!),
                 VaiTro = "GianHang",
                 TrangThai = true,
             };
@@ -879,7 +879,7 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         [HttpPut("tai-xe/vi-tri")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "TaiXe")]
-        public async Task<IActionResult> DriverPosition(MobileDriverPositionRequest request)
+        public async Task<IActionResult> UpdateDriverPosition(MobileDriverPositionRequest request)
         {
             var tx = await CurrentDriverAsync();
             if (tx == null) return Loi("Tài khoản tài xế không hợp lệ.", 401);
@@ -1210,10 +1210,11 @@ namespace FoodServiceApp.Web.Controllers.Api
         private static string? GetDeliveryCode(DonHang d)
         {
             if (!string.IsNullOrEmpty(d.MaXacNhanGiao)) return d.MaXacNhanGiao;
-            var marker = d.GhiChu?.IndexOf("[MA_GIAO:", StringComparison.Ordinal);
+            if (string.IsNullOrEmpty(d.GhiChu)) return null;
+            var marker = d.GhiChu.IndexOf("[MA_GIAO:", StringComparison.Ordinal);
             if (marker < 0) return null;
             var start = marker + "[MA_GIAO:".Length;
-            var end = d.GhiChu!.IndexOf(']', start);
+            var end = d.GhiChu.IndexOf(']', start);
             return end > start ? d.GhiChu[start..end] : null;
         }
 
@@ -1305,6 +1306,41 @@ namespace FoodServiceApp.Web.Controllers.Api
                 ? Math.Round(amount * km.PhanTramGiam.Value / 100)
                 : Math.Max(0, km.SoTienGiam ?? 0);
             return (Math.Min(discount, amount), km.MaKhuyenMai);
+        }
+
+        [HttpGet("chien-dich")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ChienDichDangChay([FromQuery] string? viTri)
+        {
+            var now = DateTime.Now;
+            var query = _db.ChienDichQuangCaos.Where(x => x.TrangThai == "DangChay" &&
+                x.NgayBatDau <= now && x.NgayKetThuc > now &&
+                x.GianHang!.TrangThaiDuyet == "DaDuyet" &&
+                x.GianHang.TrangThaiKinhDoanh == "DangMo" && x.GianHang.TaiKhoan!.TrangThai);
+            if (!string.IsNullOrWhiteSpace(viTri)) query = query.Where(x => x.LoaiViTri == viTri);
+            return Ok(await query.OrderByDescending(x => x.NganSach).Select(x => new
+            {
+                x.MaChienDich,
+                x.MaGianHang,
+                x.TieuDe,
+                x.NoiDung,
+                x.HinhAnh,
+                x.LoaiViTri,
+                TenGianHang = x.GianHang!.TenCuaHang
+            }).ToListAsync());
+        }
+
+        [HttpPost("chien-dich/{id:int}/tuong-tac")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GhiNhanTuongTacChienDich(int id)
+        {
+            var now = DateTime.Now;
+            var campaign = await _db.ChienDichQuangCaos.SingleOrDefaultAsync(x => x.MaChienDich == id &&
+                x.TrangThai == "DangChay" && x.NgayBatDau <= now && x.NgayKetThuc > now);
+            if (campaign == null) return NotFound();
+            campaign.LuotTuongTac++;
+            await _db.SaveChangesAsync();
+            return NoContent();
         }
 
         private async Task<DeliveryRoute> CalculateDeliveryAsync(string from, string to)

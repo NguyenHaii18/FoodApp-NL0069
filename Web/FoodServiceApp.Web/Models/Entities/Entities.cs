@@ -48,6 +48,27 @@ namespace FoodServiceApp.Web.Models.Entities
         public ICollection<DanhMuc> DanhMucs { get; set; } = new List<DanhMuc>();
         public ICollection<DonHang> DonHangs { get; set; } = new List<DonHang>();
         public ICollection<KhuyenMai> KhuyenMais { get; set; } = new List<KhuyenMai>();
+        public ICollection<ChienDichQuangCao> ChienDichQuangCaos { get; set; } = new List<ChienDichQuangCao>();
+    }
+
+    [Table("ChienDichQuangCao")]
+    public class ChienDichQuangCao
+    {
+        [Key] public int MaChienDich { get; set; }
+        public int MaGianHang { get; set; }
+        public GianHang? GianHang { get; set; }
+        public string TenChienDich { get; set; } = "";
+        public string LoaiViTri { get; set; } = "NoiBat";
+        public string TieuDe { get; set; } = "";
+        public string? NoiDung { get; set; }
+        public string? HinhAnh { get; set; }
+        public DateTime NgayBatDau { get; set; }
+        public DateTime NgayKetThuc { get; set; }
+        public decimal NganSach { get; set; }
+        public string TrangThai { get; set; } = "BanNhap";
+        public int LuotHienThi { get; set; }
+        public int LuotTuongTac { get; set; }
+        public DateTime NgayTao { get; set; } = DateTime.Now;
     }
 
     [Table("QuanTri")]
@@ -110,6 +131,8 @@ namespace FoodServiceApp.Web.Models.Entities
         public int MaGianHang { get; set; }
         public GianHang? GianHang { get; set; }
         public string TenDanhMuc { get; set; } = "";
+        public int ThuTu { get; set; }
+        public bool DaAn { get; set; }
 
         public ICollection<MonAn> MonAns { get; set; } = new List<MonAn>();
     }

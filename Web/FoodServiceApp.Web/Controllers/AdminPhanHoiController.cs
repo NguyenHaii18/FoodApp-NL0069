@@ -28,8 +28,9 @@ namespace FoodServiceApp.Web.Controllers
             ViewBag.NhanVien = await _db.QuanTris.ToDictionaryAsync(q => q.MaTK, q => q.HoTen);
             var daXuLy = await _db.PhanHois.Where(p => p.NgayXuLy != null).Select(p => new { p.NgayGui, p.NgayXuLy }).ToListAsync();
             ViewBag.TrungBinhGio = daXuLy.Any() ? daXuLy.Average(x => (x.NgayXuLy!.Value - x.NgayGui).TotalHours) : (double?)null;
-            ViewBag.MaTKHienTai = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
-            ViewBag.LaQuanLy = await _db.QuanTris.AnyAsync(q => q.MaTK == (int)ViewBag.MaTKHienTai && (q.CapQuyenHan == "SuperAdmin" || q.CapQuyenHan == "QuanLy"));
+            var maTKHienTai = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+            ViewBag.MaTKHienTai = maTKHienTai;
+            ViewBag.LaQuanLy = await _db.QuanTris.AnyAsync(q => q.MaTK == maTKHienTai && (q.CapQuyenHan == "SuperAdmin" || q.CapQuyenHan == "QuanLy"));
             return View(await query.OrderBy(p => p.TrangThai == "DaXuLy").ThenByDescending(p => p.NgayGui).ToListAsync());
         }
 

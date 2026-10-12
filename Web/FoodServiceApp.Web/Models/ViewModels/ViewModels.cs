@@ -114,16 +114,6 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string? HinhAnhHienTai { get; set; }
         public IFormFile? AnhMoi { get; set; }
 
-        public string? Email { get; set; }
-        [RegularExpression(@"^([01]\d|2[0-3]):[0-5]\d$", ErrorMessage = "Giờ mở cửa dạng HH:mm")]
-        public string GioMoCua { get; set; } = "00:00";
-        [RegularExpression(@"^([01]\d|2[0-3]):[0-5]\d$", ErrorMessage = "Giờ đóng cửa dạng HH:mm")]
-        public string GioDongCua { get; set; } = "23:59";
-        public bool DangNhanDon { get; set; } = true;
-        public string? GiayPhepHienTai { get; set; }
-        public string? GiayAttpHienTai { get; set; }
-        public IFormFile? GiayPhepMoi { get; set; }
-        public IFormFile? GiayAttpMoi { get; set; }
         public bool ConHang { get; set; } = true;
 
         public string TenDanhMucMoi { get; set; } = "";
@@ -173,6 +163,17 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string? MoTa { get; set; }
         public string? HinhAnhHienTai { get; set; }
         public IFormFile? AnhMoi { get; set; }
+
+        public string? Email { get; set; }
+        [RegularExpression(@"^([01]\d|2[0-3]):[0-5]\d$", ErrorMessage = "Giờ mở cửa dạng HH:mm")]
+        public string GioMoCua { get; set; } = "00:00";
+        [RegularExpression(@"^([01]\d|2[0-3]):[0-5]\d$", ErrorMessage = "Giờ đóng cửa dạng HH:mm")]
+        public string GioDongCua { get; set; } = "23:59";
+        public bool DangNhanDon { get; set; } = true;
+        public string? GiayPhepHienTai { get; set; }
+        public string? GiayAttpHienTai { get; set; }
+        public IFormFile? GiayPhepMoi { get; set; }
+        public IFormFile? GiayAttpMoi { get; set; }
 
         public string? MatKhauMoi { get; set; }
         public string? XacNhanMatKhauMoi { get; set; }

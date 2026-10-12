@@ -121,7 +121,7 @@ public partial class PaymentPage : ContentPage
         BtnXacNhanDatHang.Text = $"Xác nhận đặt hàng • {TongCong:N0}đ";
     }
 
-    private async void OnApDungKhuyenMaiClicked(object sender, EventArgs e)
+    private void OnApDungKhuyenMaiClicked(object sender, EventArgs e)
     {
         var maCode = EntryMaKhuyenMai.Text?.Trim();
         if (string.IsNullOrEmpty(maCode)) return;

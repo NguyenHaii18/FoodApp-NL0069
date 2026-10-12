@@ -31,6 +31,9 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         // ------------------------------------------------------------------ giờ hoạt động / nhận đơn
         public record GioHoatDongRequest(string? GioMoCua, string? GioDongCua, bool DangNhanDon, bool DangMoCua);
+        public record ChienDichRequest(string? TenChienDich, string? LoaiViTri, string? TieuDe,
+            string? NoiDung, string? HinhAnh, DateTime NgayBatDau, DateTime NgayKetThuc,
+            decimal NganSach, bool KichHoat);
 
         [HttpPut("gian-hang/{id:int}/gio-hoat-dong")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "GianHang")]
@@ -122,22 +125,22 @@ namespace FoodServiceApp.Web.Controllers.Api
         {
             var store = await OwnStoreAsync(id);
             if (store == null) return Loi("Bạn không có quyền xem gian hàng này.", 403);
-            var from = (tu ?? DateTime.Today.AddDays(-29)).Date;
+            var fromDate = (tu ?? DateTime.Today.AddDays(-29)).Date;
             var to = (den ?? DateTime.Today).Date.AddDays(1);
 
             var don = await _db.DonHangs.Include(d => d.ChiTiets)
-                .Where(d => d.MaGianHang == id && d.TrangThai == "DaGiao" && d.NgayDat >= from && d.NgayDat < to).ToListAsync();
+                .Where(d => d.MaGianHang == id && d.TrangThai == "DaGiao" && d.NgayDat >= fromDate && d.NgayDat < to).ToListAsync();
             // Doanh thu món = tiền hàng (không tính phí giao: phí giao thuộc về tài xế)
             var doanhThu = don.Sum(d => d.ChiTiets.Sum(c => c.DonGia * c.SoLuong));
             var phiNenTang = Math.Round(doanhThu * store.TyLeChietKhau, 0);
             var giaVon = (await (from c in _db.ChiTietDonHangs
                                  join d in _db.DonHangs on c.MaDonHang equals d.MaDonHang
                                  join m in _db.MonAns on c.MaMonAn equals m.MaMonAn
-                                 where d.MaGianHang == id && d.TrangThai == "DaGiao" && d.NgayDat >= from && d.NgayDat < to
+                                 where d.MaGianHang == id && d.TrangThai == "DaGiao" && d.NgayDat >= fromDate && d.NgayDat < to
                                  select (decimal?)(m.GiaVon * c.SoLuong)).SumAsync()) ?? 0m;
             return Ok(new
             {
-                tu = from, den = to.AddDays(-1),
+                tu = fromDate, den = to.AddDays(-1),
                 soDon = don.Count,
                 doanhThuMon = doanhThu,
                 tyLeChietKhau = store.TyLeChietKhau,
@@ -146,6 +149,66 @@ namespace FoodServiceApp.Web.Controllers.Api
                 giaVon,
                 loiNhuan = doanhThu - phiNenTang - giaVon
             });
+        }
+
+        // ------------------------------------------------------------------ chiến dịch quảng cáo của gian hàng
+        [HttpGet("gian-hang/{id:int}/chien-dich")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "GianHang")]
+        public async Task<IActionResult> DanhSachChienDich(int id)
+        {
+            if (await OwnStoreAsync(id) == null) return Loi("Bạn không có quyền xem gian hàng này.", 403);
+            return Ok(await _db.ChienDichQuangCaos.Where(x => x.MaGianHang == id)
+                .OrderByDescending(x => x.NgayTao).ToListAsync());
+        }
+
+        [HttpPost("gian-hang/{id:int}/chien-dich")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "GianHang")]
+        public Task<IActionResult> TaoChienDich(int id, ChienDichRequest request) => LuuChienDich(id, null, request);
+
+        [HttpPut("gian-hang/{id:int}/chien-dich/{maChienDich:int}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "GianHang")]
+        public Task<IActionResult> SuaChienDich(int id, int maChienDich, ChienDichRequest request) =>
+            LuuChienDich(id, maChienDich, request);
+
+        private async Task<IActionResult> LuuChienDich(int id, int? maChienDich, ChienDichRequest request)
+        {
+            if (await OwnStoreAsync(id) == null) return Loi("Bạn không có quyền sửa gian hàng này.", 403);
+            if (string.IsNullOrWhiteSpace(request.TenChienDich) || string.IsNullOrWhiteSpace(request.TieuDe))
+                return Loi("Tên chiến dịch và tiêu đề không được để trống.");
+            if (request.TenChienDich.Length > 150 || request.TieuDe.Length > 150 || request.NoiDung?.Length > 500 || request.HinhAnh?.Length > 500)
+                return Loi("Nội dung chiến dịch vượt quá độ dài cho phép.");
+            if (request.LoaiViTri is not ("Banner" or "NoiBat" or "GoiY")) return Loi("Vị trí quảng cáo không hợp lệ.");
+            if (request.NgayKetThuc <= request.NgayBatDau) return Loi("Ngày kết thúc phải sau ngày bắt đầu.");
+            if (request.NganSach < 0 || request.NganSach > 1_000_000_000m) return Loi("Ngân sách không hợp lệ.");
+
+            var campaign = maChienDich == null
+                ? new ChienDichQuangCao { MaGianHang = id }
+                : await _db.ChienDichQuangCaos.SingleOrDefaultAsync(x => x.MaChienDich == maChienDich && x.MaGianHang == id);
+            if (campaign == null) return Loi("Không tìm thấy chiến dịch.", 404);
+            campaign.TenChienDich = request.TenChienDich.Trim();
+            campaign.LoaiViTri = request.LoaiViTri;
+            campaign.TieuDe = request.TieuDe.Trim();
+            campaign.NoiDung = request.NoiDung?.Trim();
+            campaign.HinhAnh = request.HinhAnh?.Trim();
+            campaign.NgayBatDau = request.NgayBatDau;
+            campaign.NgayKetThuc = request.NgayKetThuc;
+            campaign.NganSach = request.NganSach;
+            campaign.TrangThai = request.KichHoat ? "DangChay" : "BanNhap";
+            if (maChienDich == null) _db.ChienDichQuangCaos.Add(campaign);
+            await _db.SaveChangesAsync();
+            return Ok(new { campaign.MaChienDich });
+        }
+
+        [HttpDelete("gian-hang/{id:int}/chien-dich/{maChienDich:int}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "GianHang")]
+        public async Task<IActionResult> XoaChienDich(int id, int maChienDich)
+        {
+            if (await OwnStoreAsync(id) == null) return Loi("Bạn không có quyền sửa gian hàng này.", 403);
+            var campaign = await _db.ChienDichQuangCaos.SingleOrDefaultAsync(x => x.MaChienDich == maChienDich && x.MaGianHang == id);
+            if (campaign == null) return Loi("Không tìm thấy chiến dịch.", 404);
+            _db.ChienDichQuangCaos.Remove(campaign);
+            await _db.SaveChangesAsync();
+            return NoContent();
         }
 
         // ------------------------------------------------------------------ quên mật khẩu (không có OTP/email → hạn chế số lần thử)

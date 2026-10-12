@@ -57,7 +57,8 @@ namespace FoodServiceApp.Web.Controllers
             var tep = $"{thuMuc}\\{db}_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             try
             {
-                await Db.Database.SetCommandTimeout(300).ExecuteSqlRawAsync("BACKUP DATABASE [" + db + "] TO DISK = {0} WITH INIT", tep);
+                Db.Database.SetCommandTimeout(300);
+                await Db.Database.ExecuteSqlRawAsync("BACKUP DATABASE [" + db + "] TO DISK = {0} WITH INIT", tep);
                 TempData["ThongBao"] = "Đã sao lưu: " + tep;
             }
             catch (Exception ex)

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.VendorCampaignsPage"
+             Title="Chiến dịch quảng cáo">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Tạo chiến dịch" Style="{StaticResource TitleLabel}" />
+                    <Entry x:Name="Ten" Placeholder="Tên chiến dịch" />
+                    <Entry x:Name="TieuDe" Placeholder="Tiêu đề hiển thị" />
+                    <Picker x:Name="ViTri" Title="Vị trí">
+                        <Picker.Items><x:String>Banner</x:String><x:String>NoiBat</x:String><x:String>GoiY</x:String></Picker.Items>
+                    </Picker>
+                    <Editor x:Name="NoiDung" Placeholder="Nội dung quảng cáo" AutoSize="TextChanges" />
+                    <Entry x:Name="HinhAnh" Placeholder="Đường dẫn ảnh (không bắt buộc)" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <DatePicker x:Name="BatDau" Grid.Column="0" />
+                        <DatePicker x:Name="KetThuc" Grid.Column="1" />
+                    </Grid>
+                    <Entry x:Name="NganSach" Placeholder="Ngân sách" Keyboard="Numeric" />
+                    <HorizontalStackLayout><Switch x:Name="KichHoat" /><Label Text="Kích hoạt ngay" VerticalOptions="Center" /></HorizontalStackLayout>
+                    <Button Text="Tạo chiến dịch" Style="{StaticResource PrimaryButton}" Clicked="OnCreate" />
+                </VerticalStackLayout>
+            </Frame>
+            <Label Text="Các chiến dịch" Style="{StaticResource TitleLabel}" />
+            <Label x:Name="Rong" Text="Chưa có chiến dịch." IsVisible="False" />
+            <CollectionView x:Name="DanhSach" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ChienDichQuangCao">
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,8">
+                            <VerticalStackLayout>
+                                <Grid ColumnDefinitions="*,Auto"><Label Text="{Binding TenChienDich}" FontAttributes="Bold" /><Label Grid.Column="1" Text="{Binding TrangThai}" TextColor="{StaticResource Primary}" /></Grid>
+                                <Label Text="{Binding TieuDe}" />
+                                <Label Text="{Binding NganSach, StringFormat='Ngân sách: {0:N0}đ'}" FontSize="12" />
+                                <Label Text="{Binding LuotTuongTac, StringFormat='Tương tác: {0}'}" FontSize="12" />
+                                <Button Text="Xóa" Style="{StaticResource OutlineButton}" CommandParameter="{Binding .}" Clicked="OnDelete" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

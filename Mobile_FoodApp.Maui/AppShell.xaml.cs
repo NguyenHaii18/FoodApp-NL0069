@@ -58,6 +58,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(VendorReviewsPage), typeof(VendorReviewsPage));
         Routing.RegisterRoute(nameof(VendorNotificationsPage), typeof(VendorNotificationsPage));
         Routing.RegisterRoute(nameof(VendorFinancePage), typeof(VendorFinancePage));
+        Routing.RegisterRoute(nameof(VendorCampaignsPage), typeof(VendorCampaignsPage));
 
         // Luồng quản lý quản trị — điều hướng dạng stack, nằm ngoài TabBar khách hàng.
         Routing.RegisterRoute(nameof(AdminLoginPage), typeof(AdminLoginPage));
