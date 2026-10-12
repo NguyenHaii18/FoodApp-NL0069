@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminCustomerListPage"
+             Title="Tài khoản khách hàng">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+            <CollectionView x:Name="DsKhachHang" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:KhachHang">
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                <Label Grid.Row="0" Grid.Column="0" Text="{Binding HoTen}" FontAttributes="Bold" FontSize="14" />
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToTextConverter}}"
+                                       TextColor="{StaticResource Danger}" FontSize="11" FontAttributes="Bold" />
+
+                                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="12" TextColor="{StaticResource TextGrey}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="✉️ " />
+                                            <Span Text="{Binding Email}" />
+                                            <Span Text="   📞 " />
+                                            <Span Text="{Binding SoDienThoai}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+
+                                <Label Grid.Row="2" Grid.Column="0" FontSize="11" TextColor="{StaticResource TextGrey}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding NgayDangKy, StringFormat='Tham gia {0:dd/MM/yyyy}'}" />
+                                            <Span Text="{Binding TongSoDon, StringFormat='   •   {0} đơn đã đặt'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+
+                                <Button Grid.Row="2" Grid.Column="1"
+                                        Text="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToNutTextConverter}}"
+                                        FontSize="11" HeightRequest="32" Padding="10,0" CornerRadius="8"
+                                        BackgroundColor="Transparent"
+                                        TextColor="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToMauConverter}}"
+                                        BorderColor="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToMauConverter}}" BorderWidth="1"
+                                        Clicked="OnKhoaMoClicked" CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

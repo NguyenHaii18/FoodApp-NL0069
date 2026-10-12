@@ -1,0 +1,31 @@
+@model GianHang
+@{
+    ViewData["Title"] = "Chờ duyệt";
+}
+
+<div class="card" style="max-width:520px; margin:60px auto; text-align:center;">
+    @if (Model.TrangThaiDuyet == "ChoDuyet")
+    {
+        <div style="font-size:40px; margin-bottom:12px;">⏳</div>
+        <h2>Hồ sơ đang chờ duyệt</h2>
+        <p class="text-muted">
+            Gian hàng <strong>@Model.TenCuaHang</strong> đã đăng ký thành công và đang chờ
+            Quản trị viên xét duyệt. Bạn sẽ có thể quản lý thực đơn, nhận đơn hàng ngay sau khi
+            được duyệt. Vui lòng quay lại kiểm tra sau.
+        </p>
+    }
+    else if (Model.TrangThaiDuyet == "TuChoi")
+    {
+        <div style="font-size:40px; margin-bottom:12px;">❌</div>
+        <h2>Hồ sơ đã bị từ chối</h2>
+        <p class="text-muted">
+            Rất tiếc, hồ sơ đăng ký của gian hàng <strong>@Model.TenCuaHang</strong> đã bị từ chối.
+            Vui lòng liên hệ quản trị viên để biết thêm chi tiết hoặc cập nhật lại hồ sơ ở mục Hồ sơ.
+        </p>
+    }
+    <a asp-controller="HoSo" asp-action="Index" class="btn btn-outline mt-3">Xem/sửa hồ sơ</a>
+    <form asp-controller="Auth" asp-action="Logout" method="post" style="display:inline;">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-outline mt-3">Đăng xuất</button>
+    </form>
+</div>

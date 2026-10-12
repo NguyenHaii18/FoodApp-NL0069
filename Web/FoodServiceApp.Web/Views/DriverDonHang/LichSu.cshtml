@@ -1,0 +1,43 @@
+@model List<GiaoHang>
+@{
+    ViewData["Title"] = "Lịch sử giao hàng";
+    Layout = "_DriverLayout";
+}
+
+<div class="topbar">
+    <h2>Lịch sử giao hàng</h2>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Chưa có chuyến giao nào hoàn tất.</div></div>
+}
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead><tr><th>Mã đơn</th><th>Gian hàng</th><th>Thời gian giao</th><th>Kết quả</th><th>Thu nhập</th></tr></thead>
+            <tbody>
+                @foreach (var g in Model)
+                {
+                    <tr>
+                        <td>#@g.MaDonHang</td>
+                        <td>@g.DonHang?.GianHang?.TenCuaHang</td>
+                        <td>@(g.ThoiGianGiao?.ToString("HH:mm dd/MM/yyyy") ?? "—")</td>
+                        <td>
+                            @if (g.TrangThai == "GiaoThanhCong")
+                            {
+                                <span class="badge badge-success">Thành công</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Thất bại</span>
+                            }
+                        </td>
+                        <td>@(g.TrangThai == "GiaoThanhCong" ? g.DonHang!.PhiGiaoHang.ToString("N0") + "đ" : "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

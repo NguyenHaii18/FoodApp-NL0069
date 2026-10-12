@@ -1,0 +1,43 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập Tài xế";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="logo" style="background: var(--accent);">🏍️</div>
+        <h2>Cổng Tài xế</h2>
+        <p class="sub">Đăng nhập để nhận đơn và giao hàng</p>
+
+        @if (!string.IsNullOrEmpty(Model.LoiThongBao))
+        {
+            <div class="validation-summary-errors">@Model.LoiThongBao</div>
+        }
+        @if (TempData["ThongBao"] != null)
+        {
+            <div class="alert-success mb-3">@TempData["ThongBao"]</div>
+        }
+
+        <form asp-controller="DriverAuth" asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label asp-for="TenDangNhap">Tên đăng nhập</label>
+                <input asp-for="TenDangNhap" class="form-control" placeholder="vd: taixe01" autofocus />
+                <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MatKhau">Mật khẩu</label>
+                <input asp-for="MatKhau" type="password" class="form-control" placeholder="••••••••" />
+                <span asp-validation-for="MatKhau" class="field-validation-error"></span>
+            </div>
+            <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; background:var(--accent); color:#fff;">
+                Đăng nhập
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:16px; font-size:12.5px;">
+            <a href="/QuenMatKhau">Quên mật khẩu?</a><br />
+            Chưa có tài khoản? <a asp-controller="DriverAuth" asp-action="DangKy">Đăng ký làm tài xế</a>
+        </p>
+    </div>
+</div>

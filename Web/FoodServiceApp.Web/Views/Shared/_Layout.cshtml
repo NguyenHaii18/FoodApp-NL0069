@@ -1,0 +1,80 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var gianHangTen = Context.User.FindFirst("TenCuaHang")?.Value ?? "Gian hàng";
+    var gianHangDiaChi = Context.User.FindFirst("DiaChi")?.Value ?? "";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Quản lý Gian hàng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_IntroVideo" />
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo">🍽️</div>
+                <div>
+                    <h1>@gianHangTen</h1>
+                    <p>@gianHangDiaChi</p>
+                </div>
+            </div>
+
+            <nav>
+                <a class="nav-item @(currentController == "Dashboard" ? "active" : "")" asp-controller="Dashboard" asp-action="Index">
+                    <span class="icon">🏠</span> Trang chủ
+                </a>
+                <a class="nav-item @(currentController == "DonHang" ? "active" : "")" asp-controller="DonHang" asp-action="Index">
+                    <span class="icon">📦</span> Đơn hàng
+                </a>
+                <a class="nav-item @(currentController == "MonAn" ? "active" : "")" asp-controller="MonAn" asp-action="Index">
+                    <span class="icon">🍲</span> Thực đơn
+                </a>
+                <a class="nav-item @(currentController == "KhuyenMai" ? "active" : "")" asp-controller="KhuyenMai" asp-action="Index">
+                    <span class="icon">🏷️</span> Khuyến mãi
+                </a>
+                <a class="nav-item @(currentController == "DoanhThu" ? "active" : "")" asp-controller="DoanhThu" asp-action="Index">
+                    <span class="icon">📈</span> Doanh thu
+                </a>
+                <a class="nav-item @(currentController == "HoSo" ? "active" : "")" asp-controller="HoSo" asp-action="Index">
+                    <span class="icon">🏬</span> Hồ sơ cửa hàng
+                </a>
+                <a class="nav-item" asp-controller="BaoMat" asp-action="Index"><span class="icon">🔒</span> Bảo mật tài khoản</a>
+            </nav>
+
+            <form asp-controller="Auth" asp-action="Logout" method="post" style="margin-top: 24px;">
+                <button type="submit" class="nav-item" style="width:100%; border:none; background:transparent; cursor:pointer; text-align:left;">
+                    <span class="icon">🚪</span> Đăng xuất
+                </button>
+            </form>
+        </aside>
+
+        <main class="main-content">
+            @if (TempData["ThongBao"] != null)
+            {
+                <div class="alert-success mb-3">
+                    @TempData["ThongBao"]
+                </div>
+            }
+            @if (TempData["LoiThongBao"] != null)
+            {
+                <div class="alert-danger mb-3">
+                    @TempData["LoiThongBao"]
+                </div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

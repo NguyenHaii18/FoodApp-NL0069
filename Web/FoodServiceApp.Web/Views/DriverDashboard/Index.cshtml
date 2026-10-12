@@ -1,0 +1,68 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "_DriverLayout";
+    var taiXe = (TaiXe)ViewBag.TaiXe;
+    var donDangGiao = (DonHang?)ViewBag.DonDangGiao;
+}
+
+<div class="topbar">
+    <h2>Trang chủ</h2>
+    @if (taiXe.TrangThai != "DangGiao")
+    {
+        <form asp-controller="DriverDashboard" asp-action="ToggleSanSang" method="post">
+            @Html.AntiForgeryToken()
+            <div class="toggle-wrap">
+                <span style="font-size:13px; color:var(--text-grey);">
+                    @(taiXe.TrangThai == "SanSang" ? "Đang sẵn sàng nhận đơn" : "Đang ngoại tuyến")
+                </span>
+                <label class="toggle-switch">
+                    <input type="checkbox" onchange="this.form.submit()" checked="@(taiXe.TrangThai == "SanSang")" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </form>
+    }
+    else
+    {
+        <span class="badge badge-primary">Đang trong chuyến giao</span>
+    }
+</div>
+
+<div class="grid-3 mb-3">
+    <div class="stat-card" style="background: var(--accent);">
+        <div class="label">Đơn đã giao hôm nay</div>
+        <div class="value">@ViewBag.SoDonHomNay</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Thu nhập hôm nay</div>
+        <div class="value">@(((decimal)ViewBag.ThuNhapHomNay).ToString("N0"))đ</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Đơn đang chờ tài xế nhận</div>
+        <div class="value">@ViewBag.SoDonChoNhan</div>
+    </div>
+</div>
+<div style="text-align:right; margin-bottom:14px;">
+    <a asp-controller="DriverThuNhap" asp-action="Index" style="font-size:13px; color:var(--primary);">Xem chi tiết thu nhập theo ngày →</a>
+</div>
+
+@if (donDangGiao != null)
+{
+    <div class="card mb-3" style="border-color:var(--accent);">
+        <h3 style="margin-top:0;">Chuyến giao hiện tại — Đơn #@donDangGiao.MaDonHang</h3>
+        <p><strong>Lấy hàng tại:</strong> @donDangGiao.GianHang?.TenCuaHang — @donDangGiao.GianHang?.DiaChi</p>
+        <p><strong>Giao đến:</strong> @donDangGiao.DiaChiGiaoHang</p>
+        <p><strong>Tổng tiền thu hộ (nếu COD):</strong> @donDangGiao.TongTien.ToString("N0")đ</p>
+        <a asp-controller="DriverDonHang" asp-action="DonHienTai" class="btn btn-accent">Xem chi tiết & cập nhật trạng thái</a>
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="empty-state">Bạn chưa có chuyến giao nào đang thực hiện.</div>
+        <div style="text-align:center;">
+            <a asp-controller="DriverDonHang" asp-action="ChoNhan" class="btn btn-primary">Xem đơn chờ nhận</a>
+        </div>
+    </div>
+}

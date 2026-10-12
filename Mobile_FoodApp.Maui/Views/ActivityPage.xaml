@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.ActivityPage"
+             Title="Hoạt động" Shell.NavBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+            <Label Text="Hoạt động" Style="{StaticResource TitleLabel}" Margin="0,0,0,6" />
+
+            <VerticalStackLayout x:Name="DanhSach" Spacing="10" />
+        <Label x:Name="LblTrong" Text="Chưa có hoạt động nào" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" Margin="0,40" IsVisible="False" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

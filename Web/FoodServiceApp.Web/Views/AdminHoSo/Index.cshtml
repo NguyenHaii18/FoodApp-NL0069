@@ -1,0 +1,56 @@
+@model FoodServiceApp.Web.Controllers.AdminHoSoViewModel
+@{
+    ViewData["Title"] = "Hồ sơ";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Hồ sơ quản trị viên</h2>
+</div>
+
+<div class="card" style="max-width:480px;">
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="form-group">
+            <label asp-for="HoTen">Họ tên</label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SDT">Số điện thoại</label>
+            <input asp-for="SDT" class="form-control" />
+            <span asp-validation-for="SDT" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PhongBanPhuTrach">Phòng ban phụ trách</label>
+            <input asp-for="PhongBanPhuTrach" class="form-control" placeholder="vd: Vận hành, CSKH..." />
+        </div>
+        <div class="form-group">
+            <label>Cấp quyền hạn</label>
+            <input value="@Model.CapQuyenHan" class="form-control" disabled />
+            <span class="text-muted" style="font-size:12px;">Chỉ quản trị viên cấp cao hơn mới có thể thay đổi cấp quyền hạn.</span>
+        </div>
+
+        <hr style="border-color:var(--border); margin:20px 0;" />
+        <p class="text-muted" style="font-size:13px;">Đổi mật khẩu (bỏ trống nếu không muốn đổi)</p>
+
+        <div class="form-group">
+            <label asp-for="MatKhauMoi">Mật khẩu mới</label>
+            <input asp-for="MatKhauMoi" type="password" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="XacNhanMatKhauMoi">Xác nhận mật khẩu mới</label>
+            <input asp-for="XacNhanMatKhauMoi" type="password" class="form-control" />
+            <span asp-validation-for="XacNhanMatKhauMoi" class="field-validation-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    </form>
+</div>

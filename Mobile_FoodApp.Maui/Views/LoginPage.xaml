@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.LoginPage"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,40" Spacing="14">
+
+            <Frame WidthRequest="96" HeightRequest="96" CornerRadius="24" Padding="0" HasShadow="False"
+                   IsClippedToBounds="True" HorizontalOptions="Center" BackgroundColor="{StaticResource Primary}">
+                <Image Source="logo.png" Aspect="AspectFill" />
+            </Frame>
+
+            <Label Text="Dịch Vụ Ăn Uống" Style="{StaticResource TitleLabel}" HorizontalOptions="Center" />
+            <Label x:Name="LblPhuDe" Text="Đăng nhập để tiếp tục đặt món"
+                   Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" Margin="0,0,0,10" />
+
+            <!-- Toggle Đăng nhập / Đăng ký -->
+            <Grid ColumnDefinitions="*,*" BackgroundColor="{StaticResource PrimarySoft}" Padding="4" Margin="0,0,0,10">
+                <Button x:Name="TabDangNhap" Text="Đăng nhập" Grid.Column="0"
+                        BackgroundColor="White" TextColor="{StaticResource Primary}"
+                        CornerRadius="8" Clicked="OnTabDangNhapClicked" />
+                <Button x:Name="TabDangKy" Text="Đăng ký" Grid.Column="1"
+                        BackgroundColor="Transparent" TextColor="{StaticResource TextGrey}"
+                        CornerRadius="8" Clicked="OnTabDangKyClicked" />
+            </Grid>
+
+            <!-- Chỉ hiện khi ở chế độ Đăng ký -->
+            <VerticalStackLayout x:Name="KhungDangKy" IsVisible="False" Spacing="10">
+                <Entry x:Name="EntryHoTen" Placeholder="Họ và tên" />
+                <Entry x:Name="EntrySdt" Placeholder="Số điện thoại" Keyboard="Telephone" />
+                <Entry x:Name="EntryDiaChi" Placeholder="Địa chỉ giao hàng (số nhà, đường, quận...)" />
+            </VerticalStackLayout>
+
+            <Entry x:Name="EntryEmail" Placeholder="Email" Keyboard="Email" />
+            <Entry x:Name="EntryMatKhau" Placeholder="Mật khẩu" IsPassword="True" />
+
+            <Label x:Name="LblQuenMatKhau" Text="Quên mật khẩu?" TextColor="{StaticResource Primary}"
+                   FontSize="13" HorizontalOptions="End">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnQuenMatKhauTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False"
+                                Color="{StaticResource Primary}" />
+
+            <Button x:Name="BtnXacNhan" Text="Đăng nhập" Style="{StaticResource PrimaryButton}"
+                    Clicked="OnXacNhanClicked" />
+
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12"
+                   HorizontalOptions="Center" IsVisible="False" />
+
+            <Label Text="🛵 Bạn là tài xế? Đăng nhập tại đây" TextColor="{StaticResource Accent}"
+                   FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,20,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDangNhapTaiXeTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label Text="🏪 Bạn là gian hàng đối tác? Đăng nhập tại đây" TextColor="{StaticResource Primary}"
+                   FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,10,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDangNhapGianHangTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label Text="🛡️ Quản trị viên hệ thống" TextColor="{StaticResource TextGrey}"
+                   FontSize="12" HorizontalOptions="Center" Margin="0,10,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDangNhapQuanTriTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

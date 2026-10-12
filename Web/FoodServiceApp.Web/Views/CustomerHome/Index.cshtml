@@ -1,0 +1,100 @@
+@model CustomerHomeViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "_CustomerLayout";
+}
+
+<div class="hero-banner">
+    <div>
+        <h1>Đói bụng chưa? 🍜</h1>
+        <p>Hàng ngàn quán ăn, freeship nhiều nơi — đặt món chỉ trong vài giây.</p>
+    </div>
+    <div class="hero-emoji">🥡</div>
+</div>
+
+<div class="category-scroll">
+    @foreach (var dm in Model.DanhMucPho)
+    {
+        <a class="category-pill" asp-action="Index" asp-route-danhMuc="@dm" style="text-decoration:none;">@dm</a>
+    }
+</div>
+
+<form method="get" class="card mb-3" style="padding:12px;">
+    <div style="display:flex; gap:8px;">
+        <input type="text" name="tuKhoa" value="@Model.TuKhoa" class="form-control" placeholder="Tìm quán ăn, món ăn, danh mục..." />
+        <button type="submit" class="btn btn-primary">Tìm</button>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; font-size:13px;">
+        <select name="danhMuc" class="form-control" style="max-width:170px;">
+            <option value="">Mọi loại món</option>
+            @foreach (var dm in Model.DanhMucPho) { <option value="@dm" selected="@(Model.DanhMuc == dm)">@dm</option> }
+        </select>
+        <input name="khuVuc" value="@Model.KhuVuc" class="form-control" style="max-width:170px;" placeholder="Khu vực / địa chỉ" />
+        <input name="giaTu" type="number" min="0" step="1000" value="@Model.GiaTu" class="form-control" style="max-width:120px;" placeholder="Giá từ" />
+        <input name="giaDen" type="number" min="0" step="1000" value="@Model.GiaDen" class="form-control" style="max-width:120px;" placeholder="Giá đến" />
+        <select name="saoTu" class="form-control" style="max-width:130px;">
+            <option value="">Mọi đánh giá</option>
+            @foreach (var n in new[] { 5, 4, 3 }) { <option value="@n" selected="@(Model.SaoTu == n)">Từ @n sao</option> }
+        </select>
+        <select name="sapXep" class="form-control" style="max-width:160px;">
+            <option value="">Sắp xếp mặc định</option>
+            <option value="danhGia" selected="@(Model.SapXep == "danhGia")">Đánh giá cao</option>
+            <option value="banChay" selected="@(Model.SapXep == "banChay")">Bán chạy</option>
+            <option value="giaThap" selected="@(Model.SapXep == "giaThap")">Giá thấp → cao</option>
+            <option value="giaCao" selected="@(Model.SapXep == "giaCao")">Giá cao → thấp</option>
+        </select>
+        <label style="margin:0;"><input type="checkbox" name="chiDangMo" value="true" checked="@Model.ChiDangMo" /> Chỉ quán đang mở</label>
+        <input type="hidden" name="chiDangMo" value="false" />
+        @if (Model.CoLoc) { <a asp-action="Index" class="btn btn-outline btn-sm">Xóa bộ lọc</a> }
+    </div>
+</form>
+
+@if (Model.LichSuTimKiem.Any())
+{
+    <div class="mb-3" style="font-size:13px;">
+        🕘 Tìm gần đây:
+        @foreach (var k in Model.LichSuTimKiem) { <a class="badge badge-grey" style="text-decoration:none; margin-right:4px;" asp-action="Index" asp-route-tuKhoa="@k">@k</a> }
+        <a asp-action="Index" asp-route-xoaLichSu="true" style="margin-left:6px; color:var(--text-grey);">Xóa lịch sử</a>
+    </div>
+}
+@if (!Model.CoLoc && Model.MonPhoBien.Any())
+{
+    <div class="mb-3" style="font-size:13px;">
+        🔥 Món phổ biến:
+        @foreach (var m in Model.MonPhoBien) { <a class="badge badge-primary" style="text-decoration:none; margin-right:4px;" asp-action="Index" asp-route-tuKhoa="@m">@m</a> }
+    </div>
+}
+
+<h3 class="category-tab-label">@(Model.CoLoc ? $"Kết quả ({Model.DanhSachGianHang.Count})" : "Gian hàng")</h3>
+
+@if (!Model.DanhSachGianHang.Any())
+{
+    <div class="card"><div class="empty-state">
+        Không tìm thấy gian hàng phù hợp@(string.IsNullOrWhiteSpace(Model.TuKhoa) ? "" : $" với \"{Model.TuKhoa}\"").
+        <div style="margin-top:6px;">Thử bỏ bớt bộ lọc, đổi từ khóa, hoặc bỏ chọn "Chỉ quán đang mở".</div>
+    </div></div>
+}
+else
+{
+    <div class="grid-4">
+        @foreach (var g in Model.DanhSachGianHang)
+        {
+            <a asp-controller="CustomerHome" asp-action="ChiTiet" asp-route-id="@g.MaGianHang" class="shop-card">
+                <div class="thumb">
+                    @if (g.DangMo) { <span class="open-badge">Đang mở</span> } else { <span class="open-badge" style="background:#999;">Đóng cửa</span> }
+                    @if (!string.IsNullOrEmpty(g.HinhAnh)) { <img src="@g.HinhAnh" alt="@g.TenCuaHang" /> } else { <span>🍲</span> }
+                </div>
+                <div class="body">
+                    <div class="name">@(g.YeuThich ? "❤️ " : "")@g.TenCuaHang</div>
+                    <div class="addr">@g.DiaChi</div>
+                    @if (g.SoDanhGia > 0)
+                    {
+                        <div class="rating"><span class="stars">⭐</span> @g.DiemTrungBinh.ToString("0.0") <span>(@g.SoDanhGia đánh giá)</span></div>
+                    }
+                    else { <div class="rating text-muted">Chưa có đánh giá</div> }
+                    <div class="rating">@(g.TuGia != null ? $"Từ {g.TuGia.Value:N0}đ" : "") @(g.DaBan > 0 ? $"· đã bán {g.DaBan}" : "")</div>
+                </div>
+            </a>
+        }
+    </div>
+}

@@ -1,0 +1,32 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Cài đặt phí & chính sách";
+    Layout = "_AdminLayout";
+    var ds = (List<CauHinhHeThong>)ViewBag.Ds;
+    var ls = (List<CauHinhHeThongLichSu>)ViewBag.LichSu;
+    var ten = (Dictionary<int, string>)ViewBag.Ten;
+}
+<div class="topbar"><h2>⚙️ Cài đặt phí & chính sách</h2></div>
+<div class="card mb-3">
+    <table class="data-table">
+        <thead><tr><th>Khóa</th><th>Mô tả</th><th>Giá trị</th><th>Sửa gần nhất</th></tr></thead>
+        <tbody>
+        @foreach (var c in ds)
+        {
+            <tr>
+                <td><code>@c.Khoa</code></td><td style="font-size:13px;">@c.MoTa</td>
+                <td><form asp-action="Luu" method="post" style="display:flex; gap:6px;">@Html.AntiForgeryToken()<input type="hidden" name="khoa" value="@c.Khoa" />
+                    @if (c.Khoa.StartsWith("QuyDinh.") || c.Khoa == "HoanTien.ChinhSach") { <textarea name="giaTri" class="form-control" rows="2" style="min-width:320px;">@c.GiaTri</textarea> }
+                    else { <input name="giaTri" value="@c.GiaTri" class="form-control" style="width:140px;" /> }
+                    <button class="btn btn-primary btn-sm">Lưu</button></form></td>
+                <td class="text-muted" style="font-size:12px;">@c.NgaySua.ToString("dd/MM/yy HH:mm")@(c.MaTKSua != null && ten.TryGetValue(c.MaTKSua.Value, out var n) ? " · " + n : "")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="text-muted" style="font-size:12.5px;">Phí giao, bán kính, thời gian tự hủy và hoàn tiền có hiệu lực ngay. Hoa hồng riêng của từng gian hàng nằm ở hồ sơ gian hàng (TyLeChietKhau); <code>HoaHong.MacDinh</code> là mức mặc định ghi nhận cho chính sách.</p>
+</div>
+<div class="card"><h3 style="margin-top:0;">Lịch sử thay đổi</h3>
+    @if (!ls.Any()) { <div class="empty-state">Chưa có thay đổi.</div> }
+    @foreach (var l in ls) { <div style="font-size:13px; padding:3px 0;">@l.ThoiGian.ToString("dd/MM/yy HH:mm") — @(l.MaTK != null && ten.TryGetValue(l.MaTK.Value, out var n2) ? n2 : "?") đổi <code>@l.Khoa</code>: @l.GiaTriCu → <b>@l.GiaTriMoi</b></div> }
+</div>

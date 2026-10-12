@@ -1,0 +1,13 @@
+@model string
+@{
+    var (css, nhan) = Model switch
+    {
+        "ChoXacNhan" => ("badge-warning", "Chờ xác nhận"),
+        "DaXacNhan" => ("badge-primary", "Đang chuẩn bị"),
+        "DangGiao" => ("badge-primary", "Đang giao"),
+        "DaGiao" => ("badge-success", "Hoàn thành"),
+        "DaHuy" => ("badge-danger", "Đã hủy"),
+        _ => ("badge-grey", Model)
+    };
+}
+<span class="badge @css">@nhan</span>

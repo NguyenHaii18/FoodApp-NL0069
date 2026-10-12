@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FoodApp.Maui.Views"
+             x:Class="FoodApp.Maui.Views.ChatPage"
+             Title="Tin nhắn">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+
+        <!-- Thông tin người trò chuyện + nút gọi -->
+        <Grid Grid.Row="0" Padding="16,10" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource PrimaryDark}" Offset="0.0" />
+                <GradientStop Color="{StaticResource Primary}" Offset="0.6" />
+                <GradientStop Color="{StaticResource Accent}" Offset="1.0" />
+            </LinearGradientBrush>
+            </Grid.Background>
+            <Frame Grid.Column="0" WidthRequest="44" HeightRequest="44" CornerRadius="22" Padding="0" BackgroundColor="White" HasShadow="False" BorderColor="Transparent">
+                <Label x:Name="LblIcon" Text="🛵" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" TextColor="{StaticResource Primary}" />
+            </Frame>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                <Label x:Name="LblTen" FontAttributes="Bold" FontSize="15.5" TextColor="White" />
+                <Label x:Name="LblPhu" FontSize="12" TextColor="#E9DDFF" />
+            </VerticalStackLayout>
+            <Frame Grid.Column="2" Padding="12,8" CornerRadius="18" BackgroundColor="#26FFFFFF" HasShadow="False" BorderColor="Transparent" VerticalOptions="Center">
+                <Frame.GestureRecognizers><TapGestureRecognizer Tapped="OnGoiTapped" /></Frame.GestureRecognizers>
+                <Label Text="📞 Gọi" FontSize="13" FontAttributes="Bold" TextColor="White" />
+            </Frame>
+        </Grid>
+
+        <!-- Danh sách tin nhắn -->
+        <CollectionView Grid.Row="1" x:Name="DsTinNhan" SelectionMode="None" Margin="12,8">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Spacing="6" Margin="0,60,0,0" HorizontalOptions="Center">
+                    <Label Text="💬" FontSize="38" HorizontalOptions="Center" />
+                    <Label Text="Chưa có tin nhắn. Hãy gửi lời chào!" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:TinNhanHienThi">
+                    <Frame BackgroundColor="{Binding Nen}" HorizontalOptions="{Binding CanLe}" CornerRadius="16"
+                           Padding="12,8" Margin="0,3" HasShadow="False" BorderColor="Transparent" MaximumWidthRequest="290">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding NoiDung}" TextColor="{Binding Chu}" FontSize="14" />
+                            <Label Text="{Binding Gio}" TextColor="{Binding ChuPhu}" FontSize="10.5" HorizontalOptions="End" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Câu trả lời nhanh (tài xế) -->
+        <ScrollView Grid.Row="2" x:Name="KhungNhanh" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" IsVisible="False" Margin="12,0,12,4">
+            <HorizontalStackLayout x:Name="HangNhanh" Spacing="8" />
+        </ScrollView>
+
+        <!-- Ô nhập -->
+        <Grid Grid.Row="3" Padding="12,8,12,12" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Entry Grid.Column="0" x:Name="EntryNoiDung" Placeholder="Nhập tin nhắn..." Completed="OnGuiClicked" ReturnType="Send" />
+            <Button Grid.Column="1" Text="Gửi" Style="{StaticResource PrimaryButton}" HeightRequest="46" WidthRequest="76" Clicked="OnGuiClicked" />
+        </Grid>
+    </Grid>
+</ContentPage>

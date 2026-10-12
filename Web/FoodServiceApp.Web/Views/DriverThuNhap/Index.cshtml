@@ -1,0 +1,83 @@
+@model DriverThuNhapViewModel
+@{
+    ViewData["Title"] = "Thu nhập";
+    Layout = "_DriverLayout";
+    var nhan = Model.ThuNhapTheoNgay.Select(x => x.Ngay.ToString("dd/MM")).ToList();
+    var giaTri = Model.ThuNhapTheoNgay.Select(x => x.ThuNhap).ToList();
+}
+
+<div class="topbar">
+    <h2>Thu nhập (30 ngày gần nhất)</h2>
+</div>
+
+<div class="grid-2 mb-3">
+    <div class="stat-card">
+        <div class="label">Tổng thu nhập</div>
+        <div class="value">@Model.TongThuNhap30Ngay.ToString("N0")đ</div>
+    </div>
+    <div class="stat-card" style="background: var(--accent);">
+        <div class="label">Đơn giao thành công</div>
+        <div class="value">@Model.TongDonGiaoThanhCong30Ngay</div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <h3 style="margin-top:0;">Thu nhập theo ngày</h3>
+    @if (!Model.ThuNhapTheoNgay.Any())
+    {
+        <div class="empty-state">Chưa có đơn giao thành công trong 30 ngày qua.</div>
+    }
+    else
+    {
+        <canvas id="bieuDoThuNhap" height="90"></canvas>
+    }
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Lịch sử giao hàng gần đây</h3>
+    @if (!Model.LichSuGanDay.Any())
+    {
+        <div class="empty-state">Chưa có đơn nào.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Mã đơn</th><th>Thời gian giao</th><th>Thu nhập</th></tr></thead>
+            <tbody>
+                @foreach (var g in Model.LichSuGanDay)
+                {
+                    <tr>
+                        <td>#@g.MaDonHang</td>
+                        <td>@g.ThoiGianGiao?.ToString("HH:mm dd/MM/yyyy")</td>
+                        <td>@g.DonHang!.PhiGiaoHang.ToString("N0")đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    @if (Model.ThuNhapTheoNgay.Any())
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+        <script>
+            const ctx = document.getElementById('bieuDoThuNhap');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(nhan)),
+                    datasets: [{
+                        label: 'Thu nhập (đ)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(giaTri)),
+                        backgroundColor: '#FF9F1C',
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        </script>
+    }
+}

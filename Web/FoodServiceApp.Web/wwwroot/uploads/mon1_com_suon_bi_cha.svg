@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 340" width="400" height="340">
+<rect width="400" height="340" fill="#FFF3E0"/>
+<circle cx="200.0" cy="150" r="120" fill="#FFFFFF"/>
+<circle cx="200" cy="150" r="95" fill="#FFFFFF"/>
+<circle cx="200" cy="150" r="81" fill="#F5E1C8"/>
+<circle cx="200" cy="150" r="55" fill="#E88C00"/>
+<ellipse cx="170" cy="130" rx="34" ry="20" fill="#8B5A2B"/>
+<ellipse cx="235" cy="160" rx="26" ry="16" fill="#C97B3D"/>
+<rect x="185" y="110" width="55" height="18" rx="8" fill="#E8D6A0"/>
+<text x="200.0" y="300" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#154D73" text-anchor="middle">Cơm Sườn Bì Chả</text>
+</svg>

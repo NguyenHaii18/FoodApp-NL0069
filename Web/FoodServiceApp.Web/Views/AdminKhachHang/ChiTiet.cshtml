@@ -1,0 +1,46 @@
+@model KhachHang
+@{
+    ViewData["Title"] = "Hồ sơ khách hàng";
+    Layout = "_AdminLayout";
+    var tk = (TaiKhoan)ViewBag.TaiKhoan;
+    var dons = (List<DonHang>)ViewBag.DonHangs;
+    var diaChis = (List<DiaChiKhachHang>)ViewBag.DiaChis;
+    var phanHois = (List<PhanHoi>)ViewBag.PhanHois;
+}
+<div class="topbar"><h2>Khách hàng: @Model.HoTen</h2><a asp-action="Index" class="btn btn-outline btn-sm">← Danh sách</a></div>
+<div class="grid-2 mb-3">
+    <div class="card">
+        <h3 style="margin-top:0;">Hồ sơ</h3>
+        <p>SĐT: <b>@Model.SDT</b> · Email: <b>@(Model.Email ?? "—")</b></p>
+        <p>Tài khoản: <b>@tk.TenDangNhap</b> — @(tk.TrangThai ? "Hoạt động" : "Đã khóa")</p>
+        <p>Xác thực: email @(tk.EmailDaXacThuc ? "✅" : "—"), SĐT @(tk.SdtDaXacThuc ? "✅" : "—") · Đồng ý điều khoản: @(tk.DongYDieuKhoanLuc?.ToString("dd/MM/yyyy") ?? "chưa")</p>
+        <p>Số báo cáo đánh giá đã gửi: @ViewBag.BaoCao</p>
+        <h4>Địa chỉ</h4>
+        @foreach (var d in diaChis) { <div style="font-size:13px;">@d.Nhan@(d.MacDinh ? " (mặc định)" : ""): @d.DiaChi, @d.Phuong, @d.Quan, @d.Tinh</div> }
+        @if (tk.TrangThai)
+        {
+            <form asp-action="XuLyViPham" asp-route-maTK="@tk.MaTK" method="post" style="margin-top:12px; display:flex; gap:6px;">
+                @Html.AntiForgeryToken()
+                <input name="lyDo" class="form-control" placeholder="Lý do khóa (vi phạm chính sách)" required />
+                <button class="btn btn-danger btn-sm">Khóa vì vi phạm</button>
+            </form>
+        }
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Yêu cầu hỗ trợ gần đây</h3>
+        @if (!phanHois.Any()) { <div class="empty-state">Chưa có.</div> }
+        @foreach (var p in phanHois) { <div style="font-size:13px; margin:6px 0;"><b>@p.TieuDe</b> — @p.Loai — @(p.TrangThai == "DaXuLy" ? "đã xử lý" : "chờ")</div> }
+    </div>
+</div>
+<div class="card">
+    <h3 style="margin-top:0;">Lịch sử đơn (50 đơn gần nhất)</h3>
+    <table class="data-table">
+        <thead><tr><th>Mã</th><th>Ngày</th><th>Gian hàng</th><th>Tổng</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+        @foreach (var d in dons)
+        {
+            <tr><td><a asp-controller="AdminDonHang" asp-action="ChiTiet" asp-route-id="@d.MaDonHang">#@d.MaDonHang</a></td><td>@d.NgayDat.ToString("dd/MM/yyyy HH:mm")</td><td>@d.GianHang?.TenCuaHang</td><td>@d.TongTien.ToString("N0")đ</td><td>@d.TrangThai</td></tr>
+        }
+        </tbody>
+    </table>
+</div>

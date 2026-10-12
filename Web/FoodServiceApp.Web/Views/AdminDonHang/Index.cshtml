@@ -1,0 +1,50 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "_AdminLayout";
+    var tre = (HashSet<int>)ViewBag.Tre; var ket = (HashSet<int>)ViewBag.Ket;
+    string? bo = ViewBag.Bo;
+}
+<div class="topbar"><h2>📦 Đơn hàng toàn hệ thống</h2>
+    <a class="btn btn-outline" asp-action="Index" asp-all-route-data="@(new Dictionary<string,string?>{ ["q"]=(string?)ViewBag.Q, ["trangThai"]=(string?)ViewBag.TrangThai, ["thanhToan"]=(string?)ViewBag.ThanhToan, ["tu"]=(string?)ViewBag.Tu, ["den"]=(string?)ViewBag.Den, ["bo"]=bo, ["xuat"]="csv" })">⬇️ Xuất CSV</a>
+</div>
+<form method="get" class="card mb-3" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+    <div><label>Tìm (mã đơn, khách, quán, tài xế)</label><input name="q" value="@ViewBag.Q" class="form-control" /></div>
+    <div><label>Trạng thái</label>
+        <select name="trangThai" class="form-control"><option value="">Tất cả</option>
+        @foreach (var t in new[] { "ChoXacNhan", "DaXacNhan", "DangGiao", "DaGiao", "DaHuy" }) { <option value="@t" selected="@((string?)ViewBag.TrangThai == t)">@t</option> }</select></div>
+    <div><label>Thanh toán</label>
+        <select name="thanhToan" class="form-control"><option value="">Tất cả</option>
+        @foreach (var t in new[] { "TienMat", "VNPay", "Momo", "ChuyenKhoan", "ViDienTu" }) { <option value="@t" selected="@((string?)ViewBag.ThanhToan == t)">@t</option> }</select></div>
+    <div><label>Từ ngày</label><input type="date" name="tu" value="@ViewBag.Tu" class="form-control" /></div>
+    <div><label>Đến ngày</label><input type="date" name="den" value="@ViewBag.Den" class="form-control" /></div>
+    <div><label>Nhóm đặc biệt</label>
+        <select name="bo" class="form-control"><option value="">—</option>
+            <option value="tre" selected="@(bo == "tre")">Đơn trễ (> @ViewBag.TreSauPhut phút)</option>
+            <option value="that-bai" selected="@(bo == "that-bai")">Giao thất bại</option>
+            <option value="khieu-nai" selected="@(bo == "khieu-nai")">Bị khiếu nại</option></select></div>
+    <button class="btn btn-primary">Lọc</button>
+</form>
+<div class="card">
+    <table class="data-table">
+        <thead><tr><th>Mã</th><th>Ngày đặt</th><th>Khách hàng</th><th>Gian hàng</th><th>Tài xế</th><th>Trạng thái</th><th>Thanh toán</th><th>Tổng</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var d in Model)
+        {
+            <tr>
+                <td><a asp-action="ChiTiet" asp-route-id="@d.MaDonHang">#@d.MaDonHang</a></td>
+                <td>@d.NgayDat.ToString("dd/MM HH:mm")</td>
+                <td>@d.KhachHang?.HoTen</td>
+                <td>@d.GianHang?.TenCuaHang</td>
+                <td>@(d.GiaoHang?.TaiXe?.HoTen ?? "—")</td>
+                <td>@d.TrangThai @if (tre.Contains(d.MaDonHang)) { <span class="badge badge-danger">Trễ</span> } @if (ket.Contains(d.MaDonHang)) { <span class="badge badge-grey">Kẹt</span> }</td>
+                <td>@d.ThanhToan?.HinhThuc · @d.ThanhToan?.TrangThai</td>
+                <td>@d.TongTien.ToString("N0")đ</td>
+                <td><a asp-action="ChiTiet" asp-route-id="@d.MaDonHang" class="btn btn-outline btn-sm">Xem</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any()) { <div class="empty-state">Không có đơn nào khớp bộ lọc.</div> }
+    <p class="text-muted" style="font-size:12px;">Hiển thị tối đa 200 đơn mới nhất; dùng Xuất CSV để lấy đầy đủ (tối đa 5.000). "Kẹt" = đứng yên một trạng thái quá @ViewBag.KetPhut phút.</p>
+</div>

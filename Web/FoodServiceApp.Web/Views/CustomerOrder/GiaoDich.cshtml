@@ -1,0 +1,39 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Lịch sử giao dịch";
+    Layout = "_CustomerLayout";
+    string Nhan(string t) => t switch { "DaThanhToan" => "Đã thanh toán", "ChoThanhToan" => "Chờ thanh toán", "ThatBai" => "Thất bại", "DaHoanTien" => "Đã hoàn tiền", _ => t };
+}
+<div class="topbar"><h2>💳 Lịch sử giao dịch</h2></div>
+<div class="order-tabs">
+    <a asp-action="Index">Đang xử lý</a>
+    <a asp-action="LichSu">Lịch sử</a>
+    <a asp-action="GiaoDich" class="active">Giao dịch</a>
+</div>
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Chưa có giao dịch nào.</div></div>
+}
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead><tr><th>Đơn</th><th>Ngày</th><th>Gian hàng</th><th>Hình thức</th><th>Số tiền</th><th>Trạng thái</th><th>Mã giao dịch</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td><a asp-action="ChiTiet" asp-route-id="@d.MaDonHang">#@d.MaDonHang</a></td>
+                    <td>@d.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@d.GianHang?.TenCuaHang</td>
+                    <td>@d.ThanhToan!.HinhThuc</td>
+                    <td>@d.TongTien.ToString("N0")đ</td>
+                    <td>@Nhan(d.ThanhToan.TrangThai)</td>
+                    <td>@d.ThanhToan.MaGiaoDich</td>
+                    <td><a asp-action="BienNhan" asp-route-id="@d.MaDonHang">Biên nhận</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

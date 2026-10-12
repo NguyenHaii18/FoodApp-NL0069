@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminStaffPage"
+             Title="Tài khoản quản trị">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Frame Style="{StaticResource CardFrame}" BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySoft}, Dark={StaticResource BorderColorDark}}">
+                <Label FontSize="12.5" Text="Admin tổng: toàn quyền, quản lý tài khoản quản trị, xem nhật ký thao tác. Nhân viên hỗ trợ: xem tài khoản, xử lý khiếu nại / hoàn tiền, xem thống kê." />
+            </Frame>
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Thêm tài khoản quản trị" Style="{StaticResource TitleLabel}" FontSize="15" />
+                    <Entry x:Name="EntryHoTen" Placeholder="Họ và tên" />
+                    <Entry x:Name="EntryEmail" Placeholder="Email đăng nhập" Keyboard="Email" />
+                    <Entry x:Name="EntryMatKhau" Placeholder="Mật khẩu tạm (tối thiểu 6 ký tự)" IsPassword="True" />
+                    <Picker x:Name="PickerVaiTro" Title="Vai trò" />
+                    <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12.5" IsVisible="False" />
+                    <Button Text="Thêm tài khoản" Style="{StaticResource PrimaryButton}" Clicked="OnThemClicked" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Danh sách tài khoản" Style="{StaticResource TitleLabel}" FontSize="15" />
+            <CollectionView x:Name="DsQuanTri" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:QuanTriVien">
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="0">
+                                        <Label Text="{Binding HoTen}" FontAttributes="Bold" FontSize="15" />
+                                        <Label Text="{Binding Email}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                    </VerticalStackLayout>
+                                    <Frame Grid.Column="1" Style="{StaticResource ChipFrame}" VerticalOptions="Start">
+                                        <Label Text="{Binding VaiTroNhan}" FontSize="11.5" FontAttributes="Bold" TextColor="{StaticResource Primary}" />
+                                    </Frame>
+                                </Grid>
+                                <Label Text="{Binding TrangThaiNhan}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6" Margin="0,4,0,0">
+                                    <Button Grid.Column="0" Text="{Binding NutKhoa}" Style="{StaticResource OutlineButton}" HeightRequest="38" FontSize="11.5" Clicked="OnKhoaClicked" CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="1" Text="{Binding NutVaiTro}" Style="{StaticResource OutlineButton}" HeightRequest="38" FontSize="11" Clicked="OnVaiTroClicked" CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="2" Text="Đặt lại MK" Style="{StaticResource OutlineButton}" HeightRequest="38" FontSize="11.5" Clicked="OnDatLaiMatKhauClicked" CommandParameter="{Binding .}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

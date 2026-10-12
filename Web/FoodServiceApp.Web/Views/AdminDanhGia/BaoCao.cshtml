@@ -1,0 +1,24 @@
+@model List<BaoCaoDanhGia>
+@{
+    ViewData["Title"] = "Báo cáo đánh giá";
+    Layout = "_AdminLayout";
+    var dg = (Dictionary<int, DanhGia>)ViewBag.DanhGias; var quan = (Dictionary<int, string>)ViewBag.Quan; var dem = (Dictionary<int, int>)ViewBag.Dem;
+}
+<div class="topbar"><h2>🚩 Đánh giá bị báo cáo</h2></div>
+<div class="order-tabs"><a asp-action="Index" asp-route-tab="bao-cao" class="active">Chờ xử lý</a><a asp-action="Index" asp-route-tab="tat-ca">Tất cả đánh giá</a></div>
+@if (!Model.Any()) { <div class="card"><div class="empty-state">Không có báo cáo nào chờ xử lý.</div></div> }
+@foreach (var b in Model)
+{
+    dg.TryGetValue(b.MaDanhGia, out var d);
+    <div class="card mb-3">
+        <div><b>Báo cáo #@b.MaBaoCao</b> (@b.NgayTao.ToString("dd/MM HH:mm")) — Lý do: @b.LyDo @if (dem.TryGetValue(b.MaDanhGia, out var n) && n > 1) { <span class="badge badge-danger">@n người báo cáo</span> }</div>
+        @if (d != null)
+        {
+            <div style="margin:8px 0; padding:8px; background:#F7F7F7;">
+                @(quan.TryGetValue(d.MaGianHang, out var q) ? q : "") — @(new string('⭐', d.SoSao))@if (d.SoSaoGiaoHang != null) { <text> · tài xế @d.SoSaoGiaoHang⭐</text> }<br />@d.NoiDung
+            </div>
+            <form asp-action="An" asp-route-maDanhGia="@d.MaDanhGia" method="post" style="display:flex; gap:6px; margin-bottom:6px;">@Html.AntiForgeryToken()<input name="lyDo" class="form-control" placeholder="Lý do ẩn đánh giá" required /><button class="btn btn-danger btn-sm">Ẩn đánh giá</button></form>
+        }
+        <form asp-action="Giu" asp-route-maBaoCao="@b.MaBaoCao" method="post" style="display:flex; gap:6px;">@Html.AntiForgeryToken()<input name="lyDo" class="form-control" placeholder="Ghi chú (bác báo cáo, giữ nguyên)" /><button class="btn btn-outline btn-sm">Giữ nguyên</button></form>
+    </div>
+}

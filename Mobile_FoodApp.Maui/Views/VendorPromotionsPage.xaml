@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.VendorPromotionsPage"
+             Title="Khuyến mãi của tôi">
+
+    <Grid RowDefinitions="Auto,*" Padding="16">
+
+        <Button Grid.Row="0" Text="+ Tạo mã khuyến mãi mới" Style="{StaticResource PrimaryButton}"
+                Margin="0,0,0,12" Clicked="OnThemClicked" />
+
+        <RefreshView Grid.Row="1" x:Name="RefreshDsKm" Refreshing="OnRefreshing">
+            <ScrollView>
+                <VerticalStackLayout Spacing="10">
+
+                    <Label x:Name="LblRong" Text="Gian hàng chưa có mã khuyến mãi nào. Tạo mã đầu tiên để thu hút khách hàng!"
+                           Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center"
+                           Margin="0,30,0,0" IsVisible="False" />
+
+                    <CollectionView x:Name="DsKhuyenMai" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:KhuyenMai">
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                                    <VerticalStackLayout Spacing="5">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="{Binding MaCode}" FontAttributes="Bold" FontSize="15" TextColor="{StaticResource Primary}" />
+                                            <Label Grid.Column="1" Text="{Binding TrangThaiHienThi}" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource TextGrey}" />
+                                        </Grid>
+                                        <Label Text="{Binding TenChuongTrinh}" FontSize="13" FontAttributes="Bold" />
+                                        <Label Text="{Binding GiaTriGiamHienThi}" FontSize="12.5" TextColor="{StaticResource Accent}" />
+                                        <Label FontSize="11.5" TextColor="{StaticResource TextGrey}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="Đơn tối thiểu " />
+                                                    <Span Text="{Binding GiaTriDonToiThieu, StringFormat='{0:N0}đ'}" />
+                                                    <Span Text="   •   Hết hạn " />
+                                                    <Span Text="{Binding NgayKetThuc, StringFormat='{0:dd/MM/yyyy}'}" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        <Label FontSize="11.5" TextColor="{StaticResource TextGrey}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="Đã dùng " />
+                                                    <Span Text="{Binding SoLuongDaDung}" />
+                                                    <Span Text="/" />
+                                                    <Span Text="{Binding SoLuongToiDa}" />
+                                                    <Span Text=" lượt" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                            <Label Grid.Column="0" Text="Đang bật" FontSize="12" VerticalOptions="Center" />
+                                            <Switch Grid.Column="1" HorizontalOptions="Start" IsToggled="{Binding DangHoatDong}"
+                                                    Toggled="OnBatTatToggled" OnColor="{StaticResource Primary}" />
+                                            <Button Grid.Column="2" Text="Sửa" Style="{StaticResource OutlineButton}"
+                                                    HeightRequest="34" FontSize="12" Padding="14,0"
+                                                    Clicked="OnSuaClicked" CommandParameter="{Binding .}" />
+                                            <Button Grid.Column="3" Text="Xóa" HeightRequest="34" FontSize="12" Padding="14,0" CornerRadius="10"
+                                                    BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
+                                                    BorderColor="{StaticResource Danger}" BorderWidth="1"
+                                                    Clicked="OnXoaClicked" CommandParameter="{Binding .}" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

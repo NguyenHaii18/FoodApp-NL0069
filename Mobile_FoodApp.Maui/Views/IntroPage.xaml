@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.IntroPage"
+             BackgroundColor="#3C0293"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto,*" Padding="32">
+        <VerticalStackLayout Grid.Row="1" Spacing="14" HorizontalOptions="Center">
+            <Image x:Name="Logo" Source="logo.png" WidthRequest="240" HeightRequest="240" />
+            <Label x:Name="TxtTen" Text="FoodApp" TextColor="White" FontSize="34" FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+            <Label x:Name="TxtSlogan" Text="Giao đồ ăn nhanh · Tận nơi" TextColor="#D9CCFF" FontSize="15"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="2" VerticalOptions="End" Spacing="8" Margin="0,0,0,24">
+            <ProgressBar x:Name="Tien" Progress="0" ProgressColor="#FACC15" WidthRequest="180" HorizontalOptions="Center" />
+            <Label Text="Đang chuẩn bị bữa ăn cho bạn…" TextColor="#B9A8F5" FontSize="12" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

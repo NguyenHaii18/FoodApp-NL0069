@@ -1,0 +1,51 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Đơn chờ nhận";
+    Layout = "_DriverLayout";
+}
+
+<div class="topbar">
+    <h2>Đơn chờ nhận</h2>
+    <a asp-action="DonHienTai" class="btn btn-outline btn-sm">Chuyến hiện tại →</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Hiện chưa có đơn nào cần giao.</div></div>
+}
+else
+{
+    <div class="grid-2">
+        @foreach (var don in Model)
+        {
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <div>
+                        <h3 style="margin:0 0 4px;">Đơn #@don.MaDonHang</h3>
+                        <p class="text-muted" style="margin:0; font-size:12.5px;">@don.NgayDat.ToString("HH:mm dd/MM")</p>
+                    </div>
+                    <span class="badge badge-primary">@don.TongTien.ToString("N0")đ</span>
+                </div>
+                <p style="margin:10px 0 4px;"><strong>Lấy tại:</strong> @don.GianHang?.TenCuaHang</p>
+                <p style="margin:0 0 4px; font-size:13px; color:var(--text-grey);">@don.GianHang?.DiaChi</p>
+                <p style="margin:10px 0 4px;"><strong>Giao đến:</strong> @don.DiaChiGiaoHang</p>
+                <p style="margin:0 0 12px; font-size:13px; color:var(--text-grey);">
+                    @string.Join(", ", don.ChiTiets.Select(c => $"{c.MonAn?.TenMon} x{c.SoLuong}"))
+                </p>
+                <p style="margin:0 0 12px; font-size:14px;">
+                    <strong>Bạn nhận:</strong>
+                    <span style="color:var(--success); font-weight:700;">@don.PhiGiaoHang.ToString("N0")đ</span>
+                    @if (!string.IsNullOrEmpty(don.GianHang?.DiaChi))
+                    {
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=@Uri.EscapeDataString(don.GianHang.DiaChi)"
+                           target="_blank" rel="noopener" style="float:right; font-size:12.5px; color:var(--primary);">🗺️ Xem quãng đường</a>
+                    }
+                </p>
+                <form asp-action="Nhan" asp-route-id="@don.MaDonHang" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-accent" style="width:100%;">Nhận đơn này</button>
+                </form>
+            </div>
+        }
+    </div>
+}

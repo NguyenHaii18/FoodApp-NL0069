@@ -1,0 +1,55 @@
+@model MonAnFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+<div class="form-group">
+    <label asp-for="TenMon">Tên món</label>
+    <input asp-for="TenMon" class="form-control" placeholder="vd: Cơm sườn bì chả" />
+    <span asp-validation-for="TenMon" class="field-validation-error"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Gia">Giá (đ)</label>
+    <input asp-for="Gia" type="number" step="1000" class="form-control" placeholder="45000" />
+    <span asp-validation-for="Gia" class="field-validation-error"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="MaDanhMuc">Danh mục</label>
+    <select asp-for="MaDanhMuc" class="form-control">
+        <option value="0">-- Chọn danh mục có sẵn --</option>
+        @foreach (var dm in Model.DanhSachDanhMuc)
+        {
+            <option value="@dm.MaDanhMuc">@dm.TenDanhMuc</option>
+        }
+    </select>
+</div>
+
+<div class="form-group">
+    <label asp-for="TenDanhMucMoi">Hoặc tạo danh mục mới (bỏ trống nếu đã chọn ở trên)</label>
+    <input asp-for="TenDanhMucMoi" class="form-control" placeholder="vd: Món thêm" />
+</div>
+
+<div class="form-group">
+    <label asp-for="MoTa">Mô tả</label>
+    <textarea asp-for="MoTa" class="form-control" placeholder="Mô tả ngắn về món ăn (không bắt buộc)"></textarea>
+</div>
+
+<div class="form-group">
+    <label>Ảnh món ăn</label>
+    @if (!string.IsNullOrEmpty(Model.HinhAnhHienTai))
+    {
+        <div class="mb-2">
+            <img src="@Model.HinhAnhHienTai" style="width:80px;height:80px;border-radius:10px;object-fit:cover;" />
+        </div>
+    }
+    <input asp-for="AnhMoi" type="file" accept=".jpg,.jpeg,.png,.webp" class="form-control" />
+    <span class="text-muted" style="font-size:12px;">Bỏ trống nếu không muốn đổi ảnh. Tối đa 5MB.</span>
+</div>
+
+<div class="form-group">
+    <label style="display:flex; align-items:center; gap:8px;">
+        <input asp-for="ConHang" type="checkbox" style="width:auto;" />
+        Còn hàng (đang bán)
+    </label>
+</div>

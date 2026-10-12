@@ -1,0 +1,131 @@
+@model MonChiTietViewModel
+@{
+    ViewData["Title"] = Model.Mon.TenMon;
+    Layout = "_CustomerLayout";
+    var conHang = Model.Mon.TinhTrang == "ConHang";
+    var nhanDon = FoodServiceApp.Web.Services.GianHangHelper.NhanDon(Model.GianHang);
+    var sizes = Model.TuyChons.Where(t => t.Loai == "Size").ToList();
+    var toppings = Model.TuyChons.Where(t => t.Loai == "Topping").ToList();
+    var mucCay = Model.TuyChons.Where(t => t.Loai == "MucCay").ToList();
+}
+
+<div class="topbar">
+    <h2>@Model.Mon.TenMon</h2>
+    <a asp-action="ChiTiet" asp-route-id="@Model.GianHang.MaGianHang" class="btn btn-outline">← Về gian hàng</a>
+</div>
+
+<div class="grid-2">
+    <div class="card dish-hero">
+        @if (!string.IsNullOrEmpty(Model.Mon.HinhAnh)) { <img src="@Model.Mon.HinhAnh" alt="@Model.Mon.TenMon" /> } else { <div class="dish-hero-empty">🍲</div> }
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">@Model.Mon.TenMon
+            @if (Context.User.IsInRole("KhachHang"))
+            {
+                <form asp-controller="CustomerYeuThich" asp-action="BatTat" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="loai" value="MonAn" /><input type="hidden" name="id" value="@Model.Mon.MaMonAn" />
+                    <input type="hidden" name="quayVe" value="@Context.Request.Path" />
+                    <button class="btn btn-sm btn-outline">@(Model.YeuThich ? "❤️ Đã lưu" : "🤍 Lưu món")</button>
+                </form>
+            }
+        </h3>
+        <div class="dish-price">@Model.Mon.Gia.ToString("N0")đ</div>
+        <p class="meta">
+            Gian hàng: <a asp-action="ChiTiet" asp-route-id="@Model.GianHang.MaGianHang"><strong>@Model.GianHang.TenCuaHang</strong></a>
+            &nbsp;·&nbsp; 📍 @Model.GianHang.DiaChi
+        </p>
+        <div class="rating-line">
+            @if (Model.SoDanhGia > 0) { <span>⭐ @Model.DiemTrungBinh.ToString("0.0") (@Model.SoDanhGia đánh giá)</span> }
+            else { <span class="text-muted">Món này chưa có đánh giá</span> }
+        </div>
+        <p style="margin-top:12px;">@(string.IsNullOrWhiteSpace(Model.Mon.MoTa) ? "Gian hàng chưa cập nhật mô tả cho món này." : Model.Mon.MoTa)</p>
+
+        @if (conHang && nhanDon)
+        {
+            <form asp-action="ThemVaoGio" asp-route-maGianHang="@Model.GianHang.MaGianHang" method="post" id="formMon" style="margin-top:14px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maMonAn" value="@Model.Mon.MaMonAn" />
+                <input type="hidden" name="veTrangMon" value="true" />
+
+                @if (sizes.Any())
+                {
+                    <div class="form-group"><label><b>Kích cỡ / khẩu phần</b> (chọn 1)</label>
+                        @foreach (var t in sizes)
+                        {
+                            <label class="payment-option"><input type="radio" name="tuyChon" value="@t.MaTuyChon" data-gia="@t.GiaThem.ToString("F0")" data-nhom="size" /> @t.TenTuyChon @(t.GiaThem > 0 ? $"(+{t.GiaThem:N0}đ)" : "")</label>
+                        }
+                        <label class="payment-option"><input type="radio" name="_boSize" checked data-nhom="size" data-gia="0" /> Mặc định</label>
+                    </div>
+                }
+                @if (mucCay.Any())
+                {
+                    <div class="form-group"><label><b>Mức cay</b> (chọn 1)</label>
+                        @foreach (var t in mucCay)
+                        {
+                            <label class="payment-option"><input type="radio" name="tuyChon" value="@t.MaTuyChon" data-gia="@t.GiaThem.ToString("F0")" data-nhom="cay" /> @t.TenTuyChon @(t.GiaThem > 0 ? $"(+{t.GiaThem:N0}đ)" : "")</label>
+                        }
+                        <label class="payment-option"><input type="radio" name="_boCay" checked data-nhom="cay" data-gia="0" /> Không chọn</label>
+                    </div>
+                }
+                @if (toppings.Any())
+                {
+                    <div class="form-group"><label><b>Topping</b> (chọn nhiều)</label>
+                        @foreach (var t in toppings)
+                        {
+                            <label class="payment-option"><input type="checkbox" name="tuyChon" value="@t.MaTuyChon" data-gia="@t.GiaThem.ToString("F0")" data-nhom="topping" /> @t.TenTuyChon @(t.GiaThem > 0 ? $"(+{t.GiaThem:N0}đ)" : "")</label>
+                        }
+                    </div>
+                }
+                @if (Model.Mon.ChoGhiChu)
+                {
+                    <div class="form-group"><label><b>Ghi chú cho món</b> (không bắt buộc)</label>
+                        <input name="ghiChu" maxlength="200" class="form-control" placeholder="Ví dụ: ít đường, không hành..." /></div>
+                }
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label style="margin:0;">Số lượng</label>
+                    <input type="number" name="soLuong" id="soLuong" value="1" min="1" max="20" class="form-control" style="width:90px;" />
+                    <button type="submit" class="btn btn-primary">🛒 Thêm vào giỏ — <span id="tongGia">@Model.Mon.Gia.ToString("N0")đ</span></button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <span class="badge badge-grey" style="margin-top:14px;">
+                @(!conHang ? (Model.Mon.TinhTrang == "TamNgung" ? "Món đã ngừng bán" : "Hết hàng") : "Gian hàng chưa nhận đơn")
+            </span>
+        }
+    </div>
+</div>
+
+<div class="card" style="margin-top:16px;">
+    <h3 style="margin-top:0;">Đánh giá về món</h3>
+    @if (!Model.DanhGias.Any()) { <div class="empty-state">Chưa có đánh giá nào. Hãy đặt món và là người đầu tiên đánh giá!</div> }
+    else
+    {
+        @foreach (var dg in Model.DanhGias)
+        {
+            <div class="review-row">
+                <div><strong>@dg.TenKhach</strong> &nbsp; @(new string('⭐', dg.SoSao)) <span class="text-muted" style="font-size:12px;">· @dg.Ngay.ToString("dd/MM/yyyy")</span></div>
+                @if (!string.IsNullOrWhiteSpace(dg.NoiDung)) { <div style="font-size:13.5px; margin-top:2px;">@dg.NoiDung</div> }
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.getElementById('formMon'); if (!form) return;
+            var gia = @Model.Mon.Gia.ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
+            function tinh() {
+                var them = 0;
+                form.querySelectorAll('input[data-gia]').forEach(function (i) { if (i.checked) them += parseFloat(i.getAttribute('data-gia') || '0'); });
+                var sl = Math.max(1, parseInt(document.getElementById('soLuong').value || '1'));
+                document.getElementById('tongGia').textContent = Math.round((gia + them) * sl).toLocaleString('vi-VN') + 'đ';
+            }
+            form.addEventListener('change', tinh); form.addEventListener('input', tinh); tinh();
+        })();
+    </script>
+}

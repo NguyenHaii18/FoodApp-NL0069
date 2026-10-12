@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.AdminPromotionEditPage"
+             Title="Tạo khuyến mãi hệ thống">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <Label Text="Áp dụng cho toàn bộ gian hàng trên nền tảng."
+                   Style="{StaticResource SubtitleLabel}" Margin="0,0,0,4" />
+
+            <Label Text="Mã khuyến mãi *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryMaCode" Placeholder="VD: GIAM20" />
+
+            <Label Text="Tên chương trình *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryTenChuongTrinh" Placeholder="VD: Chào hè giảm 20%" />
+
+            <Label Text="Mô tả" FontSize="13" FontAttributes="Bold" />
+            <Editor x:Name="EditorMoTa" HeightRequest="70" BackgroundColor="White" />
+
+            <Label Text="Hình thức giảm giá *" FontSize="13" FontAttributes="Bold" />
+            <Picker x:Name="PickerLoaiGiam" Title="Chọn hình thức" SelectedIndexChanged="OnLoaiGiamChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Giảm theo %</x:String>
+                        <x:String>Giảm số tiền cố định</x:String>
+                        <x:String>Giảm phí giao hàng</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Label x:Name="LblNhanGiaTri" Text="Giá trị giảm (%) *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryGiaTriGiam" Placeholder="VD: 20" Keyboard="Numeric" />
+
+            <Label x:Name="LblGiamToiDa" Text="Giảm tối đa (đ) — chỉ áp dụng cho giảm theo %" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryGiamToiDa" Placeholder="Để trống nếu không giới hạn" Keyboard="Numeric" />
+
+            <Label Text="Giá trị đơn hàng tối thiểu (đ)" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryDonToiThieu" Placeholder="VD: 50000" Keyboard="Numeric" />
+
+            <Label Text="Số lượt sử dụng tối đa *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntrySoLuongToiDa" Placeholder="VD: 500" Keyboard="Numeric" />
+
+            <Label Text="Phạm vi áp dụng (tùy chọn)" FontSize="13" FontAttributes="Bold" Margin="0,6,0,0" />
+            <Label Text="Món áp dụng: tên món, cách nhau dấu phẩy (để trống = mọi món)" FontSize="11.5" />
+            <Entry x:Name="EntryMonApDung" Placeholder="VD: Cơm tấm sườn, Trà tắc" />
+            <Label Text="Danh mục áp dụng: cách nhau dấu phẩy (để trống = mọi danh mục)" FontSize="11.5" />
+            <Entry x:Name="EntryDanhMucApDung" Placeholder="VD: Món chính, Nước uống" />
+            <Label Text="Gian hàng áp dụng: mã gian hàng, cách nhau dấu phẩy (để trống = toàn hệ thống)" FontSize="11.5" />
+            <Entry x:Name="EntryGianHangApDung" Placeholder="VD: gh1, gh2" />
+            <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                <Label Grid.Column="0" Text="Mỗi khách chỉ dùng 1 lần" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" x:Name="SwitchMoiKhachMotLan" OnColor="{StaticResource Primary}" />
+            </Grid>
+
+            <Label Text="Ngày bắt đầu *" FontSize="13" FontAttributes="Bold" />
+            <DatePicker x:Name="DateBatDau" />
+
+            <Label Text="Ngày kết thúc *" FontSize="13" FontAttributes="Bold" />
+            <DatePicker x:Name="DateKetThuc" />
+
+            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False"
+                                Color="{StaticResource TextDark}" />
+
+            <Button x:Name="BtnLuu" Text="Tạo khuyến mãi" Style="{StaticResource PrimaryButton}"
+                    BackgroundColor="{StaticResource TextDark}" Margin="0,10,0,0" Clicked="OnLuuClicked" />
+
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12"
+                   HorizontalOptions="Center" IsVisible="False" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

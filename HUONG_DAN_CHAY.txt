@@ -1,0 +1,133 @@
+FOODSERVICE - BẢN GỘP (Web + API + Mobile MAUI + SQL + Intro)
+================================================================
+Web/                       ASP.NET Core 8: Website (Gian hàng/Quản trị/Tài xế/Khách) + API /api/mobile + Swagger
+Mobile_FoodApp.Maui/       App .NET MAUI (Khách, Gian hàng, Tài xế, Quản trị)
+Database/01_TaoMoi_Full.sql  Tạo mới toàn bộ CSDL (ĐÃ gồm v8 + v9 backend + bổ sung Đối tác). Có DROP DATABASE đầu file!
+Database/NangCap_*.sql     Chỉ dùng khi đã có CSDL cũ: NangCap_CSDL_DBCu -> NangCap_v8 -> NangCap_v9_Backend -> 04_BoSung_DoiTac
+Database/NangCap_v11_KhachHang.sql   Tính năng Khách hàng (yêu thích, thông báo, phiên đăng nhập, tùy chọn món, báo cáo đánh giá, địa chỉ chi tiết...) - đã gộp sẵn trong 01_TaoMoi_Full.sql, PHẦN 16
+Database/NangCap_v10_TaiKhoan_GioHang.sql  Giấy tờ gian hàng + bảng GioHang/GioHangChiTiet (đã gộp sẵn trong 01_TaoMoi_Full.sql, PHẦN 15)
+Database/04_BoSung_DoiTac.sql      Cột/bảng cho Đối tác (giờ mở cửa, giá vốn, phản hồi đánh giá, tỉ lệ phí nền tảng...) — Web cần các cột này
+Database/05_BoSung_GiaoHang_BanDo.sql  TÙY CHỌN: lưu bền vững khoảng cách/phí/mã giao/vị trí (Web hiện giữ trong bộ nhớ)
+Database/07_SaoLuu_PhucHoi.sql     Sao lưu Full/Diff/Log + dọn dữ liệu (SQL Server Agent)
+Video/                     3 video intro gốc (1080x1920). Bản nén 720p nằm trong Web/wwwroot/video và Mobile/Resources/Raw
+Docs/                      Báo cáo + slide (chưa cập nhật theo tính năng mới)
+
+BƯỚC 1 - CSDL: mở SSMS, chạy Database/01_TaoMoi_Full.sql.
+BƯỚC 2 - WEB : cd Web/FoodServiceApp.Web ; dotnet run  -> https://localhost:5001 (Swagger: /swagger)
+BƯỚC 3 - APP : dotnet workload install maui ; mở Mobile_FoodApp.Maui.csproj -> Windows Machine -> F5.
+              (app tự gọi https://localhost:5001; không có Web thì chạy chế độ offline)
+
+INTRO KHI KHỞI ĐỘNG
+- Web: video phát toàn màn hình ở lần đầu mở mỗi tab (có nút "Bỏ qua", phím Esc). Đổi video/tắt trong
+  Web/appsettings.json -> "Intro": { "Bat": true, "Tep": "intro_3d.mp4" }  (intro.mp4 | logo_but_toc.mp4)
+- App: Views/KhoiDongVideoPage là trang đầu tiên; xong video -> trang đăng nhập. Cần NuGet CommunityToolkit.Maui
+  + MediaElement (đã khai trong csproj, máy cần có mạng để restore). Đổi video: thay Resources/Raw/intro.mp4.
+
+TÀI KHOẢN: Web quản trị quantri01 / admin123 ; khách/gian hàng/tài xế mẫu: mật khẩu 123456
+           App quản trị: admin@fooddelivery.vn / admin123
+
+
+BỔ SUNG TRONG BẢN NÀY (so với bản Hoàn chỉnh trước)
+- App: toàn bộ chức năng Đối tác (giờ mở cửa/nhận đơn, từ chối có lý do + tự hủy 5 phút, thực đơn nâng cao, doanh thu/lợi nhuận,
+  đánh giá + phản hồi, thông báo, tài chính/phí nền tảng 15% mặc định, quên mật khẩu) và giao hàng theo km (phí theo biểu phí,
+  chỉnh phí theo km thực tế, chia sẻ vị trí, mã xác nhận 4 số, quy tắc giao thất bại).
+- Web: Controllers/Api/VendorMobileApiController.cs (API Đối tác mới); MobileApiController: chặn đặt hàng ngoài giờ/tạm dừng nhận đơn,
+  từ chối đơn bắt buộc lý do + hoàn tiền, trả thêm gioMoCua/gioDongCua/dangNhanDon/tyLeChietKhau/tamNgungBan/lyDoTuChoi.
+- KHÔNG đổi: video intro, Web (Razor + API cũ), 3 file nâng cấp SQL. Chưa build/chạy thử (không có .NET SDK/SQL Server ở nơi tạo gói).
+- Ghi chú: app chế độ online vẫn đọc đánh giá/thông báo/tài chính từ dữ liệu cục bộ; các API tương ứng đã có ở Web để nối tiếp.
+
+
+BỔ SUNG LẦN NÀY (bản Merged)
+- Gộp: FoodService_HoanChinh + FoodService_HoanChinh_Full (Đối tác + giao hàng theo km) + 05_GioHang.sql (bản gốc để ở Database/05_GioHang_GOC.sql).
+- SQL: hash mật khẩu mẫu là BCrypt thật (quantri01/02 = admin123, còn lại 123456).
+- Web (tài khoản & bảo mật, dùng chung 4 vai trò):
+  /QuenMatKhau (OTP)  |  /BaoMat (xác thực email/SĐT, lịch sử đăng nhập, ảnh đại diện, xóa tài khoản)
+  Khóa tạm 15 phút sau 5 lần sai mật khẩu | Hồ sơ gian hàng: email, giờ hoạt động, nhận đơn, giấy phép KD + ATTP
+  Quản trị: /QuanTri/NhanVien (tạo Admin tổng / Nhân viên hỗ trợ), /QuanTri/NhatKy (nhật ký thao tác, chỉ Admin tổng)
+  Nhân viên hỗ trợ chỉ xem + xử lý phản hồi/sự cố; duyệt/khóa/khuyến mãi cần Admin tổng.
+- API: Controllers/Api/TaiKhoanApiController.cs (xem Web/FoodServiceApp.Web/Docs/API_MOBILE.md) + giỏ hàng trên server.
+- OTP: chưa cấu hình mục "Smtp" trong appsettings.json thì mã hiện ngay trên màn hình (Otp:HienMaDev=true) để demo; khi nộp/triển khai
+  hãy điền Smtp và đặt Otp:HienMaDev=false.
+- BẮT BUỘC chạy SQL mới (01_TaoMoi_Full.sql, hoặc NangCap_v9_Backend -> 04_BoSung_DoiTac -> NangCap_v10 -> NangCap_v11) trước khi chạy Web, vì Entity
+  TaiKhoan có thêm cột khóa tạm/xác thực.
+- CHƯA làm: app MAUI chưa gọi API OTP/lịch sử đăng nhập mới (app vẫn dùng luồng quên mật khẩu/xóa tài khoản của riêng nó); Web chưa gọi
+  GioHang server (Web dùng giỏ trong Session).
+
+
+=== TÍNH NĂNG KHÁCH HÀNG (v11) ===
+Web /MuaHang: tìm kiếm + lọc + sắp xếp + lịch sử tìm; trang quán (giờ, mở/đóng, phí/ETA, khuyến mãi, đánh giá + phản hồi quán, báo cáo đánh giá);
+chi tiết món (size/topping/ghi chú, giá theo lựa chọn, món ngừng bán không thêm được); giỏ hàng (đối chiếu giá/tình trạng, không trộn quán);
+đặt hàng (sổ địa chỉ, voucher, chống đặt trùng, kiểm tra khu vực phục vụ); đơn: theo dõi, tài xế, lý do hủy, mua lại, biên nhận, lịch sử giao dịch;
+đánh giá món/quán/tài xế (sửa/xóa trong 7 ngày); yêu thích; thông báo (+ bật/tắt, khuyến mãi mới); hỗ trợ/FAQ + yêu cầu hỗ trợ + lịch sử;
+sổ địa chỉ (tỉnh/quận/phường, hướng dẫn, ghim vị trí, mặc định); đăng ký bằng email hoặc SĐT + đồng ý điều khoản;
+Bảo mật: OTP, thiết bị đăng nhập, đăng xuất thiết bị khác, xóa tài khoản.
+CHƯA CÓ: thanh toán MoMo, chuyển khoản ngân hàng, ảnh trong đánh giá, chat realtime, MAUI chưa gọi các API mới. Chưa biên dịch/chạy thử: khi build nếu có lỗi nhỏ hãy gửi lại để sửa.
+
+
+=== TÍNH NĂNG QUẢN TRỊ (v12) ===
+Menu Quản trị (/QuanTri): Dashboard (lọc kỳ, đơn theo trạng thái, thanh toán, khiếu nại chờ, khu vực nhiều đơn, top quán/món);
+Đơn hàng (tìm/lọc, lịch sử trạng thái, hủy có lý do, CSV); Điều phối (phân công/đổi/gỡ tài xế, lịch sử); Thanh toán & hoàn tiền (đối soát, COD, duyệt/từ chối theo quyền);
+Kiểm duyệt món (ẩn/hiện có lý do); Đánh giá & báo cáo đánh giá; Báo cáo + xuất CSV; Gửi thông báo (toàn hệ thống / nhóm); Khuyến mãi nâng cao (đơn tối thiểu, lượt dùng, 1 lần/khách,
+giảm phí giao, phạm vi gian hàng/danh mục/món, chi phí, cảnh báo lạm dụng); Phí & chính sách (CauHinhHeThong + lịch sử người sửa); Hệ thống & phiên (tình trạng DB/API, sao lưu, thu hồi phiên);
+Phản hồi/khiếu nại: phân loại, phân công, yêu cầu khách bổ sung, chuyển sang hoàn tiền, thời gian giải quyết; Gian hàng/Tài xế: lý do từ chối bắt buộc + yêu cầu bổ sung hồ sơ; Khách hàng: chi tiết + lịch sử đơn + khóa vì vi phạm.
+Vai trò: SuperAdmin (toàn quyền) / QuanLy (vận hành, thanh toán, hoàn tiền) / NhanVien (xem + xử lý phản hồi).
+Lưu ý: sao lưu/khôi phục dùng Database/07_SaoLuu_PhucHoi.sql; tích hợp bản đồ/email/SMS/cổng thanh toán chỉ hiển thị trạng thái cấu hình, chưa có màn hình sửa khóa API (đặt trong appsettings/biến môi trường).
+Chưa biên dịch/chạy thử. Đã sửa 1 lỗi biên dịch có sẵn: DriverAuthController khai báo trùng hàm Logout.
+
+
+=== BỔ SUNG APP MAUI: TÀI KHOẢN, PHÂN QUYỀN, NHẬT KÝ (v4) ===
+App đã nối vào API tài khoản của Web (TaiKhoanApiController) và có chế độ offline (demo) khi không có Web.
+- Khách: ảnh đại diện (thư viện/camera), email + xác thực OTP, đổi email bằng OTP (offline), quên mật khẩu bằng OTP, lịch sử đăng nhập,
+  xóa tài khoản (online: POST api/mobile/tai-khoan/xoa), đổi mật khẩu.
+- Gian hàng: giấy tờ (số giấy phép KD, ATTP, CCCD chủ quán, mã số thuế, ảnh giấy phép), từ chối có lý do, quên mật khẩu bằng OTP.
+  Online chỉ GPKD + ATTP được lưu lên Web (PUT api/mobile/gian-hang/giay-to); CCCD/MST/ảnh giấy phép hiện chỉ lưu trên máy.
+- Tài xế: đăng ký + admin duyệt, 2 công tắc Online/Offline và Sẵn sàng/Tạm không nhận (online gửi PUT tai-xe/trang-thai: SanSang | NgoaiTuyen),
+  quên mật khẩu bằng OTP, đổi mật khẩu.
+- Quản trị: đăng nhập theo vai trò (Admin tổng / Nhân viên hỗ trợ), ma trận quyền (PhanQuyenService), quản lý tài khoản quản trị (offline),
+  nhật ký thao tác (online đọc từ GET api/mobile/admin/nhat-ky, chỉ Admin tổng), khóa/mở/duyệt đều ghi nhật ký.
+- OTP: online dùng đúng API của Web (nếu Web chưa cấu hình SMTP và Otp:HienMaDev=true thì Web trả maDev và app hiện mã trên màn hình);
+  offline app tự sinh mã và hiển thị trên màn hình (không gửi email/SMS thật).
+- WEB đã sửa 1 chỗ: POST api/mobile/admin/dang-nhap trả thêm vaiTro (SuperAdmin|QuanLy|NhanVien) và hoTen. App coi SuperAdmin = Admin tổng,
+  QuanLy/NhanVien = quyền hạn chế (server vẫn kiểm tra lại mọi thao tác ghi).
+- Giới hạn đã biết: (1) ảnh đại diện khách/tài xế chỉ lưu trên máy vì Web chưa có API tải ảnh đại diện (chỉ có upload món ăn/gian hàng);
+  (2) đổi email khi online phải làm trên website; (3) tài khoản quản trị khi online quản lý trên website (/QuanTri/NhanVien);
+  (4) mật khẩu khách/gian hàng ở chế độ offline vẫn là dữ liệu demo lưu trên máy (chưa băm), tài khoản quản trị và tài xế đã băm PBKDF2;
+  (5) CHƯA build/chạy thử — nếu build báo lỗi, gửi lại lỗi đầu tiên để sửa; (6) Docs/ (báo cáo, slide) chưa cập nhật.
+
+
+=== BỔ SUNG v13 (Admin: thanh toán / hoàn tiền / phí / phân quyền) ===
+1) Chạy Database/NangCap_v13_HoanTien_PhanQuyen.sql (hoặc tạo mới bằng 01_TaoMoi_Full.sql, đã gộp sẵn).
+2) Hoàn tiền thật: điền VnPay:TmnCode + VnPay:HashSecret thật (sandbox/production) trong appsettings.json. Khi Admin bấm "Duyệt & hoàn",
+   hệ thống gọi API refund của VNPay (toàn phần/một phần); chỉ khi cổng trả mã 00 mới đổi trạng thái sang DaHoanTien và lưu mã giao dịch hoàn.
+   Giao dịch VNPay cũ (trước v13) chưa lưu vnp_PayDate, và cổng khác (Momo...) chưa tích hợp -> hoàn trên cổng rồi nhập "Mã hoàn thủ công".
+3) Hoa hồng: gian hàng mới tự lấy HoaHong.MacDinh (Quản trị > Cấu hình); chỉnh riêng từng gian hàng ở trang chi tiết gian hàng.
+4) Phân quyền: Quản trị > Phân quyền quản trị > hàng "Quyền chi tiết" (Đơn hàng, Thanh toán, Hoàn tiền, Đánh giá, Thông báo & món ăn).
+Lưu ý: chưa biên dịch/chạy thử trong môi trường này (không có .NET SDK, không gọi được cổng VNPay).
+
+
+=== BỔ SUNG v14 (giao hàng) ===
+Chạy Database/NangCap_v14_GiaoHang.sql (đã gộp trong 01_TaoMoi_Full.sql). Script chuyển mã cũ trong ghi chú sang cột MaXacNhanGiao.
+1) Mã xác nhận 4 số: lưu cột riêng, CHỈ trả cho khách (trước đây app tài xế cũng nhận được mã nên xác nhận vô nghĩa; đơn đặt trên web không có mã).
+   Mọi đường hoàn thành (mobile, API tài xế, web tài xế) đều bắt buộc đúng mã; sai 5 lần thì khóa, Quản trị mở khóa + đổi mã ở chi tiết đơn.
+   Đơn cũ không có mã: bắt buộc có ảnh bằng chứng (POST api/mobile/don-hang/{id}/bang-chung, multipart "file").
+2) Bằng chứng: ảnh, tọa độ lúc giao, tiền COD thực thu — xem ở Quản trị > Đơn hàng > chi tiết.
+3) Giao thất bại thống nhất: server tự phân loại lý do (lỗi khách: không liên lạc/từ chối/hẹn lại/sai địa chỉ -> tài xế vẫn nhận phí giao, hoàn = tổng - phí giao;
+   lý do khác: hoàn đủ, không tính phí). Đơn -> DaHuy, tự tạo yêu cầu hoàn tiền (Quản trị > Thanh toán > Hoàn tiền) đi qua duyệt + hoàn tiền thật qua VNPay, thông báo khách.
+4) Vị trí tài xế lưu bảng TaiXeViTri (không mất khi restart), chặn cập nhật dồn dập/nhảy > 150 km/h, trả viTriCu khi > 90 giây chưa cập nhật.
+   Khách: GET api/mobile/don-hang/{id}/vi-tri. App mobile dùng trường taiXeLat/taiXeLng/viTriCu trong danh sách đơn.
+Chưa biên dịch/chạy thử. App mobile cần: gửi ảnh bằng chứng khi đơn không có mã và hiện viTriCu ("mất tín hiệu"); phần UI này chưa sửa.
+
+=== v7: THỐNG NHẤT LUỒNG GIAO HÀNG (Web tài xế / DriverApi / MobileApi / Admin điều phối) ===
+Trạng thái chuẩn:
+  Nhận đơn     -> DonHang "DaXacNhan" + MaTaiXe, GiaoHang "DaNhan"  (tài xế đang đến quán)
+  Đã lấy hàng  -> DonHang "DangGiao", GiaoHang "DangGiao" (sinh mã 4 số cho khách)
+  Giao xong    -> "DaGiao" / "GiaoThanhCong" (mã 4 số hoặc ảnh bằng chứng)
+  Giao thất bại-> "DaHuy" / "GiaoThatBai" (+ YeuCauHoanTien, phí tài xế nếu lỗi do khách)
+Mọi nơi dùng chung Services/GiaoHangXuLy.cs (NhanDonAsync chống 2 tài xế nhận cùng đơn, DaLayHangAsync, GiaiPhongTaiXeAsync).
+Điều phối admin: phân công/đổi tài xế đưa đơn về "DaXacNhan"+"DaNhan" cho tài xế mới, tự giải phóng tài xế cũ.
+Vị trí trực tiếp: trang "Chuyến giao hiện tại" tự gửi GPS (5s/lần) -> TaiXeViTri; khách xem tại trang chi tiết đơn (thăm dò 10s, có cảnh báo tín hiệu cũ >90s).
+Lưu ý: chưa biên dịch/chạy thử trong môi trường tạo gói; hãy Build trước. App MAUI chưa sửa giao diện cho luồng mới (API vẫn tương thích).
+
+=== v8: ĐỐI CHIẾU DỮ LIỆU LIÊN KẾT ===
+Bổ sung bảng GiaoDichThanhToan (sổ giao dịch/đối soát) và LichSuGiaoHang (từng bước giao) - tự ghi trong AppDbContext.SaveChangesAsync.
+Chạy Database/NangCap_v15_SoGiaoDich_LichSuGiaoHang.sql (DB mới dùng 01_TaoMoi_Full.sql đã gồm). Hiển thị ở Admin > Chi tiết đơn.

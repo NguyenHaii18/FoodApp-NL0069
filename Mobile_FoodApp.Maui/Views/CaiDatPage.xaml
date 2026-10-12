@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.CaiDatPage"
+             Title="Cài đặt">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="Giao diện" FontAttributes="Bold" FontSize="13" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Chế độ sáng / tối" Style="{StaticResource SubtitleLabel}" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                        <Button x:Name="BtnSang" Grid.Column="0" Text="☀️ Sáng" CommandParameter="light" Clicked="OnGiaoDienClicked" CornerRadius="18" FontSize="12.5" />
+                        <Button x:Name="BtnToi" Grid.Column="1" Text="🌙 Tối" CommandParameter="dark" Clicked="OnGiaoDienClicked" CornerRadius="18" FontSize="12.5" />
+                        <Button x:Name="BtnHeThong" Grid.Column="2" Text="📱 Hệ thống" CommandParameter="auto" Clicked="OnGiaoDienClicked" CornerRadius="18" FontSize="12.5" />
+                    </Grid>
+                    <Label Text="Màu chủ đề" Style="{StaticResource SubtitleLabel}" Margin="0,6,0,0" />
+                    <FlexLayout x:Name="KhungMau" Wrap="Wrap" JustifyContent="Start" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Thông báo" FontAttributes="Bold" FontSize="13" Margin="0,6,0,0" />
+            <Frame Style="{StaticResource CardFrame}" Padding="14,6">
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,6"><VerticalStackLayout><Label Text="🔔  Thông báo đơn hàng" FontSize="13.5" /><Label Text="Báo khi đơn đổi trạng thái" FontSize="11" TextColor="{StaticResource TextGrey}" /></VerticalStackLayout><Switch x:Name="SwPush" Grid.Column="1" StyleId="push" Toggled="OnCaiDatToggled" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,6"><VerticalStackLayout><Label Text="🎁  Khuyến mãi &amp; tin mới" FontSize="13.5" /><Label Text="Hiện mục Ưu đãi hot và Tin mới ở trang chủ" FontSize="11" TextColor="{StaticResource TextGrey}" /></VerticalStackLayout><Switch x:Name="SwKm" Grid.Column="1" StyleId="km" Toggled="OnCaiDatToggled" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,6"><VerticalStackLayout><Label Text="🔊  Âm thanh &amp; rung" FontSize="13.5" /><Label Text="Phát âm khi có thông báo trong app" FontSize="11" TextColor="{StaticResource TextGrey}" /></VerticalStackLayout><Switch x:Name="SwAmThanh" Grid.Column="1" StyleId="amthanh" Toggled="OnCaiDatToggled" /></Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Quyền riêng tư" FontAttributes="Bold" FontSize="13" Margin="0,6,0,0" />
+            <Frame Style="{StaticResource CardFrame}" Padding="14,6">
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,6"><VerticalStackLayout><Label Text="📡  Cho phép dùng vị trí" FontSize="13.5" /><Label Text="Gợi ý quán gần bạn" FontSize="11" TextColor="{StaticResource TextGrey}" /></VerticalStackLayout><Switch x:Name="SwViTri" Grid.Column="1" StyleId="vitri" Toggled="OnCaiDatToggled" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,6"><VerticalStackLayout><Label Text="🔒  Hỏi xác nhận trước khi đặt hàng" FontSize="13.5" /><Label Text="Tránh đặt nhầm đơn" FontSize="11" TextColor="{StaticResource TextGrey}" /></VerticalStackLayout><Switch x:Name="SwXacNhanDat" Grid.Column="1" StyleId="xacnhandat" Toggled="OnCaiDatToggled" /></Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Kết nối máy chủ" FontAttributes="Bold" FontSize="13" Margin="0,6,0,0" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label x:Name="LblTrangThaiMayChu" FontSize="13" FontAttributes="Bold" />
+                    <Label x:Name="LblDiaChiMayChu" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0" Text="Kiểm tra kết nối" Style="{StaticResource OutlineButton}" Clicked="OnKiemTraClicked" />
+                        <Button Grid.Column="1" Text="Đổi địa chỉ" Style="{StaticResource OutlineButton}" Clicked="OnDoiDiaChiClicked" />
+                    </Grid>
+                    <ActivityIndicator x:Name="Loading" IsRunning="False" IsVisible="False" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Dữ liệu" FontAttributes="Bold" FontSize="13" Margin="0,6,0,0" />
+            <Frame Style="{StaticResource CardFrame}" BorderColor="{StaticResource Danger}">
+                <Frame.GestureRecognizers><TapGestureRecognizer Tapped="OnXoaDuLieuTapped" /></Frame.GestureRecognizers>
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="🧹  Xóa toàn bộ dữ liệu trên máy" FontSize="13.5" TextColor="{StaticResource Danger}" />
+                    <Label Text="Đưa app về trạng thái mới cài (xóa tài khoản, đơn, cài đặt đã lưu trên máy này)" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label x:Name="LblPhienBan" FontSize="11.5" TextColor="{StaticResource TextGrey}" HorizontalOptions="Center" Margin="0,10,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

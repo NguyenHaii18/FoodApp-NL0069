@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400"><defs><linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E6FA5"/><stop offset="1" stop-color="#154D73"/></linearGradient></defs>
+<rect width="640" height="400" fill="url(#bgGrad)"/>
+<ellipse cx="200" cy="200" rx="110" ry="66.0" fill="#FFFFFF"/>
+<ellipse cx="200" cy="195" rx="95" ry="52.25000000000001" fill="#A1795A"/>
+<ellipse cx="200" cy="185" rx="80" ry="40.0" fill="#C9986B"/>
+<circle cx="170" cy="180" r="16" fill="#FFFFFF" opacity="0.9"/>
+<circle cx="235" cy="195" r="12" fill="#EF6C00"/>
+<circle cx="190" cy="205" r="8" fill="#2E7D32"/>
+<text x="320" y="350" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#FFFFFF" text-anchor="middle">Phở Hà Nội Xưa</text>
+<text x="320" y="380" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="500" fill="#FFE0B2" text-anchor="middle">Phở bò / gà công thức Hà Nội gốc</text>
+</svg>

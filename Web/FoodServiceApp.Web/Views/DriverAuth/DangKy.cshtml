@@ -1,0 +1,66 @@
+@model DriverRegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài xế";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-page">
+    <div class="login-card" style="width:440px;">
+        <div class="logo" style="background: var(--accent);">🏍️</div>
+        <h2>Đăng ký làm tài xế</h2>
+        <p class="sub">Hồ sơ sẽ được Quản trị viên duyệt trước khi bạn có thể nhận đơn</p>
+
+        <form asp-controller="DriverAuth" asp-action="DangKy" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+            <div class="form-group">
+                <label asp-for="HoTen">Họ tên</label>
+                <input asp-for="HoTen" class="form-control" />
+                <span asp-validation-for="HoTen" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SDT">Số điện thoại</label>
+                <input asp-for="SDT" class="form-control" />
+                <span asp-validation-for="SDT" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhuongTien">Phương tiện</label>
+                <input asp-for="PhuongTien" class="form-control" placeholder="VD: Xe máy" />
+            </div>
+            <div class="form-group">
+                <label asp-for="BienSo">Biển số xe</label>
+                <input asp-for="BienSo" class="form-control" placeholder="VD: 59-P1 123.45" />
+            </div>
+            <div class="form-group">
+                <label asp-for="KhuVucHoatDong">Khu vực hoạt động</label>
+                <input asp-for="KhuVucHoatDong" class="form-control" placeholder="VD: Quận 1, Quận 3" />
+            </div>
+
+            <hr style="border-color:var(--border); margin:16px 0;" />
+
+            <div class="form-group">
+                <label asp-for="TenDangNhap">Tên đăng nhập</label>
+                <input asp-for="TenDangNhap" class="form-control" />
+                <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MatKhau">Mật khẩu</label>
+                <input asp-for="MatKhau" type="password" class="form-control" />
+                <span asp-validation-for="MatKhau" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="XacNhanMatKhau">Xác nhận mật khẩu</label>
+                <input asp-for="XacNhanMatKhau" type="password" class="form-control" />
+                <span asp-validation-for="XacNhanMatKhau" class="field-validation-error"></span>
+            </div>
+
+            <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; background:var(--accent); color:#fff;">
+                Đăng ký
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:16px; font-size:12.5px;">
+            Đã có tài khoản? <a asp-controller="DriverAuth" asp-action="Login">Đăng nhập</a>
+        </p>
+    </div>
+</div>

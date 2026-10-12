@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.DriverEarningsPage" Title="Thu nhập &amp; thưởng">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="Thu nhập &amp; thưởng" Style="{StaticResource TitleLabel}" />
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button x:Name="BtnNgay" Grid.Column="0" Text="Ngày" CommandParameter="ngay" Clicked="OnKyClicked" CornerRadius="12" />
+                <Button x:Name="BtnTuan" Grid.Column="1" Text="Tuần" CommandParameter="tuan" Clicked="OnKyClicked" CornerRadius="12" />
+                <Button x:Name="BtnThang" Grid.Column="2" Text="Tháng" CommandParameter="thang" Clicked="OnKyClicked" CornerRadius="12" />
+            </Grid>
+            <Label x:Name="LblKy" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" />
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Tổng thu nhập" FontSize="12" />
+                    <Label x:Name="LblTong" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource Success}" />
+                    <Label x:Name="LblChiTiet" FontSize="13" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="🎁 Thưởng &amp; phụ cấp" FontAttributes="Bold" />
+                    <Label x:Name="LblTienDo" FontSize="13" />
+                    <Label Text="Thưởng ngày: 5 đơn +20.000đ · 10 đơn +50.000đ · 15 đơn +100.000đ" FontSize="11.5" TextColor="{StaticResource TextGrey}" />
+                    <Label Text="Thưởng tuần: 25 đơn +80.000đ · 40 đơn +150.000đ (tính vào Chủ nhật)" FontSize="11.5" TextColor="{StaticResource TextGrey}" />
+                    <Label Text="Phụ cấp giao đêm 21:00–06:00: +3.000đ/đơn" FontSize="11.5" TextColor="{StaticResource TextGrey}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Lịch sử đơn trong kỳ" Style="{StaticResource TitleLabel}" FontSize="16" />
+            <VerticalStackLayout x:Name="DsLichSu" Spacing="8" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

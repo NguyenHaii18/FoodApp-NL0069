@@ -1,0 +1,40 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="logo">🍽️</div>
+        <h2>Cổng Gian hàng</h2>
+        <p class="sub">Đăng nhập để quản lý cửa hàng của bạn</p>
+
+        @if (!string.IsNullOrEmpty(Model.LoiThongBao))
+        {
+            <div class="validation-summary-errors">@Model.LoiThongBao</div>
+        }
+
+        <form asp-controller="Auth" asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label asp-for="TenDangNhap">Tên đăng nhập</label>
+                <input asp-for="TenDangNhap" class="form-control" placeholder="vd: gianhang01" autofocus />
+                <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MatKhau">Mật khẩu</label>
+                <input asp-for="MatKhau" type="password" class="form-control" placeholder="••••••••" />
+                <span asp-validation-for="MatKhau" class="field-validation-error"></span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+                Đăng nhập
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:16px; font-size:12.5px;">
+            <a href="/QuenMatKhau">Quên mật khẩu?</a><br />
+            Chưa có gian hàng? <a asp-controller="Auth" asp-action="DangKy">Đăng ký ngay</a><br />
+            <a asp-controller="AdminAuth" asp-action="Login">Đăng nhập với vai trò Quản trị →</a>
+        </p>
+    </div>
+</div>

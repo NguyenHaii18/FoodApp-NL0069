@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.DriverProfilePage"
+             Title="Hồ sơ tài xế">
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- Ảnh đại diện -->
+            <Grid Padding="20,24,20,56">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource PrimaryDark}" Offset="0.0" />
+                <GradientStop Color="{StaticResource Primary}" Offset="0.6" />
+                <GradientStop Color="{StaticResource Accent}" Offset="1.0" />
+            </LinearGradientBrush>
+                </Grid.Background>
+                <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Frame WidthRequest="116" HeightRequest="116" CornerRadius="58" Padding="0" IsClippedToBounds="True"
+                           BackgroundColor="White" BorderColor="#99FFFFFF" HasShadow="False" HorizontalOptions="Center">
+                        <Grid>
+                            <Image x:Name="ImgAnh" Aspect="AspectFill" IsVisible="False" />
+                            <Label x:Name="LblAnh" FontSize="54" TextColor="{StaticResource Primary}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Grid>
+                    </Frame>
+                    <Label x:Name="LblTenDau" FontSize="18" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
+                    <Label Text="Ảnh đại diện sẽ hiện ở trang chủ tài xế" FontSize="12" TextColor="#E9DDFF" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <VerticalStackLayout Padding="16,0,16,28" Margin="0,-34,0,0" Spacing="14">
+
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Ảnh đại diện" Style="{StaticResource TitleLabel}" FontSize="15" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Grid.Column="0" Text="🖼️ Chọn ảnh" Style="{StaticResource PrimaryButton}" HeightRequest="44" Clicked="OnChonAnhClicked" />
+                            <Button Grid.Column="1" x:Name="BtnChup" Text="📸 Chụp ảnh" Style="{StaticResource OutlineButton}" HeightRequest="44" Clicked="OnChupAnhClicked" />
+                        </Grid>
+                        <Button x:Name="BtnXoaAnh" Text="Xóa ảnh, dùng biểu tượng" Style="{StaticResource OutlineButton}" HeightRequest="40"
+                                TextColor="{StaticResource Danger}" BorderColor="{StaticResource Danger}" Clicked="OnXoaAnhClicked" />
+                        <Label Text="Biểu tượng thay thế khi chưa có ảnh" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        <Entry x:Name="EntryEmoji" Placeholder="🛵" MaxLength="4" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Thông tin cá nhân" Style="{StaticResource TitleLabel}" FontSize="15" />
+                        <Label Text="Họ và tên" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        <Entry x:Name="EntryHoTen" Placeholder="Nguyễn Văn A" />
+                        <Label Text="Số điện thoại" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        <Entry x:Name="EntrySdt" Placeholder="09xx xxx xxx" Keyboard="Telephone" />
+                        <Label Text="Phương tiện" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        <Picker x:Name="PickerLoaiXe" Title="Loại xe" />
+                        <Label Text="Biển số xe" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        <Entry x:Name="EntryBienSo" Placeholder="59A1-123.45" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12.5" IsVisible="False" />
+                <Label x:Name="LblThanhCong" Text="✓ Đã lưu hồ sơ" TextColor="{StaticResource Success}" FontSize="13"
+                       FontAttributes="Bold" HorizontalOptions="Center" IsVisible="False" />
+                <Button Text="Lưu hồ sơ" Style="{StaticResource PrimaryButton}" Clicked="OnLuuClicked" />
+                <Button Text="🔑 Đổi mật khẩu" Style="{StaticResource OutlineButton}" Clicked="OnDoiMatKhauClicked" />
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

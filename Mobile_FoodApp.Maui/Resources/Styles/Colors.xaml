@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Bảng màu TÍM - TRẮNG: nền trắng/tím rất nhạt, chữ tối, tím đậm làm màu nhấn chính -->
+    <Color x:Key="Primary">#6D28D9</Color>        <!-- tím đậm: nút, thanh tiêu đề (chữ trắng đọc rõ) -->
+    <Color x:Key="PrimaryDark">#5B21B6</Color>
+    <Color x:Key="PrimaryLight">#A78BFA</Color>
+    <Color x:Key="PrimarySoft">#F3EEFF</Color>    <!-- tím rất nhạt: nền ô, tab, ô biểu tượng -->
+    <Color x:Key="Accent">#8B5CF6</Color>         <!-- tím vừa: thanh tiến trình, thứ hạng -->
+    <Color x:Key="Background">#FAF8FF</Color>     <!-- nền trang: trắng pha tím -->
+    <Color x:Key="CardColor">#FFFFFF</Color>
+    <Color x:Key="TextDark">#1F1537</Color>
+    <Color x:Key="TextGrey">#6B6480</Color>
+    <Color x:Key="Danger">#DC2626</Color>
+    <Color x:Key="Success">#15803D</Color>
+    <Color x:Key="Warning">#F59E0B</Color>
+    <Color x:Key="BorderColor">#E4DAF7</Color>
+
+
+    <!-- Bảng màu chế độ tối -->
+    <Color x:Key="BackgroundDark">#150F24</Color>
+    <Color x:Key="CardColorDark">#1F1736</Color>
+    <Color x:Key="TextOnDark">#EEE9FA</Color>
+    <Color x:Key="TextGreyDark">#A59BC0</Color>
+    <Color x:Key="BorderColorDark">#3A2F58</Color>
+
+</ResourceDictionary>

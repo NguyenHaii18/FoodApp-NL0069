@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminVendorListPage"
+             Title="Danh sách gian hàng">
+
+    <RefreshView x:Name="RefreshDsGianHang" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="10">
+
+                <CollectionView x:Name="DsGianHang" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:GianHang">
+                            <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                                <VerticalStackLayout Spacing="6">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding HinhAnh}" FontSize="22" />
+                                        <VerticalStackLayout Grid.Column="1">
+                                            <Label Text="{Binding TenGianHang}" FontAttributes="Bold" FontSize="14" />
+                                            <Label FontSize="11" TextColor="{StaticResource TextGrey}"
+                                                   Text="{Binding NgayDangKy, StringFormat='Tham gia từ {0:dd/MM/yyyy}'}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="2" FontSize="11" FontAttributes="Bold" VerticalOptions="Center"
+                                               Text="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToTextConverter}}"
+                                               TextColor="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToMauConverter}}" />
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*,*">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label Text="Tình trạng kinh doanh" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                            <Label FontSize="12.5" FontAttributes="Bold"
+                                                   Text="{Binding DangMoCua, Converter={StaticResource MoCuaToTextConverter}}" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                            <Label Text="Doanh thu (ước tính)" FontSize="11" TextColor="{StaticResource TextGrey}" HorizontalOptions="End" />
+                                            <Label FontSize="12.5" FontAttributes="Bold" TextColor="{StaticResource Primary}"
+                                                   HorizontalOptions="End" Text="{Binding Id, Converter={StaticResource GianHangIdToDoanhThuConverter}}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+
+                                    <Button Text="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToNutTextConverter}}"
+                                            HeightRequest="38" FontSize="13" CornerRadius="10"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToMauConverter}}"
+                                            BorderColor="{Binding TaiKhoanBiKhoa, Converter={StaticResource KhoaToMauConverter}}" BorderWidth="1"
+                                            Clicked="OnKhoaMoClicked" CommandParameter="{Binding .}" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

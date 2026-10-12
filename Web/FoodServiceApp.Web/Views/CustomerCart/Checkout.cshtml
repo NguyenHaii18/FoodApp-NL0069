@@ -1,0 +1,189 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh toán";
+    Layout = "_CustomerLayout";
+}
+
+<div class="topbar">
+    <h2>Xác nhận đặt hàng</h2>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.LoiThongBao))
+{
+    <div class="alert-danger mb-3">@Model.LoiThongBao</div>
+}
+
+<div class="grid-2">
+    <div>
+        <div class="checkout-section">
+            <div class="section-title">📍 Địa chỉ &amp; ghi chú</div>
+            <form asp-action="DatHang" method="post" id="formDatHang">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="MaKhuyenMai" value="@Model.MaKhuyenMai" />
+                <input type="hidden" name="MaYeuCauDat" value="@Model.MaYeuCauDat" />
+
+                @{
+                    var diaChis = (List<DiaChiKhachHang>?)ViewBag.DiaChis ?? new List<DiaChiKhachHang>();
+                }
+                @if (diaChis.Any())
+                {
+                    <div class="form-group">
+                        <label>Chọn từ sổ địa chỉ</label>
+                        <select id="chonDiaChi" class="form-control">
+                            <option value="">— Nhập địa chỉ khác —</option>
+                            @foreach (var dc in diaChis)
+                            {
+                                var day = string.Join(", ", new[] { dc.DiaChi, dc.Phuong, dc.Quan, dc.Tinh }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                                <option value="@day" data-huongdan="@dc.HuongDan">@dc.Nhan@(dc.MacDinh ? " (mặc định)" : "") — @day</option>
+                            }
+                        </select>
+                    </div>
+                }
+                <div class="form-group">
+                    <div id="canh-bao-khu-vuc" class="alert-danger" style="display:none; margin-bottom:8px;"></div>
+                    <label>Địa chỉ giao hàng <a asp-controller="CustomerDiaChi" asp-action="Index" style="font-size:12px; margin-left:6px;">Quản lý sổ địa chỉ</a></label>
+                    <textarea name="DiaChiGiaoHang" class="form-control" required>@Model.DiaChiGiaoHang</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Ghi chú / hướng dẫn giao hàng (không bắt buộc)</label>
+                    <textarea name="GhiChu" class="form-control">@Model.GhiChu</textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Hình thức thanh toán</label>
+                    <label class="payment-option">
+                        <input type="radio" name="HinhThucThanhToan" value="TienMat" checked="@(Model.HinhThucThanhToan == "TienMat")" /> 💵 Tiền mặt khi nhận hàng
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="HinhThucThanhToan" value="VNPay" checked="@(Model.HinhThucThanhToan == "VNPay")" /> 🏦 VNPay
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="HinhThucThanhToan" value="Momo" checked="@(Model.HinhThucThanhToan == "Momo")" /> 📱 Momo
+                    </label>
+                    <span class="text-muted" style="font-size:12px;">
+                        Chọn VNPay: bạn sẽ được chuyển sang cổng thanh toán VNPay thật để hoàn tất.
+                        Momo hiện chưa được hỗ trợ.
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        <div class="checkout-section">
+            <div class="section-title">🏷️ Mã khuyến mãi</div>
+            <form asp-action="ApDungKhuyenMai" method="post" style="display:flex; gap:8px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="MaYeuCauDat" value="@Model.MaYeuCauDat" />
+                <input type="hidden" name="DiaChiGiaoHang" value="@Model.DiaChiGiaoHang" />
+                <input type="hidden" name="GhiChu" value="@Model.GhiChu" />
+                <input type="hidden" name="HinhThucThanhToan" value="@Model.HinhThucThanhToan" />
+                <input type="text" name="MaKhuyenMai" value="@Model.MaKhuyenMai" class="form-control" placeholder="Nhập mã khuyến mãi (nếu có)" />
+                <button type="submit" class="btn btn-outline">Áp dụng</button>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <div class="checkout-section">
+            <div class="section-title">🧾 @Model.GioHang.TenGianHang</div>
+            @foreach (var item in Model.GioHang.Items)
+            {
+                <div class="checkout-item-row">
+                    <span>@item.TenMon x@item.SoLuong@if (!string.IsNullOrEmpty(item.TuyChonText)) { <br /><small class="text-muted">@item.TuyChonText</small> }@if (!string.IsNullOrEmpty(item.GhiChu)) { <br /><small class="text-muted">📝 @item.GhiChu</small> }</span>
+                    <span>@((item.Gia * item.SoLuong).ToString("N0"))đ</span>
+                </div>
+            }
+            <hr style="border:none; border-top:1px solid var(--border); margin:10px 0;" />
+            <div class="checkout-item-row"><span>Tạm tính</span><span>@Model.GioHang.TongTien.ToString("N0")đ</span></div>
+            @if (Model.SoTienGiam > 0)
+            {
+                <div class="checkout-item-row" style="color:var(--success);"><span>Giảm giá</span><span>-@Model.SoTienGiam.ToString("N0")đ</span></div>
+            }
+            <div class="checkout-item-row" id="dong-phi-giao">
+                <span>Phí giao hàng</span>
+                <span id="gia-tri-phi-giao">@(Model.PhiGiaoHangUocTinh > 0 ? Model.PhiGiaoHangUocTinh.ToString("N0") + "đ" : "Nhập địa chỉ để xem phí")</span>
+            </div>
+            <div class="checkout-item-row" style="font-weight:800; font-size:16px; color:var(--primary); margin-top:6px;">
+                <span>Thành tiền</span><span id="gia-tri-thanh-tien">@Model.ThanhTien.ToString("N0")đ</span>
+            </div>
+
+            <button type="submit" form="formDatHang" class="btn btn-primary btn-full" style="margin-top:14px; padding:12px;" id="nut-dat-hang">
+                Đặt hàng — @Model.ThanhTien.ToString("N0")đ
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var textareaDiaChi = document.querySelector('textarea[name="DiaChiGiaoHang"]');
+            var elPhi = document.getElementById('gia-tri-phi-giao');
+            var elThanhTien = document.getElementById('gia-tri-thanh-tien');
+            var nutDatHang = document.getElementById('nut-dat-hang');
+            var formDat = document.getElementById('formDatHang');
+            if (formDat) formDat.addEventListener('submit', function () {   // chống bấm đặt hàng nhiều lần
+                nutDatHang.disabled = true; nutDatHang.textContent = 'Đang xử lý...';
+            });
+            var tamTinhSauGiam = @Html.Raw((Model.GioHang.TongTien - Model.SoTienGiam).ToString("F0"));
+            var timer = null;
+
+            function dinhDangTien(so) {
+                return Math.round(so).toLocaleString('vi-VN') + 'đ';
+            }
+
+            function uocTinhPhi() {
+                var diaChi = textareaDiaChi.value.trim();
+                if (!diaChi) {
+                    elPhi.textContent = 'Nhập địa chỉ để xem phí';
+                    return;
+                }
+                elPhi.textContent = 'Đang tính...';
+
+                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                fetch('@Url.Action("UocTinhPhi")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify(diaChi)
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        var phi = data.phiGiaoHang || 0;
+                        var canhBao = document.getElementById('canh-bao-khu-vuc');
+                        if (data.ngoaiKhuVuc) {
+                            canhBao.textContent = 'Địa chỉ nằm ngoài khu vực phục vụ (' + data.khoangCachKm.toFixed(1) + ' km, tối đa ' + data.banKinhKm + ' km).';
+                            canhBao.style.display = 'block'; nutDatHang.disabled = true;
+                        } else { canhBao.style.display = 'none'; nutDatHang.disabled = false; }
+                        elPhi.textContent = dinhDangTien(phi);
+                        var thanhTien = tamTinhSauGiam + phi;
+                        elThanhTien.textContent = dinhDangTien(thanhTien);
+                        nutDatHang.textContent = 'Đặt hàng — ' + dinhDangTien(thanhTien);
+                    })
+                    .catch(function () {
+                        elPhi.textContent = 'Không ước tính được (sẽ tính lúc đặt hàng)';
+                    });
+            }
+
+            var chonDiaChi = document.getElementById('chonDiaChi');
+            if (chonDiaChi && textareaDiaChi) {
+                chonDiaChi.addEventListener('change', function () {
+                    if (this.value) {
+                        textareaDiaChi.value = this.value;
+                        var hd = this.options[this.selectedIndex].getAttribute('data-huongdan');
+                        var ghiChu = document.querySelector('textarea[name="GhiChu"]');
+                        if (hd && ghiChu && !ghiChu.value.trim()) ghiChu.value = hd;
+                        textareaDiaChi.dispatchEvent(new Event('input')); // kích hoạt ước tính lại phí giao hàng
+                    }
+                });
+            }
+
+            if (textareaDiaChi) {
+                textareaDiaChi.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(uocTinhPhi, 700); // debounce, tránh gọi API liên tục khi đang gõ
+                });
+                if (textareaDiaChi.value.trim()) uocTinhPhi();
+            }
+        })();
+    </script>
+}

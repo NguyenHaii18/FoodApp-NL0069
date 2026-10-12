@@ -1,0 +1,59 @@
+@model List<(KhachHang KhachHang, TaiKhoan TaiKhoan)>
+@{
+    ViewData["Title"] = "Khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Quản lý khách hàng</h2>
+</div>
+
+<div class="card mb-3">
+    <form method="get" style="display:flex; gap:8px;">
+        <input type="text" name="timKiem" value="@ViewBag.TimKiem" class="form-control" placeholder="Tìm theo tên hoặc số điện thoại..." />
+        <button type="submit" class="btn btn-primary">Tìm</button>
+    </form>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Không tìm thấy khách hàng nào.</div></div>
+}
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead><tr><th>Họ tên</th><th>SĐT</th><th>Email</th><th>Địa chỉ</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var (kh, tk) in Model)
+                {
+                    <tr>
+                        <td><a asp-action="ChiTiet" asp-route-id="@kh.MaKH">@kh.HoTen</a></td>
+                        <td>@kh.SDT</td>
+                        <td>@(kh.Email ?? "—")</td>
+                        <td>@(kh.DiaChiGiaoHang ?? "—")</td>
+                        <td>
+                            @if (tk.TrangThai)
+                            {
+                                <span class="badge badge-success">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Đã khoá</span>
+                            }
+                        </td>
+                        <td>
+                            <form asp-action="ToggleKhoa" asp-route-maTK="@tk.MaTK" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm @(tk.TrangThai ? "btn-danger" : "btn-outline")"
+                                        onclick="return confirm('@(tk.TrangThai ? "Khoá" : "Mở khoá") tài khoản \'@kh.HoTen\'?')">
+                                    @(tk.TrangThai ? "Khoá" : "Mở khoá")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

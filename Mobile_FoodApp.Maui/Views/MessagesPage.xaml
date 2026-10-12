@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.MessagesPage"
+             Title="Tin nhắn" Shell.NavBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+            <Label Text="Tin nhắn" Style="{StaticResource TitleLabel}" />
+            <VerticalStackLayout x:Name="DanhSach" Spacing="8" />
+            <VerticalStackLayout x:Name="KhungTrong" Spacing="6" Margin="0,60,0,0" HorizontalOptions="Center">
+                <Label Text="💬" FontSize="40" HorizontalOptions="Center" />
+                <Label Text="Chưa có tin nhắn nào" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center" />
+                <Label Text="Khi đơn hàng của bạn có tài xế nhận, bạn có thể nhắn tin và gọi cho tài xế tại đây."
+                       Style="{StaticResource SubtitleLabel}" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.OrderTrackingPage"
+             Title="Đơn hàng"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16,16,16,0" RowSpacing="10">
+        <Label Grid.Row="0" Text="Đơn hàng của tôi" Style="{StaticResource TitleLabel}" />
+
+        <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+            <HorizontalStackLayout x:Name="ThanhLoc" Spacing="8" />
+        </ScrollView>
+
+        <RefreshView Grid.Row="2" x:Name="LamMoi" Refreshing="OnKeoLamMoi">
+            <ScrollView>
+                <VerticalStackLayout x:Name="DanhSach" Spacing="12" Padding="0,0,0,16">
+                    <Label x:Name="LblTrong" Text="Chưa có đơn hàng nào" Style="{StaticResource SubtitleLabel}"
+                           HorizontalOptions="Center" Margin="0,40" IsVisible="False" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

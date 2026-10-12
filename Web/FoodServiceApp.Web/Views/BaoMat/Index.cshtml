@@ -1,0 +1,99 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Bảo mật tài khoản";
+    var tk = (TaiKhoan)ViewBag.TaiKhoan;
+    Layout = tk.VaiTro switch { "QuanTri" => "_AdminLayout", "TaiXe" => "_DriverLayout", "KhachHang" => "_CustomerLayout", _ => "_Layout" };
+    var lichSu = (List<NhatKyHeThong>)ViewBag.LichSu;
+    string? email = ViewBag.Email, sdt = ViewBag.Sdt;
+}
+<div class="topbar"><h2>Bảo mật tài khoản</h2></div>
+
+@if (TempData["ThongBao"] != null) { <div class="alert-success mb-3">@TempData["ThongBao"]</div> }
+@if (TempData["MaDev"] != null) { <div class="alert-success mb-3">Chế độ demo (chưa cấu hình SMTP/SMS): mã OTP là <b>@TempData["MaDev"]</b></div> }
+@if (TempData["Loi"] != null) { <div class="validation-summary-errors mb-3">@TempData["Loi"]</div> }
+
+<div class="card mb-3" style="max-width:640px;">
+    <h3>Xác thực liên hệ</h3>
+    @foreach (var (kenh, nhan, giaTri, daXt) in new[] { ("email", "Email", email, tk.EmailDaXacThuc), ("sms", "Số điện thoại", sdt, tk.SdtDaXacThuc) })
+    {
+        <div style="margin:10px 0; padding-bottom:10px; border-bottom:1px solid #eee;">
+            <b>@nhan:</b> @(string.IsNullOrWhiteSpace(giaTri) ? "chưa có" : giaTri)
+            @if (daXt) { <span class="badge badge-success">Đã xác thực</span> }
+            else if (!string.IsNullOrWhiteSpace(giaTri))
+            {
+                <form asp-action="GuiOtp" method="post" style="display:inline;">@Html.AntiForgeryToken()<input type="hidden" name="kenh" value="@kenh" /><button class="btn btn-sm btn-outline">Gửi mã OTP</button></form>
+                <form asp-action="XacNhan" method="post" style="display:inline;">@Html.AntiForgeryToken()<input type="hidden" name="kenh" value="@kenh" />
+                    <input name="otp" class="form-control" style="width:110px; display:inline-block;" placeholder="Mã 6 số" maxlength="6" />
+                    <button class="btn btn-sm btn-primary">Xác nhận</button></form>
+            }
+        </div>
+    }
+</div>
+
+@if ((bool)ViewBag.CoAnh)
+{
+    <div class="card mb-3" style="max-width:640px;">
+        <h3>Ảnh đại diện</h3>
+        @if (!string.IsNullOrEmpty((string?)ViewBag.Anh)) { <img src="@ViewBag.Anh" alt="avatar" style="width:96px;height:96px;border-radius:50%;object-fit:cover;" /> }
+        <form asp-action="AnhDaiDien" method="post" enctype="multipart/form-data" style="margin-top:8px;">
+            @Html.AntiForgeryToken()
+            <input type="file" name="anh" accept="image/*" required />
+            <button class="btn btn-primary btn-sm">Tải lên</button>
+        </form>
+    </div>
+}
+
+@{
+    var phien = (List<PhienDangNhap>)ViewBag.Phien;
+    Guid? phienHienTai = ViewBag.PhienHienTai;
+}
+<div class="card mb-3" style="max-width:640px;">
+    <h3>Thiết bị / phiên đang đăng nhập</h3>
+    @if (!phien.Any()) { <div class="empty-state">Chưa ghi nhận phiên nào (đăng nhập lại để bắt đầu theo dõi).</div> }
+    else
+    {
+        @foreach (var p in phien)
+        {
+            <div style="display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
+                <div style="flex:1; font-size:13px;">
+                    <b>@(p.Kenh == "app" ? "📱 Ứng dụng" : "💻 Trình duyệt")</b>
+                    @if (p.MaPhien == phienHienTai) { <span class="badge badge-success">Thiết bị này</span> }
+                    <div class="text-muted">@p.ThietBi</div>
+                    <div class="text-muted">IP @p.DiaChiIP · đăng nhập @p.NgayTao.ToString("dd/MM HH:mm") · hoạt động @p.LanCuoi.ToString("dd/MM HH:mm")</div>
+                </div>
+                <form asp-action="ThuHoiPhien" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@p.MaPhien" /><button class="btn btn-sm btn-outline">Đăng xuất</button></form>
+            </div>
+        }
+        <form asp-action="DangXuatThietBiKhac" method="post" style="margin-top:10px;" onsubmit="return confirm('Đăng xuất tất cả thiết bị khác?');">@Html.AntiForgeryToken()<button class="btn btn-danger btn-sm">Đăng xuất tất cả thiết bị khác</button></form>
+    }
+</div>
+
+<div class="card mb-3" style="max-width:640px;">
+    <h3>Lịch sử đăng nhập gần đây</h3>
+    @if (!lichSu.Any()) { <div class="empty-state">Chưa có lịch sử.</div> }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Thời gian</th><th>Sự kiện</th><th>IP</th></tr></thead>
+            <tbody>
+            @foreach (var n in lichSu)
+            {
+                <tr><td>@n.ThoiGian.ToString("dd/MM/yyyy HH:mm:ss")</td><td>@(n.MucDo == "Warn" ? "⚠️ " : "✅ ")@n.ThongDiep</td><td>@n.DiaChiIP</td></tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+@if (tk.VaiTro != "QuanTri")
+{
+    <div class="card" style="max-width:640px; border:1px solid #f5c2c7;">
+        <h3 style="color:#b02a37;">Xóa tài khoản</h3>
+        <p>Tài khoản sẽ bị vô hiệu hóa và thông tin cá nhân được ẩn danh. Không thể hoàn tác. Cần không còn đơn đang xử lý.</p>
+        <form asp-action="Xoa" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa tài khoản?');">
+            @Html.AntiForgeryToken()
+            <input type="password" name="matKhau" class="form-control" placeholder="Nhập mật khẩu để xác nhận" required style="max-width:300px; display:inline-block;" />
+            <button class="btn btn-danger">Xóa tài khoản của tôi</button>
+        </form>
+    </div>
+}

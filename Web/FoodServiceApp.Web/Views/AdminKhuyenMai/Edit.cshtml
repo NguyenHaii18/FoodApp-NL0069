@@ -1,0 +1,18 @@
+@model KhuyenMaiFormViewModel
+@{
+    ViewData["Title"] = "Sửa khuyến mãi toàn hệ thống";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Sửa mã khuyến mãi — @Model.MaCode</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Quay lại</a>
+</div>
+
+<div class="card" style="max-width:640px;">
+    <form asp-action="Edit" asp-route-id="@Model.MaKhuyenMai" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("~/Views/AdminKhuyenMai/_FormAdmin.cshtml", Model)
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+    </form>
+</div>

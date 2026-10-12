@@ -1,0 +1,143 @@
+@{
+    ViewData["Title"] = "Thống kê & báo cáo";
+    Layout = "_AdminLayout";
+    var monBanChay = (IEnumerable<dynamic>)ViewBag.MonBanChay;
+    var doanhThuTheoGianHang = (IEnumerable<dynamic>)ViewBag.DoanhThuTheoGianHang;
+    var hieuQuaKhuyenMai = (IEnumerable<dynamic>)ViewBag.HieuQuaKhuyenMai;
+    var ky = (string)ViewBag.KyBaoCao;
+
+    var tieuDeKy = ky switch { "Thang" => "12 tháng gần nhất", "Nam" => "5 năm gần nhất", _ => "30 ngày gần nhất" };
+}
+
+<div class="topbar">
+    <h2>Thống kê & báo cáo (@tieuDeKy)</h2>
+</div>
+
+<div class="card mb-3" style="display:flex; gap:8px; padding:12px;">
+    <a asp-action="Index" asp-route-ky="Ngay" class="btn btn-sm @(ky == "Ngay" ? "btn-primary" : "btn-outline")">Theo ngày</a>
+    <a asp-action="Index" asp-route-ky="Thang" class="btn btn-sm @(ky == "Thang" ? "btn-primary" : "btn-outline")">Theo tháng</a>
+    <a asp-action="Index" asp-route-ky="Nam" class="btn btn-sm @(ky == "Nam" ? "btn-primary" : "btn-outline")">Theo năm</a>
+</div>
+
+<div class="grid-3 mb-3">
+    <div class="stat-card">
+        <div class="label">Tổng doanh thu</div>
+        <div class="value">@(((decimal)ViewBag.TongDoanhThu).ToString("N0"))đ</div>
+    </div>
+    <div class="stat-card" style="background:#1E1E1E;">
+        <div class="label">Đơn hoàn thành</div>
+        <div class="value">@ViewBag.TongDonHoanThanh</div>
+    </div>
+    <div class="stat-card" style="background: var(--accent);">
+        <div class="label">Gian hàng có phát sinh đơn</div>
+        <div class="value">@ViewBag.TongGianHangHoatDong</div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <h3 style="margin-top:0;">Doanh thu toàn hệ thống</h3>
+    @if (!((IEnumerable<dynamic>)ViewBag.NhanKy).Any())
+    {
+        <div class="empty-state">Chưa có đơn hàng hoàn thành trong khoảng thời gian này.</div>
+    }
+    else
+    {
+        <canvas id="bieuDoDoanhThuHeThong" height="90"></canvas>
+    }
+</div>
+
+<div class="grid-2 mb-3">
+    <div class="card">
+        <h3 style="margin-top:0;">Món bán chạy toàn hệ thống</h3>
+        @if (!monBanChay.Any())
+        {
+            <div class="empty-state">Chưa có dữ liệu.</div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead><tr><th>Món</th><th>Số lượng</th></tr></thead>
+                <tbody>
+                    @foreach (var m in monBanChay)
+                    {
+                        <tr><td>@m.TenMon</td><td>@m.SoLuong</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Doanh thu theo gian hàng</h3>
+        @if (!doanhThuTheoGianHang.Any())
+        {
+            <div class="empty-state">Chưa có dữ liệu.</div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead><tr><th>Gian hàng</th><th>Số đơn</th><th>Doanh thu</th></tr></thead>
+                <tbody>
+                    @foreach (var g in doanhThuTheoGianHang)
+                    {
+                        <tr><td>@g.TenGianHang</td><td>@g.SoDon</td><td>@(((decimal)g.DoanhThu).ToString("N0"))đ</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Hiệu quả chương trình khuyến mãi</h3>
+    <p class="text-muted" style="font-size:12.5px; margin-top:-6px;">
+        Tính trên toàn bộ lịch sử (không giới hạn theo kỳ báo cáo ở trên) để phản ánh đúng hiệu quả từ lúc mã bắt đầu chạy.
+    </p>
+    @if (!hieuQuaKhuyenMai.Any())
+    {
+        <div class="empty-state">Chưa có mã khuyến mãi nào được sử dụng.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Mã</th><th>Số lần dùng</th><th>Doanh thu từ các đơn có mã</th><th>Ước tính tiền đã giảm</th></tr></thead>
+            <tbody>
+                @foreach (var k in hieuQuaKhuyenMai)
+                {
+                    <tr>
+                        <td><strong>@k.MaCode</strong></td>
+                        <td>@k.SoLanDung</td>
+                        <td>@(((decimal)k.DoanhThuTuMa).ToString("N0"))đ</td>
+                        <td>@(((decimal)k.TongTienDaGiam).ToString("N0"))đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    @if (((IEnumerable<dynamic>)ViewBag.NhanKy).Any())
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+        <script>
+            const ctx = document.getElementById('bieuDoDoanhThuHeThong');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.NhanKy)),
+                    datasets: [{
+                        label: 'Doanh thu (đ)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.GiaTriKy)),
+                        backgroundColor: '#8B5CF6',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        </script>
+    }
+}

@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Gửi thông báo";
+    Layout = "_AdminLayout";
+    IEnumerable<dynamic> ganDay = ViewBag.GanDay;
+}
+<div class="topbar"><h2>📣 Gửi thông báo hệ thống</h2></div>
+<div class="grid-2">
+<div class="card">
+    <form asp-action="Gui" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-group"><label>Gửi tới</label>
+            <select name="doiTuong" class="form-control" onchange="document.getElementById('nhom').style.display=this.value=='Nhom'?'block':'none'">
+                <option value="TatCa">Toàn hệ thống (khách, gian hàng, tài xế)</option><option value="KhachHang">Tất cả khách hàng</option><option value="GianHang">Tất cả gian hàng</option><option value="TaiXe">Tất cả tài xế</option><option value="Nhom">Một nhóm tài khoản (nhập tên đăng nhập)</option></select></div>
+        <div class="form-group" id="nhom" style="display:none;"><label>Tên đăng nhập (ngăn cách bằng dấu phẩy)</label><textarea name="dsTaiKhoan" class="form-control" rows="3"></textarea></div>
+        <div class="form-group"><label>Tiêu đề</label><input name="tieuDe" class="form-control" required maxlength="200" /></div>
+        <div class="form-group"><label>Nội dung</label><textarea name="noiDung" class="form-control" rows="5" required maxlength="1000"></textarea></div>
+        <button class="btn btn-primary">Gửi thông báo</button>
+    </form>
+</div>
+<div class="card"><h3 style="margin-top:0;">Đã gửi gần đây</h3>
+    @foreach (var g in ganDay) { <div style="padding:6px 0; border-bottom:1px solid #eee; font-size:13px;"><b>@g.TieuDe</b> — @g.NoiDung<div class="text-muted">@(((DateTime)g.Ngay).ToString("dd/MM HH:mm")) · @g.SoNguoi người nhận</div></div> }
+    <p class="text-muted" style="font-size:12px;">Thông báo hiển thị trong mục Thông báo của từng tài khoản. Thông báo đơn hàng/thanh toán/khuyến mãi được gửi tự động.</p>
+</div>
+</div>

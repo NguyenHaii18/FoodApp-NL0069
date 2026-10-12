@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 340" width="400" height="340">
+<rect width="400" height="340" fill="#FFF3E0"/>
+<circle cx="200.0" cy="150" r="120" fill="#FFFFFF"/>
+<path d="M 130 110 L 270 110 L 245 220 L 155 220 Z" fill="#FFFFFF"/>
+<path d="M 140 125 L 260 125 L 240 205 L 160 205 Z" fill="#F8BBD0"/>
+<circle cx="185" cy="150" r="10" fill="#8D5524"/>
+<circle cx="215" cy="165" r="9" fill="#FFD54F"/>
+<circle cx="200" cy="135" r="8" fill="#4FC3F7"/>
+<rect x="194" y="75" width="12" height="40" fill="#FFFFFF"/>
+<text x="200.0" y="300" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#154D73" text-anchor="middle">Chè Thái</text>
+</svg>

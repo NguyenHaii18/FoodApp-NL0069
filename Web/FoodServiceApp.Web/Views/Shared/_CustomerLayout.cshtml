@@ -1,0 +1,92 @@
+@using FoodServiceApp.Web.Services
+@inject CartService GioHangService
+@inject FoodServiceApp.Web.Data.AppDbContext LayoutDb
+@{
+    var hoTenKhachHang = Context.User.FindFirst("HoTenKhachHang")?.Value;
+    var daDangNhap = Context.User.Identity?.IsAuthenticated == true && Context.User.IsInRole("KhachHang");
+    var gioHangHienTai = GioHangService.LayGioHang();
+    var chuaDoc = 0;
+    if (daDangNhap && int.TryParse(Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var maTkLayout))
+    {
+        try { chuaDoc = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(LayoutDb.ThongBaos, t => t.MaTK == maTkLayout && !t.DaDoc); } catch { }
+    }
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Đặt món</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_IntroVideo" />
+    <header class="shopee-header">
+        <div class="shopee-header-row">
+            <a href="/MuaHang" class="shopee-logo">
+                <span class="logo-icon">🍽️</span> <span class="txt">Đặt Món</span>
+            </a>
+            <form class="shopee-search" method="get" asp-controller="CustomerHome" asp-action="Index">
+                <input type="text" name="tuKhoa" placeholder="Tìm quán ăn, món ăn hôm nay..." />
+                <button type="submit" aria-label="Tìm kiếm">🔍</button>
+            </form>
+            <div class="shopee-header-actions">
+                <a asp-controller="CustomerCart" asp-action="Index" class="shopee-cart" title="Giỏ hàng">
+                    🛒
+                    @if (gioHangHienTai.TongSoMon > 0)
+                    {
+                        <span class="badge-count">@gioHangHienTai.TongSoMon</span>
+                    }
+                </a>
+                @if (daDangNhap)
+                {
+                    <a asp-controller="CustomerOrder" asp-action="Index">📦 Đơn hàng</a>
+                    <a asp-controller="CustomerYeuThich" asp-action="Index" title="Yêu thích">❤️</a>
+                    <a asp-controller="CustomerThongBao" asp-action="Index" title="Thông báo">🔔@if (chuaDoc > 0) { <span class="badge-count">@chuaDoc</span> }</a>
+                    <a asp-controller="CustomerHoTro" asp-action="Index">🛟 Hỗ trợ</a>
+                    <a asp-controller="CustomerHoSo" asp-action="Index">👤 @hoTenKhachHang</a>
+                    <a asp-controller="BaoMat" asp-action="Index" style="margin-right:12px;">🔒 Bảo mật</a>
+                    <form asp-controller="CustomerAuth" asp-action="Logout" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit">Đăng xuất</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="CustomerAuth" asp-action="Login">Đăng nhập</a>
+                }
+            </div>
+        </div>
+        <div class="shopee-header-search-wrap">
+            <div class="shopee-search-tags">
+                <span>🔥 Gợi ý:</span>
+                <span>Cơm trưa văn phòng</span><span>Trà sữa</span><span>Đồ ăn vặt</span><span>Bún phở</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="shopee-main">
+        @if (TempData["ThongBao"] != null)
+        {
+            <div class="alert-success mb-3">@TempData["ThongBao"]</div>
+        }
+        @if (TempData["LoiThongBao"] != null)
+        {
+            <div class="alert-danger mb-3">@TempData["LoiThongBao"]</div>
+        }
+        @RenderBody()
+    </div>
+
+    <footer class="shopee-footer">
+        © @DateTime.Now.Year Đặt Món — Đồ án Xây dựng ứng dụng quản lý dịch vụ ăn uống (CNTT-KLCN069)
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

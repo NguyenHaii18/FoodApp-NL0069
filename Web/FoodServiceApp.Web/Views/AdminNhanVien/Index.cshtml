@@ -1,0 +1,54 @@
+@model List<FoodServiceApp.Web.Controllers.AdminNhanVienController.NhanVienRow>
+@{
+    ViewData["Title"] = "Phân quyền quản trị";
+    Layout = "_AdminLayout";
+}
+<div class="topbar"><h2>Phân quyền quản trị</h2></div>
+@if (TempData["Loi"] != null) { <div class="validation-summary-errors mb-3">@TempData["Loi"]</div> }
+<div class="card mb-3">
+    <p style="font-size:13px;"><b>Admin tổng (SuperAdmin):</b> toàn quyền, xem nhật ký, quản lý tài khoản quản trị. <b>Nhân viên hỗ trợ (NhanVien):</b> mặc định chỉ xem báo cáo và xử lý phản hồi/sự cố. Mỗi tài khoản Quản lý/Nhân viên có thể được cấp hoặc thu hồi từng chức năng ở hàng quyền chi tiết bên dưới (ví dụ chỉ cho một nhân viên kiểm duyệt đánh giá).</p>
+    <form asp-action="Them" method="post" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
+        @Html.AntiForgeryToken()
+        <input name="tenDangNhap" class="form-control" placeholder="Tên đăng nhập" required />
+        <input name="hoTen" class="form-control" placeholder="Họ tên" required />
+        <input name="sdt" class="form-control" placeholder="SĐT" />
+        <input name="email" type="email" class="form-control" placeholder="Email" />
+        <select name="capQuyen" class="form-control"><option value="NhanVien">Nhân viên hỗ trợ (chỉ xem + xử lý phản hồi)</option><option value="QuanLy">Quản lý vận hành (đơn, điều phối, thanh toán, hoàn tiền)</option><option value="SuperAdmin">Admin tổng</option></select>
+        <input name="matKhau" type="password" class="form-control" placeholder="Mật khẩu (≥6)" required minlength="6" />
+        <button class="btn btn-primary">Tạo tài khoản</button>
+    </form>
+</div>
+<div class="card">
+    <table class="data-table">
+        <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Email</th><th>Quyền</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.TaiKhoan.TenDangNhap</td><td>@r.QuanTri.HoTen</td><td>@(r.QuanTri.Email ?? "—")</td>
+                <td>@(r.QuanTri.CapQuyenHan == "SuperAdmin" ? "Admin tổng" : r.QuanTri.CapQuyenHan == "QuanLy" ? "Quản lý vận hành" : "Nhân viên hỗ trợ")</td>
+                <td>@if (r.TaiKhoan.TrangThai) { <span class="badge badge-success">Hoạt động</span> } else { <span class="badge badge-danger">Đã khóa</span> }</td>
+                <td>
+                    <form asp-action="ToggleKhoa" asp-route-maTK="@r.TaiKhoan.MaTK" method="post" style="display:inline;">@Html.AntiForgeryToken()
+                        <button class="btn btn-sm @(r.TaiKhoan.TrangThai ? "btn-danger" : "btn-outline")">@(r.TaiKhoan.TrangThai ? "Khóa" : "Mở khóa")</button></form>
+                </td>
+            </tr>
+            @if (r.QuanTri.CapQuyenHan != "SuperAdmin")
+            {
+                var co = FoodServiceApp.Web.Services.QuyenAdmin.Hieu(r.QuanTri.CapQuyenHan, r.QuanTri.QuyenChiTiet);
+                <tr><td colspan="6" style="background:#fafafa;">
+                    <form asp-action="CapNhatQuyen" asp-route-maTK="@r.TaiKhoan.MaTK" method="post" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:12.5px;">@Html.AntiForgeryToken()
+                        <b>Quyền chi tiết@(r.QuanTri.QuyenChiTiet == null ? " (mặc định theo cấp)" : " (đã tùy chỉnh)"):</b>
+                        @foreach (var (khoa, ten) in FoodServiceApp.Web.Services.QuyenAdmin.TatCa)
+                        {
+                            <label style="display:flex; gap:4px; align-items:center;"><input type="checkbox" name="quyen" value="@khoa" checked="@co.Contains(khoa)" style="width:auto;" /> @ten</label>
+                        }
+                        <button class="btn btn-primary btn-sm">Lưu quyền</button>
+                        <button class="btn btn-outline btn-sm" name="macDinh" value="true">Về mặc định</button>
+                    </form>
+                </td></tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

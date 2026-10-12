@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400"><defs><linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E6FA5"/><stop offset="1" stop-color="#154D73"/></linearGradient></defs>
+<rect width="640" height="400" fill="url(#bgGrad)"/>
+<circle cx="200" cy="190" r="110" fill="#FFFFFF"/>
+<circle cx="200" cy="190" r="96" fill="#F5E1C8"/>
+<circle cx="200" cy="190" r="70" fill="#E88C00"/>
+<ellipse cx="170" cy="170" rx="34" ry="20" fill="#8B5A2B"/>
+<ellipse cx="235" cy="200" rx="26" ry="16" fill="#C97B3D"/>
+<rect x="185" y="150" width="55" height="18" rx="8" fill="#E8D6A0"/>
+<text x="320" y="350" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#FFFFFF" text-anchor="middle">Quán Cơm Tấm Cô Ba</text>
+<text x="320" y="380" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="500" fill="#FFE0B2" text-anchor="middle">Cơm tấm sườn bì chả truyền thống</text>
+</svg>

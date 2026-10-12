@@ -1,0 +1,104 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var hoTenQuanTri = Context.User.FindFirst("HoTenQuanTri")?.Value ?? "Quản trị viên";
+    var capQuyen = Context.User.FindFirst("CapQuyenHan")?.Value ?? "";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Quản trị hệ thống</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_IntroVideo" />
+    <div class="app-shell">
+        <aside class="sidebar" style="border-right-color:#1E1E1E;">
+            <div class="sidebar-brand">
+                <div class="logo" style="background:#1E1E1E;">🛡️</div>
+                <div>
+                    <h1>@hoTenQuanTri</h1>
+                    <p>@capQuyen</p>
+                </div>
+            </div>
+
+            <nav>
+                <a class="nav-item @(currentController == "AdminDashboard" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Index">
+                    <span class="icon">🏠</span> Trang chủ
+                </a>
+                <a class="nav-item @(currentController == "AdminKhachHang" ? "active" : "")" asp-controller="AdminKhachHang" asp-action="Index">
+                    <span class="icon">👤</span> Khách hàng
+                </a>
+                <a class="nav-item @(currentController == "AdminGianHang" ? "active" : "")" asp-controller="AdminGianHang" asp-action="Index">
+                    <span class="icon">🏬</span> Gian hàng (đối tác)
+                </a>
+                <a class="nav-item @(currentController == "AdminTaiXe" ? "active" : "")" asp-controller="AdminTaiXe" asp-action="Index">
+                    <span class="icon">🛵</span> Tài xế
+                </a>
+                <a class="nav-item @(currentController == "AdminDonHang" ? "active" : "")" asp-controller="AdminDonHang" asp-action="Index"><span class="icon">📦</span> Đơn hàng</a>
+                <a class="nav-item @(currentController == "AdminDieuPhoi" ? "active" : "")" asp-controller="AdminDieuPhoi" asp-action="Index"><span class="icon">🧭</span> Điều phối giao hàng</a>
+                <a class="nav-item @(currentController == "AdminThanhToan" ? "active" : "")" asp-controller="AdminThanhToan" asp-action="Index"><span class="icon">💳</span> Thanh toán & hoàn tiền</a>
+                <a class="nav-item @(currentController == "AdminMonAn" ? "active" : "")" asp-controller="AdminMonAn" asp-action="Index"><span class="icon">🍜</span> Kiểm duyệt món ăn</a>
+                <a class="nav-item @(currentController == "AdminDanhGia" ? "active" : "")" asp-controller="AdminDanhGia" asp-action="Index"><span class="icon">⭐</span> Đánh giá & báo cáo</a>
+                <a class="nav-item @(currentController == "AdminBaoCao" ? "active" : "")" asp-controller="AdminBaoCao" asp-action="Index"><span class="icon">📑</span> Báo cáo / xuất CSV</a>
+                <a class="nav-item @(currentController == "AdminThongBao" ? "active" : "")" asp-controller="AdminThongBao" asp-action="Index"><span class="icon">📢</span> Gửi thông báo</a>
+                <a class="nav-item @(currentController == "AdminKhuyenMai" ? "active" : "")" asp-controller="AdminKhuyenMai" asp-action="Index">
+                    <span class="icon">🏷️</span> Khuyến mãi toàn hệ thống
+                </a>
+                <a class="nav-item @(currentController == "AdminThongKe" ? "active" : "")" asp-controller="AdminThongKe" asp-action="Index">
+                    <span class="icon">📊</span> Thống kê & báo cáo
+                </a>
+                <a class="nav-item @(currentController == "AdminPhanHoi" ? "active" : "")" asp-controller="AdminPhanHoi" asp-action="Index">
+                    <span class="icon">💬</span> Phản hồi khách hàng
+                </a>
+                <a class="nav-item @(currentController == "AdminSuCo" ? "active" : "")" asp-controller="AdminSuCo" asp-action="Index">
+                    <span class="icon">🛠️</span> Xử lý sự cố
+                </a>
+                <a class="nav-item @(currentController == "AdminHoSo" ? "active" : "")" asp-controller="AdminHoSo" asp-action="Index">
+                    <span class="icon">⚙️</span> Hồ sơ & đổi mật khẩu
+                </a>
+                @if (capQuyen == "SuperAdmin")
+                {
+                    <a class="nav-item @(currentController == "AdminNhanVien" ? "active" : "")" asp-controller="AdminNhanVien" asp-action="Index"><span class="icon">👥</span> Phân quyền quản trị</a>
+                    <a class="nav-item @(currentController == "AdminCauHinh" ? "active" : "")" asp-controller="AdminCauHinh" asp-action="Index"><span class="icon">🧮</span> Phí & chính sách</a>
+                    <a class="nav-item @(currentController == "AdminHeThong" ? "active" : "")" asp-controller="AdminHeThong" asp-action="Index"><span class="icon">🖥️</span> Hệ thống & phiên</a>
+                    <a class="nav-item @(currentController == "AdminNhatKy" ? "active" : "")" asp-controller="AdminNhatKy" asp-action="Index"><span class="icon">📜</span> Nhật ký thao tác</a>
+                }
+                <a class="nav-item @(currentController == "BaoMat" ? "active" : "")" asp-controller="BaoMat" asp-action="Index"><span class="icon">🔒</span> Bảo mật tài khoản</a>
+            </nav>
+
+            <form asp-controller="AdminAuth" asp-action="Logout" method="post" style="margin-top: 24px;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="nav-item" style="width:100%; border:none; background:transparent; cursor:pointer; text-align:left;">
+                    <span class="icon">🚪</span> Đăng xuất
+                </button>
+            </form>
+        </aside>
+
+        <main class="main-content">
+            @if (TempData["ThongBao"] != null)
+            {
+                <div class="alert-success mb-3">
+                    @TempData["ThongBao"]
+                </div>
+            }
+            @if (TempData["LoiThongBao"] != null)
+            {
+                <div class="alert-danger mb-3">
+                    @TempData["LoiThongBao"]
+                </div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

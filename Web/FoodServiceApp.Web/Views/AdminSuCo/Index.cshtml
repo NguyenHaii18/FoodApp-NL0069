@@ -1,0 +1,62 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Xử lý sự cố";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Xử lý sự cố vận hành</h2>
+</div>
+
+<div class="card mb-3" style="background:#F0F0F0; font-size:13px;">
+    Danh sách đơn mà tài xế đã báo <strong>giao thất bại</strong> nhưng chưa được xử lý tiếp.
+    Chọn gán lại cho tài xế khác hoặc huỷ đơn (tự động đánh dấu hoàn tiền nếu khách đã thanh toán online).
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Không có sự cố nào đang chờ xử lý. 🎉</div></div>
+}
+else
+{
+    <div class="grid-2">
+        @foreach (var don in Model)
+        {
+            <div class="card" style="border-color:var(--danger);">
+                <h3 style="margin:0 0 4px;">Đơn #@don.MaDonHang</h3>
+                <p class="text-muted" style="margin:0 0 8px; font-size:12.5px;">@don.NgayDat.ToString("HH:mm dd/MM/yyyy")</p>
+
+                <p style="margin:4px 0;"><strong>Gian hàng:</strong> @don.GianHang?.TenCuaHang</p>
+                <p style="margin:4px 0;"><strong>Tài xế:</strong> @don.GiaoHang?.TaiXe?.HoTen</p>
+                <p style="margin:4px 0;"><strong>Giao đến:</strong> @don.DiaChiGiaoHang</p>
+                <p style="margin:4px 0;"><strong>Tổng tiền:</strong> @don.TongTien.ToString("N0")đ
+                    @if (don.ThanhToan != null)
+                    {
+                        <span class="text-muted">(@don.ThanhToan.HinhThuc — @don.ThanhToan.TrangThai)</span>
+                    }
+                </p>
+                @if (!string.IsNullOrEmpty(don.GhiChu))
+                {
+                    <p style="margin:4px 0; color:var(--danger);"><strong>Ghi chú:</strong> @don.GhiChu</p>
+                }
+
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <form asp-action="GanLai" asp-route-id="@don.MaDonHang" method="post" style="flex:1;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary" style="width:100%;"
+                                onclick="return confirm('Đưa đơn #@don.MaDonHang về danh sách chờ tài xế khác nhận?')">
+                            Gán lại tài xế khác
+                        </button>
+                    </form>
+                    <form asp-action="HuyVaHoanTien" asp-route-id="@don.MaDonHang" method="post" style="flex:1;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger" style="width:100%;"
+                                onclick="return confirm('Huỷ đơn #@don.MaDonHang và hoàn tiền cho khách?')">
+                            Huỷ & hoàn tiền
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}

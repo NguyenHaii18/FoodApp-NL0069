@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Hỗ trợ";
+    Layout = "_CustomerLayout";
+    var faq = new (string Q, string A)[]
+    {
+        ("Làm sao để đặt món?", "Chọn quán → chọn món (size/topping, ghi chú) → vào giỏ hàng → chọn địa chỉ, phương thức thanh toán, mã khuyến mãi → Đặt hàng."),
+        ("Tôi có thể đặt món từ nhiều quán trong một đơn không?", "Chưa. Mỗi đơn chỉ gồm món của một gian hàng; hệ thống sẽ báo nếu giỏ đang có món của quán khác."),
+        ("Khi nào được hủy đơn?", "Bạn tự hủy được khi đơn còn ở trạng thái Chờ xác nhận. Sau khi quán xác nhận, vui lòng liên hệ quán hoặc hỗ trợ."),
+        ("Phí giao hàng tính thế nào?", "Theo khoảng cách từ quán đến địa chỉ giao (5.000đ/km, tối thiểu theo cấu hình). Phí hiển thị trước khi bạn xác nhận."),
+        ("Thanh toán online thất bại thì sao?", "Đơn giữ ở trạng thái chờ thanh toán; bạn có thể chọn lại hình thức khác hoặc liên hệ hỗ trợ kèm mã đơn. Trạng thái thanh toán chỉ được ghi nhận khi cổng thanh toán xác nhận."),
+        ("Khi nào được hoàn tiền?", "Đơn đã thanh toán online mà bị hủy sẽ chuyển sang trạng thái Đã hoàn tiền; xem tại Đơn mua → Giao dịch."),
+        ("Tôi muốn khiếu nại đơn hàng/đánh giá không phù hợp?", "Gửi yêu cầu loại Khiếu nại trong mục bên dưới; với đánh giá, dùng nút Báo cáo tại trang quán."),
+        ("Làm sao đổi số điện thoại hoặc xóa tài khoản?", "Vào Hồ sơ để sửa thông tin, vào Bảo mật để xác thực OTP, xem thiết bị đăng nhập hoặc xóa tài khoản."),
+    };
+}
+<div class="topbar"><h2>🛟 Trung tâm hỗ trợ</h2></div>
+<div class="grid-2">
+    <div class="card">
+        <h3 style="margin-top:0;">Câu hỏi thường gặp</h3>
+        @foreach (var f in faq)
+        {
+            <details style="margin:8px 0;"><summary><b>@f.Q</b></summary><p class="text-muted" style="margin:6px 0 0 14px;">@f.A</p></details>
+        }
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Liên hệ</h3>
+        <p>📞 Hotline: <a href="tel:@ViewBag.Hotline">@ViewBag.Hotline</a><br />✉️ Email: <a href="mailto:@ViewBag.Email">@ViewBag.Email</a></p>
+        <a asp-controller="CustomerPhanHoi" asp-action="Index" class="btn btn-primary">💬 Gửi yêu cầu hỗ trợ</a>
+        <p style="margin-top:12px;"><a asp-controller="CustomerPhanHoi" asp-action="Index">Xem lịch sử yêu cầu &amp; kết quả xử lý →</a></p>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var hoTenTaiXe = Context.User.FindFirst("HoTenTaiXe")?.Value ?? "Tài xế";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Tài xế</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_IntroVideo" />
+    <div class="app-shell">
+        <aside class="sidebar" style="border-right-color: var(--accent);">
+            <div class="sidebar-brand">
+                <div class="logo" style="background: var(--accent);">🏍️</div>
+                <div>
+                    <h1>@hoTenTaiXe</h1>
+                    <p>Tài xế giao hàng</p>
+                </div>
+            </div>
+
+            <nav>
+                <a class="nav-item @(currentController == "DriverDashboard" ? "active" : "")" asp-controller="DriverDashboard" asp-action="Index">
+                    <span class="icon">🏠</span> Trang chủ
+                </a>
+                <a class="nav-item @(currentController == "DriverDonHang" ? "active" : "")" asp-controller="DriverDonHang" asp-action="ChoNhan">
+                    <span class="icon">📋</span> Đơn chờ nhận
+                </a>
+                <a class="nav-item @(currentController == "DriverDonHang" ? "active" : "")" asp-controller="DriverDonHang" asp-action="DonHienTai">
+                    <span class="icon">🛵</span> Chuyến hiện tại
+                </a>
+                <a class="nav-item @(currentController == "DriverDonHang" ? "active" : "")" asp-controller="DriverDonHang" asp-action="LichSu">
+                    <span class="icon">🕓</span> Lịch sử giao hàng
+                </a>
+                <a class="nav-item @(currentController == "DriverThuNhap" ? "active" : "")" asp-controller="DriverThuNhap" asp-action="Index">
+                    <span class="icon">💰</span> Thu nhập
+                </a>
+                <a class="nav-item @(currentController == "DriverHoSo" ? "active" : "")" asp-controller="DriverHoSo" asp-action="Index">
+                    <span class="icon">🪪</span> Hồ sơ
+                </a>
+                <a class="nav-item" asp-controller="BaoMat" asp-action="Index"><span class="icon">🔒</span> Bảo mật tài khoản</a>
+            </nav>
+
+            <form asp-controller="DriverAuth" asp-action="Logout" method="post" style="margin-top: 24px;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="nav-item" style="width:100%; border:none; background:transparent; cursor:pointer; text-align:left;">
+                    <span class="icon">🚪</span> Đăng xuất
+                </button>
+            </form>
+        </aside>
+
+        <main class="main-content">
+            @if (TempData["ThongBao"] != null)
+            {
+                <div class="alert-success mb-3">
+                    @TempData["ThongBao"]
+                </div>
+            }
+            @if (TempData["LoiThongBao"] != null)
+            {
+                <div class="alert-danger mb-3">
+                    @TempData["LoiThongBao"]
+                </div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

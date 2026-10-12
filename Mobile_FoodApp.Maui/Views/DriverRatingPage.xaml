@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.DriverRatingPage" Title="Đánh giá của khách">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="Đánh giá của khách" Style="{StaticResource TitleLabel}" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                    <Label x:Name="LblDiem" FontSize="36" FontAttributes="Bold" HorizontalOptions="Center" />
+                    <Label x:Name="LblSao" FontSize="20" HorizontalOptions="Center" />
+                    <Label x:Name="LblSoLuot" FontSize="12.5" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Frame>
+            <VerticalStackLayout x:Name="DsDanhGia" Spacing="8" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

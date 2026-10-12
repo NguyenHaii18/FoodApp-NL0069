@@ -1,0 +1,17 @@
+CHẠY BẢN WINDOWS TRƯỚC (không cần Android)
+
+1. Cài .NET 8 SDK (8.0.x) và, nếu dùng Visual Studio 2022, tick workload ".NET Multi-platform App UI development".
+2. Mở PowerShell bằng quyền Administrator:   dotnet workload install maui
+3. Xóa thư mục bin và obj trong project (nếu có).
+4. Mở file FoodApp.Maui.csproj bằng Visual Studio (chỉ mở riêng file này).
+5. Thanh công cụ chọn "Windows Machine" rồi bấm F5.
+   Hoặc dùng lệnh:  dotnet build -f net8.0-windows10.0.19041.0
+                    dotnet run   -f net8.0-windows10.0.19041.0
+
+Không cần bật Web: nếu không kết nối được API, app chạy độc lập và lưu dữ liệu ngay trên máy.
+App KHÔNG còn dữ liệu mẫu - mọi thứ bắt đầu trống:
+  1) Khách: tab "Đăng ký" tạo tài khoản (có nhập địa chỉ) rồi đăng nhập.
+  2) Gian hàng: "Bạn là gian hàng đối tác?" -> Đăng ký; quản trị viên duyệt rồi mới đăng nhập được; sau đó tự thêm món.
+  3) Quản trị: admin@fooddelivery.vn / admin123 (tài khoản hệ thống duy nhất có sẵn).
+  4) Tài xế: nhập số điện thoại bất kỳ + mật khẩu từ 6 ký tự.
+Muốn nối SQL: chạy FoodServiceApp.Web (profile https), rồi sửa BaseUrlWindows trong Resources/Raw/appsettings.json cho đúng địa chỉ Web.

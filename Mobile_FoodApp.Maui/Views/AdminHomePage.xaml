@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.AdminHomePage"
+             Title="Quản trị hệ thống"
+             Shell.NavBarIsVisible="False">
+
+    <RefreshView x:Name="RefreshTrangChu" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="14">
+
+                <Grid ColumnDefinitions="Auto,*">
+                    <Frame Grid.Column="0" WidthRequest="48" HeightRequest="48" CornerRadius="24"
+                           BackgroundColor="{StaticResource TextDark}" Padding="0">
+                        <Label TextColor="White" Text="🛡️" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Frame>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="10,0,0,0">
+                        <Label x:Name="LblChaoAdmin" FontAttributes="Bold" FontSize="15" />
+                        <Label x:Name="LblVaiTro" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" />
+                        <Label Text="Bảng điều khiển quản trị" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Tổng quan hệ thống -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Frame Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Tổng gian hàng đã duyệt" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblTongGianHang" FontAttributes="Bold" FontSize="20" TextColor="{StaticResource Primary}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Tổng tài khoản khách hàng" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblTongKhachHang" FontAttributes="Bold" FontSize="20" TextColor="{StaticResource Primary}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <Frame BackgroundColor="{StaticResource TextDark}" CornerRadius="16" HasShadow="False">
+                    <VerticalStackLayout>
+                        <Label Text="Tổng doanh thu toàn hệ thống (ước tính)" TextColor="#CCFFFFFF" FontSize="12" />
+                        <Label x:Name="LblTongDoanhThu" TextColor="White" FontAttributes="Bold" FontSize="22" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Lưới điều hướng nhanh -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🧾" FontSize="22" />
+                            <Label Text="Duyệt gian hàng" FontAttributes="Bold" FontSize="14" />
+                            <Label x:Name="LblSoChoDuyet" FontSize="12" TextColor="{StaticResource Accent}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDuyetGianHangTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🏬" FontSize="22" />
+                            <Label Text="Danh sách gian hàng" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Doanh thu theo đối tác" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDanhSachGianHangTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="👥" FontSize="22" />
+                            <Label Text="Tài khoản khách hàng" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Xem, khóa/mở tài khoản" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnKhachHangTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="⚠️" FontSize="22" />
+                            <Label Text="Vấn đề phát sinh" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Khiếu nại, sự cố vận hành" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnVanDeTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="2" Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🏷️" FontSize="22" />
+                            <Label Text="Khuyến mãi" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Ưu đãi toàn hệ thống" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnKhuyenMaiTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="2" Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="📊" FontSize="22" />
+                            <Label Text="Thống kê &amp; báo cáo" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Doanh thu, đơn hàng, món bán chạy" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnThongKeTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="3" Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🛵" FontSize="22" />
+                            <Label Text="Duyệt tài xế" FontAttributes="Bold" FontSize="14" />
+                            <Label x:Name="LblSoTaiXeChoDuyet" FontSize="12" TextColor="{StaticResource Accent}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDuyetTaiXeTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame Grid.Row="3" Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🗺️" FontSize="22" />
+                            <Label Text="Bản đồ" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Tìm địa chỉ gian hàng" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBanDoTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame x:Name="OStaff" Grid.Row="4" Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="👥" FontSize="22" />
+                            <Label Text="Tài khoản quản trị" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Admin tổng / Nhân viên" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnNhanVienTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                    <Frame x:Name="ONhatKy" Grid.Row="4" Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="📜" FontSize="22" />
+                            <Label Text="Nhật ký thao tác" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="Chỉ Admin tổng" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnNhatKyTapped" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </Grid>
+
+                <Button Text="Đổi mật khẩu" Style="{StaticResource OutlineButton}" Margin="0,10,0,0" Clicked="OnDoiMatKhauClicked" />
+                <Button Text="Đăng xuất" Style="{StaticResource OutlineButton}" Margin="0,10,0,0" Clicked="OnDangXuatClicked" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

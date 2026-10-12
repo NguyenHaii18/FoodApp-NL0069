@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Đặt lại mật khẩu";
+    Layout = "_LoginLayout";
+}
+<div class="login-page">
+    <div class="login-card">
+        <div class="logo">🔐</div>
+        <h2>Đặt lại mật khẩu</h2>
+        @if (TempData["ThongBao"] != null) { <div class="alert-success mb-3">@TempData["ThongBao"]</div> }
+        @if (TempData["MaDev"] != null)
+        {
+            <div class="alert-success mb-3">Chế độ demo (chưa cấu hình SMTP): mã OTP của bạn là <b>@TempData["MaDev"]</b></div>
+        }
+        @if (ViewBag.Loi != null) { <div class="validation-summary-errors">@ViewBag.Loi</div> }
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="taiKhoan" value="@ViewBag.TaiKhoan" />
+            <div class="form-group"><label>Mã OTP (6 số)</label><input name="otp" class="form-control" maxlength="6" inputmode="numeric" required autofocus /></div>
+            <div class="form-group"><label>Mật khẩu mới</label><input name="matKhauMoi" type="password" class="form-control" minlength="6" required /></div>
+            <div class="form-group"><label>Nhập lại mật khẩu mới</label><input name="xacNhan" type="password" class="form-control" minlength="6" required /></div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">Đổi mật khẩu</button>
+        </form>
+        <p style="margin-top:14px; text-align:center;"><a asp-action="Index">Gửi lại mã</a></p>
+    </div>
+</div>

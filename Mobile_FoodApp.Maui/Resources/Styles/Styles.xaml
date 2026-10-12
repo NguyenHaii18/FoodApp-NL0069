@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Nút chính: xanh lá đậm, chữ trắng -->
+    <Style TargetType="Button" x:Key="PrimaryButton">
+        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="CornerRadius" Value="24" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="AccentButton" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+    </Style>
+
+    <!-- Nút viền xanh lá, nền trắng -->
+    <Style TargetType="Button" x:Key="OutlineButton">
+        <Setter Property="BackgroundColor" Value="White" />
+        <Setter Property="TextColor" Value="{StaticResource Primary}" />
+        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="CornerRadius" Value="21" />
+        <Setter Property="HeightRequest" Value="42" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <!-- Ô nhập liệu: luôn nền trắng chữ tối (không bị đổi theo chế độ tối của Windows) -->
+    <Style TargetType="Entry">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardColor}, Dark={StaticResource CardColorDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextDark}, Dark={StaticResource TextOnDark}}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource TextGrey}" />
+        <Setter Property="FontSize" Value="14.5" />
+        <Setter Property="HeightRequest" Value="46" />
+    </Style>
+
+    <Style TargetType="Editor">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardColor}, Dark={StaticResource CardColorDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextDark}, Dark={StaticResource TextOnDark}}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource TextGrey}" />
+        <Setter Property="FontSize" Value="14.5" />
+    </Style>
+
+    <Style TargetType="Picker">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardColor}, Dark={StaticResource CardColorDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextDark}, Dark={StaticResource TextOnDark}}" />
+        <Setter Property="TitleColor" Value="{StaticResource TextGrey}" />
+    </Style>
+
+    <Style TargetType="Switch">
+        <Setter Property="OnColor" Value="{StaticResource Accent}" />
+        <Setter Property="ThumbColor" Value="{StaticResource Primary}" />
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource Primary}" />
+    </Style>
+
+    <!-- Thẻ trắng viền xanh nhạt -->
+    <Style TargetType="Frame" x:Key="CardFrame">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardColor}, Dark={StaticResource CardColorDark}}" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource BorderColor}, Dark={StaticResource BorderColorDark}}" />
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="HasShadow" Value="False" />
+    </Style>
+
+    <!-- Chữ mặc định luôn tối trên nền sáng -->
+    <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextDark}, Dark={StaticResource TextOnDark}}" />
+    </Style>
+
+    <!-- Nhãn dạng viên thuốc (chip) -->
+    <Style TargetType="Frame" x:Key="ChipFrame">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimarySoft}, Dark={StaticResource BorderColorDark}}" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="BorderColor" Value="Transparent" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="TitleLabel">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Primary}" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="SubtitleLabel">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+    </Style>
+
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource BackgroundDark}}" />
+    </Style>
+
+</ResourceDictionary>

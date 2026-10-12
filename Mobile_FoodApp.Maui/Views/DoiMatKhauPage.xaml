@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.DoiMatKhauPage"
+             Title="Đổi mật khẩu">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="10">
+            <Label Text="Mật khẩu hiện tại" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryCu" IsPassword="True" />
+            <Label Text="Mật khẩu mới (tối thiểu 6 ký tự)" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryMoi" IsPassword="True" />
+            <Label Text="Nhập lại mật khẩu mới" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryNhapLai" IsPassword="True" />
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12" IsVisible="False" />
+            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False" Color="{StaticResource Primary}" />
+            <Button x:Name="BtnLuu" Text="Đổi mật khẩu" Style="{StaticResource PrimaryButton}" Margin="0,8,0,0" Clicked="OnLuuClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FoodApp.Maui.Views"
+             x:Class="FoodApp.Maui.Views.BanDoPage"
+             Title="Bản đồ">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <Grid Grid.Row="0" Padding="12,10,12,6" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Entry Grid.Column="0" x:Name="EntryTimKiem" Placeholder="Tìm địa chỉ, quán ăn, địa điểm..." Completed="OnTimClicked" ReturnType="Search" />
+            <Button Grid.Column="1" Text="🔍 Tìm" Style="{StaticResource PrimaryButton}" HeightRequest="46" Clicked="OnTimClicked" />
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="1" Padding="12,0" Spacing="4">
+            <ActivityIndicator x:Name="Dang" IsRunning="False" IsVisible="False" HeightRequest="22" />
+            <Label x:Name="LblThongBao" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" IsVisible="False" />
+            <CollectionView x:Name="DsKetQua" SelectionMode="None" MaximumHeightRequest="170" IsVisible="False">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:DiaDiem">
+                        <Frame Style="{StaticResource CardFrame}" Padding="12,8" Margin="0,0,0,5">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnKetQuaTapped" CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="📍" FontSize="13" VerticalOptions="Start" />
+                                <Label Grid.Column="1" Text="{Binding Ten}" FontSize="12.5" MaxLines="2" LineBreakMode="TailTruncation" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <WebView Grid.Row="2" x:Name="Wv" />
+
+        <VerticalStackLayout Grid.Row="3" Padding="12,8,12,12" Spacing="8">
+            <Label x:Name="LblDaChon" FontSize="12.5" MaxLines="2" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}"
+                   Text="Gõ để tìm, hoặc chạm vào bản đồ để chọn một điểm." />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" x:Name="BtnDung" Text="✔ Dùng địa chỉ này" Style="{StaticResource PrimaryButton}" HeightRequest="44"
+                        IsVisible="False" IsEnabled="False" Clicked="OnDungClicked" />
+                <Button Grid.Column="1" x:Name="BtnGoogle" Text="Mở Google Maps" Style="{StaticResource OutlineButton}" Clicked="OnGoogleClicked" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

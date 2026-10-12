@@ -1,0 +1,48 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Vận hành hệ thống";
+    Layout = "_AdminLayout";
+    var sqlOk = (bool)ViewBag.SqlOk;
+    var tichHop = (IEnumerable<(string Ten, string TrangThai)>)ViewBag.TichHop;
+}
+<div class="topbar"><h2>🖥️ Vận hành hệ thống</h2><a asp-action="Phien" class="btn btn-outline">Quản lý phiên đăng nhập</a></div>
+<div class="grid-2">
+<div class="card">
+    <h3 style="margin-top:0;">Tình trạng</h3>
+    <p>SQL Server: @(sqlOk ? "🟢 Kết nối tốt" : "🔴 Không kết nối được") (@ViewBag.SqlMs ms)@if (sqlOk) { <text> — CSDL <b>@ViewBag.TenDb</b></text> }</p>
+    @if (ViewBag.SqlLoi != null) { <p style="color:#b02a37;">@ViewBag.SqlLoi</p> }
+    @if (sqlOk)
+    {
+        <p>Yêu cầu API/web trong 1 giờ qua: <b>@ViewBag.ReqGio</b> · thời gian xử lý TB: <b>@(((double)ViewBag.MsTB).ToString("0")) ms</b><br />Lỗi 24 giờ qua: <b>@ViewBag.Loi24h</b> · Phiên đang đăng nhập: <b>@ViewBag.Phien</b></p>
+    }
+    <p class="text-muted" style="font-size:12.5px;">Điểm kiểm tra tự động cho công cụ giám sát: <code>GET /health</code> (200 = ổn, 503 = lỗi SQL).</p>
+</div>
+<div class="card">
+    <h3 style="margin-top:0;">Tích hợp</h3>
+    @foreach (var t in tichHop) { <div style="padding:4px 0; border-bottom:1px solid #eee; font-size:13.5px;"><b>@t.Ten:</b> @t.TrangThai</div> }
+    <p class="text-muted" style="font-size:12.5px;">Khóa API đặt trong <code>appsettings.json</code>/biến môi trường/User Secrets; trang này chỉ hiển thị đã cấu hình hay chưa (không lộ khóa).</p>
+</div>
+</div>
+<div class="card" style="margin-top:16px;">
+    <h3 style="margin-top:0;">Sao lưu & khôi phục</h3>
+    <form asp-action="SaoLuu" method="post" onsubmit="return confirm('Sao lưu CSDL ngay bây giờ?');">@Html.AntiForgeryToken()<button class="btn btn-primary">💾 Sao lưu ngay</button> <span class="text-muted">vào thư mục <code>@ViewBag.ThuMucBackup</code> trên máy chạy SQL Server (đổi bằng <code>Backup:ThuMuc</code>)</span></form>
+    <p style="font-size:13px; margin-top:10px;">Khôi phục (chạy trong SSMS, ngoài giờ hoạt động):</p>
+    <pre style="background:#F7F7F7; padding:10px; font-size:12.5px; overflow:auto;">USE master;
+ALTER DATABASE QuanLyDichVuAnUong SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+RESTORE DATABASE QuanLyDichVuAnUong FROM DISK = N'C:\FoodServiceBackup\&lt;tên_file&gt;.bak' WITH REPLACE;
+ALTER DATABASE QuanLyDichVuAnUong SET MULTI_USER;</pre>
+</div>
+<div class="card" style="margin-top:16px;">
+    <h3 style="margin-top:0;">Log lỗi gần đây</h3>
+    @if (sqlOk)
+    {
+        var loi = (List<NhatKyHeThong>)ViewBag.Loi;
+        if (!loi.Any()) { <div class="empty-state">Không có lỗi nào được ghi nhận.</div> }
+        else
+        {
+            <table class="data-table"><thead><tr><th>Thời gian</th><th>Nguồn</th><th>Thông điệp</th><th>Đường dẫn</th></tr></thead><tbody>
+            @foreach (var n in loi) { <tr><td>@n.ThoiGian.ToString("dd/MM HH:mm:ss")</td><td>@n.Nguon</td><td style="font-size:12.5px;">@n.ThongDiep</td><td style="font-size:12px;">@n.PhuongThuc @n.DuongDan</td></tr> }
+            </tbody></table>
+        }
+    }
+</div>

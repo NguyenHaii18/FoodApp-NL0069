@@ -1,0 +1,74 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Điều phối giao hàng";
+    Layout = "_AdminLayout";
+    var canGiao = (List<DonHang>)ViewBag.CanGiao;
+    var dangGiao = (List<DonHang>)ViewBag.DangGiao;
+    var taiXes = (List<TaiXe>)ViewBag.TaiXes;
+    var dangBan = (Dictionary<int, int>)ViewBag.DangBan;
+    var log = (List<DieuPhoiLog>)ViewBag.Log;
+    int tre = ViewBag.TreSauPhut;
+    var now = DateTime.Now;
+}
+<div class="topbar"><h2>🧭 Điều phối giao hàng</h2></div>
+<p class="text-muted" style="font-size:13px;">Vị trí thời gian thực của tài xế không được lưu/hiển thị (bảo vệ quyền riêng tư); điều phối dựa trên trạng thái, khu vực hoạt động và số đơn đang giao.</p>
+
+<div class="grid-2">
+<div class="card">
+    <h3 style="margin-top:0;">Đơn cần giao, chưa có tài xế (@canGiao.Count)</h3>
+    @if (!canGiao.Any()) { <div class="empty-state">Không có đơn nào đang chờ tài xế.</div> }
+    @foreach (var d in canGiao)
+    {
+        var phut = (int)(now - d.NgayDat).TotalMinutes;
+        <div style="border-bottom:1px solid #eee; padding:8px 0;">
+            <a asp-controller="AdminDonHang" asp-action="ChiTiet" asp-route-id="@d.MaDonHang"><b>#@d.MaDonHang</b></a> — @d.GianHang?.TenCuaHang → @d.DiaChiGiaoHang
+            <span class="text-muted">(@phut phút)</span>@if (phut > 10) { <span class="badge badge-danger">Chưa có tài xế quá lâu</span> }
+            <form asp-action="PhanCong" asp-route-id="@d.MaDonHang" method="post" style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                @Html.AntiForgeryToken()
+                <select name="maTaiXe" class="form-control" style="max-width:240px;">
+                    @foreach (var t in taiXes) { <option value="@t.MaTaiXe">@t.HoTen — @(t.TrangThai == "SanSang" ? "sẵn sàng" : "ngoại tuyến") — @(dangBan.TryGetValue(t.MaTaiXe, out var so) ? so : 0) đơn@(string.IsNullOrEmpty(t.KhuVucHoatDong) ? "" : " · " + t.KhuVucHoatDong)</option> }
+                </select>
+                <input name="lyDo" class="form-control" style="max-width:220px;" placeholder="Lý do phân công" required />
+                <button class="btn btn-primary btn-sm">Phân công</button>
+            </form>
+        </div>
+    }
+</div>
+<div class="card">
+    <h3 style="margin-top:0;">Đơn đang giao (@dangGiao.Count)</h3>
+    @if (!dangGiao.Any()) { <div class="empty-state">Không có đơn đang giao.</div> }
+    @foreach (var d in dangGiao)
+    {
+        var phut = (int)(now - d.NgayDat).TotalMinutes;
+        <div style="border-bottom:1px solid #eee; padding:8px 0;">
+            <a asp-controller="AdminDonHang" asp-action="ChiTiet" asp-route-id="@d.MaDonHang"><b>#@d.MaDonHang</b></a> — @d.GianHang?.TenCuaHang · TX: <b>@d.GiaoHang?.TaiXe?.HoTen</b>
+            <span class="text-muted">(@phut/@tre phút)</span>@if (phut > tre) { <span class="badge badge-danger">Quá thời gian dự kiến</span> }
+            <form asp-action="PhanCong" asp-route-id="@d.MaDonHang" method="post" style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                @Html.AntiForgeryToken()
+                <select name="maTaiXe" class="form-control" style="max-width:220px;">
+                    @foreach (var t in taiXes.Where(t => t.MaTaiXe != d.MaTaiXe)) { <option value="@t.MaTaiXe">@t.HoTen (@(dangBan.TryGetValue(t.MaTaiXe, out var so) ? so : 0) đơn)</option> }
+                </select>
+                <input name="lyDo" class="form-control" style="max-width:200px;" placeholder="Lý do đổi tài xế" required />
+                <button class="btn btn-outline btn-sm">Đổi tài xế</button>
+            </form>
+            <form asp-action="GoTaiXe" asp-route-id="@d.MaDonHang" method="post" style="display:flex; gap:6px; margin-top:4px;">
+                @Html.AntiForgeryToken()
+                <input name="lyDo" class="form-control" style="max-width:260px;" placeholder="Tài xế không thể giao tiếp - lý do" required />
+                <button class="btn btn-danger btn-sm">Gỡ tài xế</button>
+            </form>
+        </div>
+    }
+</div>
+</div>
+
+<div class="card" style="margin-top:16px;">
+    <h3 style="margin-top:0;">Tài xế đang hoạt động</h3>
+    <table class="data-table"><thead><tr><th>Tài xế</th><th>Trạng thái</th><th>Khu vực</th><th>Phương tiện</th><th>Đơn đang giao</th></tr></thead><tbody>
+    @foreach (var t in taiXes) { <tr><td>@t.HoTen<div class="text-muted" style="font-size:12px;">@t.SDT</div></td><td>@(t.TrangThai == "SanSang" ? "🟢 Sẵn sàng" : "⚪ Ngoại tuyến")</td><td>@t.KhuVucHoatDong</td><td>@t.PhuongTien @t.BienSo</td><td>@(dangBan.TryGetValue(t.MaTaiXe, out var so2) ? so2 : 0)</td></tr> }
+    </tbody></table>
+</div>
+<div class="card" style="margin-top:16px;">
+    <h3 style="margin-top:0;">Lịch sử điều phối gần đây</h3>
+    @if (!log.Any()) { <div class="empty-state">Chưa có.</div> }
+    @foreach (var l in log) { <div style="font-size:13px; padding:3px 0;">@l.ThoiGian.ToString("dd/MM HH:mm") — đơn <a asp-controller="AdminDonHang" asp-action="ChiTiet" asp-route-id="@l.MaDonHang">#@l.MaDonHang</a>: @l.HanhDong (TX @(l.MaTaiXeCu?.ToString() ?? "-") → @(l.MaTaiXeMoi?.ToString() ?? "-")) — @l.LyDo</div> }
+</div>

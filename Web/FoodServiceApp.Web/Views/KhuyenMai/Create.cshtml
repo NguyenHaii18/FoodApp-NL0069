@@ -1,0 +1,15 @@
+@model KhuyenMaiFormViewModel
+@{ ViewData["Title"] = "Tạo khuyến mãi"; }
+
+<div class="topbar">
+    <h2>Tạo mã khuyến mãi mới</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Quay lại</a>
+</div>
+
+<div class="card" style="max-width:520px;">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("_Form", Model)
+        <button type="submit" class="btn btn-primary">Tạo mã</button>
+    </form>
+</div>

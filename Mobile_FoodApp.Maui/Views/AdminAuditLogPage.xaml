@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminAuditLogPage"
+             Title="Nhật ký thao tác">
+    <Grid RowDefinitions="Auto,*" Padding="16,12" RowSpacing="8">
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
+            <Entry x:Name="EntryTim" Placeholder="Tìm theo tài khoản, hành động, đối tượng..." TextChanged="OnTimChanged" />
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout x:Name="ThanhLoc" Spacing="8" />
+            </ScrollView>
+            <Label x:Name="LblSo" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" x:Name="DsNhatKy" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="Không có dòng nhật ký nào." FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" HorizontalOptions="Center" Margin="0,40,0,0" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:NhatKyThaoTac">
+                    <Frame Style="{StaticResource CardFrame}" Padding="14,10" Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="{Binding BieuTuong}" FontSize="22" VerticalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                <Label Text="{Binding TieuDe}" FontAttributes="Bold" FontSize="13.5" />
+                                <Label Text="{Binding NguoiThucHien}" FontSize="12" TextColor="{StaticResource Primary}" />
+                                <Label Text="{Binding ChiTiet}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                <Label Text="{Binding ThoiGianHienThi}" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,2 @@
+SELECT COUNT(*) FROM GianHang;
+SELECT COUNT(*) FROM MonAn;

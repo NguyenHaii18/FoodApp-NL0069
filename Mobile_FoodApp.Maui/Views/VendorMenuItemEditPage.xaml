@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.VendorMenuItemEditPage"
+             Title="Thêm món ăn">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <Label Text="Ảnh món" FontSize="13" FontAttributes="Bold" />
+            <Frame Padding="0" CornerRadius="12" HeightRequest="150" HasShadow="False"
+                   BackgroundColor="{StaticResource PrimarySoft}" IsClippedToBounds="True">
+                <Grid>
+                    <Image x:Name="ImgAnhMon" Aspect="AspectFill" />
+                    <Label x:Name="LblChuaCoAnh" Text="Chưa có ảnh — đang dùng biểu tượng" TextColor="{StaticResource TextGrey}"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+            </Frame>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Text="📷 Tải ảnh lên" Style="{StaticResource OutlineButton}" Clicked="OnTaiAnhClicked" />
+                <Button Grid.Column="1" Text="Bỏ ảnh" Style="{StaticResource OutlineButton}" Clicked="OnBoAnhClicked" />
+            </Grid>
+
+            <Label Text="Biểu tượng món (emoji, dùng khi chưa có ảnh)" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryHinhAnh" Placeholder="🍛" MaxLength="4" />
+
+            <Label Text="Tên món *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryTenMon" Placeholder="VD: Cơm tấm sườn bì chả" />
+
+            <Label Text="Mô tả món" FontSize="13" FontAttributes="Bold" />
+            <Editor x:Name="EditorMoTa" HeightRequest="80" BackgroundColor="White" MaxLength="500"
+                    Placeholder="Thành phần, khẩu phần, điểm đặc biệt…" />
+
+            <Label Text="Danh mục *" FontSize="13" FontAttributes="Bold" />
+            <Picker x:Name="PickerDanhMuc" Title="Chọn danh mục" />
+
+            <Label Text="Giá bán (đ) *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryGia" Placeholder="VD: 45000" Keyboard="Numeric" />
+
+            <Label Text="Giá vốn / phần (đ) — dùng tính lợi nhuận" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryGiaVon" Placeholder="VD: 25000 (bỏ trống nếu chưa biết)" Keyboard="Numeric" />
+
+            <Label Text="Tình trạng món" FontSize="13" FontAttributes="Bold" />
+            <Picker x:Name="PickerTinhTrang" Title="Chọn tình trạng" />
+            <Label Text="Hết hàng: tạm hết nguyên liệu. Tạm ngừng bán: quán chủ động ngưng món. Cả hai đều ẩn món khỏi thực đơn của khách."
+                   FontSize="11" TextColor="{StaticResource TextGrey}" />
+
+            <Label Text="Tùy chọn món" Style="{StaticResource TitleLabel}" FontSize="15" Margin="0,8,0,0" />
+            <Label Text="Mỗi dòng một lựa chọn, dạng  Tên:phụ phí  (không có phụ phí thì chỉ ghi tên)." FontSize="11" TextColor="{StaticResource TextGrey}" />
+
+            <Label Text="Size" FontSize="13" FontAttributes="Bold" />
+            <Editor x:Name="EditorSize" HeightRequest="80" BackgroundColor="White"
+                    Placeholder="M&#10;L:5000&#10;XL:10000" />
+
+            <Label Text="Topping" FontSize="13" FontAttributes="Bold" />
+            <Editor x:Name="EditorTopping" HeightRequest="80" BackgroundColor="White"
+                    Placeholder="Trân châu:5000&#10;Thạch dừa:5000" />
+
+            <Label Text="Mức cay" FontSize="13" FontAttributes="Bold" />
+            <Editor x:Name="EditorMucCay" HeightRequest="80" BackgroundColor="White"
+                    Placeholder="Không cay&#10;Cay vừa&#10;Cay nhiều" />
+
+            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                <Label Grid.Column="0" Text="Cho phép khách ghi chú riêng cho món" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" x:Name="SwitchChoGhiChu" IsToggled="True" OnColor="{StaticResource Primary}" />
+            </Grid>
+
+            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False"
+                                Color="{StaticResource Primary}" />
+
+            <Button x:Name="BtnLuu" Text="Lưu món ăn" Style="{StaticResource PrimaryButton}"
+                    Margin="0,10,0,0" Clicked="OnLuuClicked" />
+
+            <Button x:Name="BtnXoa" Text="Xóa món ăn này" IsVisible="False"
+                    BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
+                    BorderColor="{StaticResource Danger}" BorderWidth="1" CornerRadius="12" HeightRequest="46"
+                    Clicked="OnXoaClicked" />
+
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12"
+                   HorizontalOptions="Center" IsVisible="False" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

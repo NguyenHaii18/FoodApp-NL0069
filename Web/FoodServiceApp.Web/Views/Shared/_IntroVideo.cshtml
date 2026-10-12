@@ -1,0 +1,39 @@
+@* Video intro phát ở đầu mỗi phiên trình duyệt (1 lần/tab). Cấu hình ở appsettings.json -> "Intro". *@
+@inject Microsoft.Extensions.Configuration.IConfiguration Cau
+@{
+    var bat = Cau.GetValue<bool?>("Intro:Bat") ?? true;
+    var tep = Cau["Intro:Tep"] ?? "intro_3d.mp4";
+    tep = System.IO.Path.GetFileName(tep);
+    var poster = System.IO.Path.ChangeExtension(tep, ".jpg");
+}
+@if (bat)
+{
+    <div id="introVideo" style="display:none;position:fixed;inset:0;z-index:99999;background:#3C0293;align-items:center;justify-content:center;">
+        <video id="introVideoEl" src="~/video/@tep" poster="~/video/@poster" muted playsinline preload="auto"
+               style="max-width:100%;max-height:100%;height:100%;object-fit:contain;"></video>
+        <button id="introBoQua" type="button"
+                style="position:absolute;top:18px;right:18px;padding:8px 18px;border:0;border-radius:999px;background:rgba(255,255,255,.9);color:#3C0293;font-weight:600;cursor:pointer;">Bỏ qua ▶</button>
+    </div>
+    <script>
+    (function () {
+        var box = document.getElementById('introVideo'), v = document.getElementById('introVideoEl');
+        var daXem = false;
+        try { daXem = sessionStorage.getItem('introDaXem') === '1'; } catch (e) { }
+        if (daXem) { box.remove(); return; }
+        var xong = false;
+        function dong() {
+            if (xong) return; xong = true;
+            try { sessionStorage.setItem('introDaXem', '1'); } catch (e) { }
+            box.style.transition = 'opacity .4s'; box.style.opacity = '0';
+            setTimeout(function () { box.remove(); document.documentElement.style.overflow = ''; }, 400);
+        }
+        box.style.display = 'flex'; document.documentElement.style.overflow = 'hidden';
+        document.getElementById('introBoQua').addEventListener('click', dong);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') dong(); });
+        v.addEventListener('ended', dong);
+        v.addEventListener('error', dong);                       // lỗi tải video -> vào thẳng trang
+        setTimeout(dong, 15000);                                  // chốt chặn: tối đa 15 giây
+        var p = v.play(); if (p && p.catch) p.catch(dong);
+    })();
+    </script>
+}

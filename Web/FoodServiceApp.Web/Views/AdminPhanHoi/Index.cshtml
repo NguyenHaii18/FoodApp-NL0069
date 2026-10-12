@@ -1,0 +1,86 @@
+@model List<PhanHoi>
+@{
+    ViewData["Title"] = "Phản hồi khách hàng";
+    Layout = "_AdminLayout";
+    var dangLoc = (string)ViewBag.TrangThaiDangLoc;
+    var nv = (Dictionary<int, string>)ViewBag.NhanVien;
+    bool laQuanLy = ViewBag.LaQuanLy;
+    double? tb = ViewBag.TrungBinhGio;
+}
+
+<div class="topbar">
+    <h2>Phản hồi của khách hàng</h2>
+    <span class="text-muted">Chưa xử lý: <strong>@ViewBag.SoChuaXuLy</strong>@if (tb != null) { <text> · TB giải quyết: <strong>@tb.Value.ToString("0.#") giờ</strong></text> }</span>
+</div>
+
+<div class="order-tabs">
+    <a asp-action="Index" class="@(dangLoc == "" ? "active" : "")">Tất cả</a>
+    <a asp-action="Index" asp-route-trangThai="ChuaXuLy" class="@(dangLoc == "ChuaXuLy" ? "active" : "")">Chưa xử lý</a>
+    <a asp-action="Index" asp-route-trangThai="DaXuLy" class="@(dangLoc == "DaXuLy" ? "active" : "")">Đã xử lý</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Không có phản hồi nào.</div></div>
+}
+else
+{
+    @foreach (var ph in Model)
+    {
+        <div class="card" style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+                <div>
+                    <strong>#@ph.MaPhanHoi — @ph.TieuDe</strong>
+                    <div class="text-muted" style="font-size:12.5px;">
+                        @ph.KhachHang?.HoTen (@ph.KhachHang?.SDT)
+                        · @(ph.Loai == "KhieuNai" ? "Khiếu nại" : ph.Loai == "GopY" ? "Góp ý" : "Khác")
+                        @if (ph.MaDonHang != null) { <text> · Đơn #@ph.MaDonHang</text> }
+                        · @ph.NgayGui.ToString("HH:mm dd/MM/yyyy")
+                    </div>
+                </div>
+                @if (ph.TrangThai == "DaXuLy") { <span class="badge badge-success">Đã xử lý</span> }
+                else { <span class="badge badge-warning">Chưa xử lý</span> }
+            </div>
+            <p style="margin:10px 0;">@ph.NoiDung</p>
+            <div class="text-muted" style="font-size:12.5px; margin-bottom:8px;">
+                Phân loại: <b>@(ph.PhanLoai ?? "chưa phân loại")</b> · Phụ trách: <b>@(ph.MaTKPhuTrach != null && nv.TryGetValue(ph.MaTKPhuTrach.Value, out var tenNv) ? tenNv : "chưa phân công")</b>
+                @if (ph.TrangThai == "ChuaXuLy") { <text> · Chờ @((DateTime.Now - ph.NgayGui).TotalHours.ToString("0.#")) giờ</text> }
+                @if (ph.NgayXuLy != null) { <text> · Giải quyết sau @((ph.NgayXuLy.Value - ph.NgayGui).TotalHours.ToString("0.#")) giờ</text> }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(ph.YeuCauBoSung)) { <div class="feedback-reply" style="border-left-color:var(--accent);"><b>Đã yêu cầu khách bổ sung:</b> @ph.YeuCauBoSung</div> }
+
+            @if (ph.TrangThai == "DaXuLy")
+            {
+                <div class="feedback-reply"><strong>Đã trả lời (@ph.NgayXuLy?.ToString("HH:mm dd/MM/yyyy")):</strong> @ph.TraLoi</div>
+            }
+            else
+            {
+                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <form asp-action="PhanLoai" asp-route-id="@ph.MaPhanHoi" method="post" style="display:flex; gap:4px;">@Html.AntiForgeryToken()
+                        <select name="phanLoai" class="form-control" style="width:140px;"><option>DonHang</option><option>MonAn</option><option>TaiXe</option><option>GianHang</option><option>ThanhToan</option><option>Khac</option></select>
+                        <button class="btn btn-outline btn-sm">Phân loại</button></form>
+                    @if (laQuanLy)
+                    {
+                        <form asp-action="PhanCong" asp-route-id="@ph.MaPhanHoi" method="post" style="display:flex; gap:4px;">@Html.AntiForgeryToken()
+                            <select name="maTK" class="form-control" style="width:160px;">@foreach (var n in nv) { <option value="@n.Key">@n.Value</option> }</select>
+                            <button class="btn btn-outline btn-sm">Phân công</button></form>
+                    }
+                    <form asp-action="BoSung" asp-route-id="@ph.MaPhanHoi" method="post" style="display:flex; gap:4px;">@Html.AntiForgeryToken()
+                        <input name="yeuCau" class="form-control" style="width:220px;" placeholder="Yêu cầu khách bổ sung ảnh/thông tin..." />
+                        <button class="btn btn-outline btn-sm">Yêu cầu bổ sung</button></form>
+                    @if (laQuanLy && ph.MaDonHang != null)
+                    {
+                        <form asp-action="ChuyenHoanTien" asp-route-id="@ph.MaPhanHoi" method="post" style="display:flex; gap:4px;">@Html.AntiForgeryToken()
+                            <input name="soTien" type="number" min="0" class="form-control" style="width:120px;" placeholder="Số tiền (đ)" />
+                            <button class="btn btn-outline btn-sm">Chuyển hoàn tiền</button></form>
+                    }
+                </div>
+                <form asp-action="XuLy" asp-route-id="@ph.MaPhanHoi" method="post">
+                    @Html.AntiForgeryToken()
+                    <textarea name="traLoi" class="form-control" placeholder="Nhập nội dung trả lời khách hàng..." required></textarea>
+                    <button type="submit" class="btn btn-primary" style="margin-top:8px;">Trả lời & đánh dấu đã xử lý</button>
+                </form>
+            }
+        </div>
+    }
+}

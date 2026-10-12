@@ -1,0 +1,95 @@
+@model PhanHoiFormViewModel
+@{
+    ViewData["Title"] = "Phản hồi";
+    Layout = "_CustomerLayout";
+    var danhSach = (List<PhanHoi>)ViewBag.DanhSach;
+    var donCuaToi = (List<DonHang>)ViewBag.DonHangCuaToi;
+}
+
+<div class="topbar">
+    <h2>💬 Gửi phản hồi</h2>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h3 style="margin-top:0;">Phản hồi mới</h3>
+        <form asp-action="Gui" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+            <div class="form-group">
+                <label asp-for="Loai">Loại phản hồi</label>
+                <select asp-for="Loai" class="form-control">
+                    <option value="GopY">Góp ý về ứng dụng / dịch vụ</option>
+                    <option value="KhieuNai">Khiếu nại (đơn hàng, gian hàng, tài xế)</option>
+                    <option value="Khac">Khác</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MaDonHang">Liên quan đến đơn hàng (không bắt buộc)</label>
+                <select asp-for="MaDonHang" class="form-control">
+                    <option value="">— Không gắn với đơn nào —</option>
+                    @foreach (var d in donCuaToi)
+                    {
+                        <option value="@d.MaDonHang">#@d.MaDonHang — @d.GianHang?.TenCuaHang — @d.NgayDat.ToString("dd/MM/yyyy")</option>
+                    }
+                </select>
+                <span asp-validation-for="MaDonHang" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TieuDe">Tiêu đề</label>
+                <input asp-for="TieuDe" class="form-control" />
+                <span asp-validation-for="TieuDe" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NoiDung">Nội dung</label>
+                <textarea asp-for="NoiDung" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="NoiDung" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Phản hồi đã gửi</h3>
+        @if (!danhSach.Any())
+        {
+            <div class="empty-state">Bạn chưa gửi phản hồi nào.</div>
+        }
+        else
+        {
+            @foreach (var ph in danhSach)
+            {
+                <div class="feedback-item">
+                    <div style="display:flex; justify-content:space-between; gap:8px;">
+                        <strong>@ph.TieuDe</strong>
+                        @if (ph.TrangThai == "DaXuLy") { <span class="badge badge-success">Đã trả lời</span> }
+                        else { <span class="badge badge-warning">Đang chờ xử lý</span> }
+                    </div>
+                    <div class="text-muted" style="font-size:12px;">
+                        @(ph.Loai == "KhieuNai" ? "Khiếu nại" : ph.Loai == "GopY" ? "Góp ý" : "Khác")
+                        @if (ph.MaDonHang != null) { <text> · Đơn #@ph.MaDonHang</text> }
+                        · @ph.NgayGui.ToString("HH:mm dd/MM/yyyy")
+                    </div>
+                    <div style="font-size:13.5px; margin-top:6px;">@ph.NoiDung</div>
+                    @if (!string.IsNullOrEmpty(ph.TraLoi))
+                    {
+                        <div class="feedback-reply"><strong>Quản trị viên trả lời:</strong> @ph.TraLoi</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(ph.YeuCauBoSung))
+                    {
+                        <div class="feedback-reply" style="border-left-color:var(--accent);"><strong>Hỗ trợ cần bạn bổ sung:</strong> @ph.YeuCauBoSung
+                            <form asp-action="BoSung" asp-route-id="@ph.MaPhanHoi" method="post" style="margin-top:6px;">@Html.AntiForgeryToken()
+                                <textarea name="noiDung" class="form-control" rows="2" placeholder="Nhập thông tin/bằng chứng bổ sung (mô tả, đường dẫn ảnh...)" required></textarea>
+                                <button class="btn btn-primary btn-sm" style="margin-top:4px;">Gửi bổ sung</button></form>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>

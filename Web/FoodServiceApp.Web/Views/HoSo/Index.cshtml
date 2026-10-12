@@ -1,0 +1,85 @@
+@model HoSoViewModel
+@{ ViewData["Title"] = "Hồ sơ cửa hàng"; }
+
+<div class="topbar">
+    <h2>Hồ sơ cửa hàng</h2>
+</div>
+
+<div class="card" style="max-width:520px;">
+    <form asp-action="Index" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="form-group">
+            <label>Ảnh cửa hàng</label>
+            @if (!string.IsNullOrEmpty(Model.HinhAnhHienTai))
+            {
+                <div class="mb-2"><img src="@Model.HinhAnhHienTai" style="width:80px;height:80px;border-radius:10px;object-fit:cover;" /></div>
+            }
+            <input asp-for="AnhMoi" type="file" accept=".jpg,.jpeg,.png,.webp" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TenCuaHang">Tên cửa hàng</label>
+            <input asp-for="TenCuaHang" class="form-control" />
+            <span asp-validation-for="TenCuaHang" class="field-validation-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="DiaChi">Địa chỉ</label>
+            <input asp-for="DiaChi" class="form-control" />
+            <span asp-validation-for="DiaChi" class="field-validation-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="SDT">Số điện thoại</label>
+            <input asp-for="SDT" class="form-control" />
+            <span asp-validation-for="SDT" class="field-validation-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MoTa">Mô tả cửa hàng</label>
+            <textarea asp-for="MoTa" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Email">Email liên hệ (dùng để nhận OTP)</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+
+        <p class="text-muted" style="font-size:13px; margin-top:16px;">Giờ hoạt động (00:00 – 23:59 = cả ngày; hỗ trợ ca qua đêm, vd 18:00 → 02:00)</p>
+        <div style="display:flex; gap:12px;">
+            <div class="form-group" style="flex:1;"><label asp-for="GioMoCua">Giờ mở cửa</label><input asp-for="GioMoCua" type="time" class="form-control" /></div>
+            <div class="form-group" style="flex:1;"><label asp-for="GioDongCua">Giờ đóng cửa</label><input asp-for="GioDongCua" type="time" class="form-control" /></div>
+        </div>
+        <div class="form-group"><label><input asp-for="DangNhanDon" type="checkbox" /> Đang nhận đơn (bỏ chọn = tạm dừng nhận đơn nhưng vẫn mở cửa)</label></div>
+
+        <p class="text-muted" style="font-size:13px; margin-top:16px;">Giấy tờ kinh doanh (ảnh hoặc PDF)</p>
+        <div class="form-group">
+            <label>Giấy phép kinh doanh</label>
+            @if (!string.IsNullOrEmpty(Model.GiayPhepHienTai)) { <div><a href="@Model.GiayPhepHienTai" target="_blank">Xem tệp hiện tại</a></div> }
+            <input asp-for="GiayPhepMoi" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Giấy chứng nhận An toàn thực phẩm</label>
+            @if (!string.IsNullOrEmpty(Model.GiayAttpHienTai)) { <div><a href="@Model.GiayAttpHienTai" target="_blank">Xem tệp hiện tại</a></div> }
+            <input asp-for="GiayAttpMoi" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-control" />
+        </div>
+
+        <hr style="border-color:var(--border); margin:20px 0;" />
+        <p class="text-muted" style="font-size:13px;">Đổi mật khẩu (bỏ trống nếu không muốn đổi)</p>
+
+        <div class="form-group">
+            <label asp-for="MatKhauMoi">Mật khẩu mới</label>
+            <input asp-for="MatKhauMoi" type="password" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="XacNhanMatKhauMoi">Xác nhận mật khẩu mới</label>
+            <input asp-for="XacNhanMatKhauMoi" type="password" class="form-control" />
+            <span asp-validation-for="XacNhanMatKhauMoi" class="field-validation-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    </form>
+</div>

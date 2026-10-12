@@ -1,0 +1,44 @@
+@model List<YeuCauHoanTien>
+@{
+    ViewData["Title"] = "Hoàn tiền";
+    Layout = "_AdminLayout";
+    var don = (Dictionary<int, DonHang>)ViewBag.Don;
+    decimal nguong = ViewBag.Nguong; string cap = ViewBag.CapQuyen; bool coQuyen = ViewBag.CoQuyenHoan;
+}
+<div class="topbar"><h2>💸 Yêu cầu hoàn tiền</h2><a asp-action="Index" class="btn btn-outline">← Giao dịch</a></div>
+<div class="card mb-3" style="font-size:13px;"><b>Chính sách:</b> @ViewBag.ChinhSach<br /><b>Phân quyền duyệt:</b> Admin tổng duyệt mọi mức; người được cấp quyền "Duyệt hoàn tiền" duyệt tới @nguong.ToString("N0")đ; còn lại chỉ tiếp nhận. VNPay: hệ thống gọi API hoàn tiền của cổng; cổng khác: hoàn trên cổng rồi nhập mã. Bạn đang là <b>@cap</b>.</div>
+<div class="card mb-3">
+    <h3 style="margin-top:0;">Tiếp nhận yêu cầu mới</h3>
+    <form asp-action="TaoHoanTien" method="post" style="display:flex; gap:8px; flex-wrap:wrap;">
+        @Html.AntiForgeryToken()
+        <input name="maDonHang" type="number" class="form-control" style="width:120px;" placeholder="Mã đơn" required />
+        <input name="soTien" type="number" class="form-control" style="width:150px;" placeholder="Số tiền (để trống = cả đơn)" />
+        <input name="lyDo" class="form-control" style="flex:1; min-width:220px;" placeholder="Lý do (bắt buộc)" required />
+        <button class="btn btn-primary">Tạo yêu cầu</button>
+    </form>
+</div>
+<div class="order-tabs"><a asp-action="HoanTien">Tất cả</a><a asp-action="HoanTien" asp-route-trangThai="ChoDuyet">Chờ duyệt</a><a asp-action="HoanTien" asp-route-trangThai="DaDuyet">Đã duyệt</a><a asp-action="HoanTien" asp-route-trangThai="TuChoi">Từ chối</a></div>
+<div class="card">
+    <table class="data-table">
+        <thead><tr><th>#</th><th>Đơn</th><th>Nguồn</th><th>Số tiền</th><th>Lý do</th><th>Trạng thái</th><th>Xử lý</th></tr></thead>
+        <tbody>
+        @foreach (var y in Model)
+        {
+            <tr>
+                <td>@y.MaYeuCau<div class="text-muted" style="font-size:11px;">@y.NgayTao.ToString("dd/MM HH:mm")</div></td>
+                <td><a asp-controller="AdminDonHang" asp-action="ChiTiet" asp-route-id="@y.MaDonHang">#@y.MaDonHang</a><div class="text-muted" style="font-size:11px;">@(don.TryGetValue(y.MaDonHang, out var d) ? d.ThanhToan?.HinhThuc + " · " + d.ThanhToan?.TrangThai : "")</div></td>
+                <td>@y.Nguon</td><td>@y.SoTien.ToString("N0")đ</td><td>@y.LyDo</td>
+                <td>@y.TrangThai@if (!string.IsNullOrEmpty(y.KetQua)) { <div class="text-muted" style="font-size:12px;">@y.KetQua</div> }</td>
+                <td>
+                @if (y.TrangThai == "ChoDuyet" && coQuyen)
+                {
+                    <form asp-action="Duyet" asp-route-id="@y.MaYeuCau" method="post" style="display:flex; gap:4px;">@Html.AntiForgeryToken()<input name="ketQua" class="form-control" placeholder="Ghi chú kết quả" /><input name="maHoanThuCong" class="form-control" placeholder="Mã hoàn thủ công (nếu có)" /><button class="btn btn-primary btn-sm" onclick="return confirm('Duyệt và gửi lệnh hoàn tiền qua cổng thanh toán?');">Duyệt & hoàn</button></form>
+                    <form asp-action="TuChoi" asp-route-id="@y.MaYeuCau" method="post" style="display:flex; gap:4px; margin-top:4px;">@Html.AntiForgeryToken()<input name="ketQua" class="form-control" placeholder="Lý do từ chối" required /><button class="btn btn-danger btn-sm">Từ chối</button></form>
+                }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any()) { <div class="empty-state">Chưa có yêu cầu nào.</div> }
+</div>

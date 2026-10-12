@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Báo cáo & thống kê";
+    Layout = "_AdminLayout";
+    var quan = (List<FoodServiceApp.Web.Controllers.AdminBaoCaoController.DongQuan>)ViewBag.Quan;
+    var tx = (List<FoodServiceApp.Web.Controllers.AdminBaoCaoController.DongTaiXe>)ViewBag.TaiXe;
+    var km = (List<FoodServiceApp.Web.Controllers.AdminBaoCaoController.DongKm>)ViewBag.KhuyenMai;
+    var gd = (List<(string HinhThuc, string TrangThai, int So, decimal Tien)>)ViewBag.GiaoDich;
+    string tu = ViewBag.Tu, den = ViewBag.Den;
+}
+<div class="topbar"><h2>📑 Báo cáo & thống kê</h2><a asp-controller="AdminThongKe" asp-action="Index" class="btn btn-outline">Biểu đồ doanh thu</a></div>
+<form method="get" class="card mb-3" style="display:flex; gap:8px; align-items:end;">
+    <div><label>Từ ngày</label><input type="date" name="tu" value="@tu" class="form-control" /></div>
+    <div><label>Đến ngày</label><input type="date" name="den" value="@den" class="form-control" /></div>
+    <button class="btn btn-primary">Xem</button></form>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Đơn hàng <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="tong-don" asp-route-tu="@tu" asp-route-den="@den">CSV</a> <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="doanh-thu-ngay" asp-route-tu="@tu" asp-route-den="@den">CSV doanh thu theo ngày</a></h3>
+    Tổng đơn <b>@ViewBag.TongDon</b> · hoàn thành <b>@ViewBag.HoanThanh</b> · hủy <b>@ViewBag.Huy</b> · giao thất bại <b>@ViewBag.ThatBai</b> · doanh thu (đơn hoàn thành) <b>@(((decimal)ViewBag.DoanhThu).ToString("N0"))đ</b></div>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Doanh thu, phí nền tảng, tiền thực nhận theo gian hàng <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="gian-hang" asp-route-tu="@tu" asp-route-den="@den">CSV</a></h3>
+    <table class="data-table"><thead><tr><th>Gian hàng</th><th>Đơn</th><th>Tiền hàng</th><th>Phí nền tảng</th><th>Thực nhận</th></tr></thead><tbody>
+    @foreach (var q in quan) { <tr><td>@q.Quan</td><td>@q.SoDon</td><td>@q.TienHang.ToString("N0")đ</td><td>@q.PhiNenTang.ToString("N0")đ</td><td>@q.ThucNhan.ToString("N0")đ</td></tr> }
+    </tbody></table>@if (!quan.Any()) { <div class="empty-state">Không có dữ liệu.</div> }
+    <p class="text-muted" style="font-size:12px;">Tiền hàng = tổng đơn − phí giao (đã trừ giảm giá). Phí nền tảng = tiền hàng × tỷ lệ chiết khấu của gian hàng.</p></div>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Thu nhập tài xế <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="tai-xe" asp-route-tu="@tu" asp-route-den="@den">CSV</a></h3>
+    <table class="data-table"><thead><tr><th>Tài xế</th><th>Đơn giao</th><th>Thu nhập (phí giao)</th></tr></thead><tbody>
+    @foreach (var t in tx) { <tr><td>@t.TaiXe</td><td>@t.SoDon</td><td>@t.ThuNhap.ToString("N0")đ</td></tr> }</tbody></table>@if (!tx.Any()) { <div class="empty-state">Không có dữ liệu.</div> }</div>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Giao dịch thanh toán <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="giao-dich" asp-route-tu="@tu" asp-route-den="@den">CSV</a></h3>
+    <table class="data-table"><thead><tr><th>Hình thức</th><th>Trạng thái</th><th>Số GD</th><th>Giá trị</th></tr></thead><tbody>
+    @foreach (var g in gd) { <tr><td>@g.HinhThuc</td><td>@g.TrangThai</td><td>@g.So</td><td>@g.Tien.ToString("N0")đ</td></tr> }</tbody></table></div>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Hoàn tiền <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="hoan-tien" asp-route-tu="@tu" asp-route-den="@den">CSV</a></h3>
+    @ViewBag.HoanSo yêu cầu · chờ duyệt @ViewBag.HoanCho · đã hoàn <b>@(((decimal)ViewBag.HoanDuyet).ToString("N0"))đ</b></div>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Voucher & khuyến mãi <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="khuyen-mai" asp-route-tu="@tu" asp-route-den="@den">CSV</a></h3>
+    <table class="data-table"><thead><tr><th>Mã</th><th>Chương trình</th><th>Lượt dùng</th><th>Chi phí giảm</th><th>Số khách</th></tr></thead><tbody>
+    @foreach (var k in km) { <tr><td><b>@k.Ma</b></td><td>@k.Ten</td><td>@k.Luot</td><td>@k.TongGiam.ToString("N0")đ</td><td>@k.SoKhach @if (k.Luot >= 5 && k.SoKhach * 3 <= k.Luot) { <span class="badge badge-danger">Nghi lạm dụng</span> }</td></tr> }</tbody></table>
+    @if (!km.Any()) { <div class="empty-state">Không có lượt dùng mã trong kỳ.</div> }
+    <p class="text-muted" style="font-size:12px;">"Nghi lạm dụng": một khách dùng cùng mã trung bình từ 3 lần trở lên.</p></div>
+
+<div class="card mb-3"><h3 style="margin-top:0;">Đánh giá & khiếu nại <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="danh-gia" asp-route-tu="@tu" asp-route-den="@den">CSV đánh giá</a> <a class="btn btn-outline btn-sm" asp-action="Xuat" asp-route-loai="khieu-nai" asp-route-tu="@tu" asp-route-den="@den">CSV khiếu nại</a></h3>
+    Đánh giá: <b>@ViewBag.DgSo</b> (TB @(((double)ViewBag.DgTB).ToString("0.0"))⭐, đã ẩn @ViewBag.DgAn) · Phản hồi: <b>@ViewBag.PhSo</b> (khiếu nại @ViewBag.PhKhieuNai, chờ xử lý @ViewBag.PhCho) · thời gian giải quyết TB: <b>@(((double)ViewBag.PhGioTB).ToString("0.0")) giờ</b></div>

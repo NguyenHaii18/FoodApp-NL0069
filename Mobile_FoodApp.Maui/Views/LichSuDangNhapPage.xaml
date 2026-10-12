@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.LichSuDangNhapPage"
+             Title="Lịch sử đăng nhập">
+    <VerticalStackLayout Padding="16,12" Spacing="8">
+        <Label Text="Các lần đăng nhập gần đây vào tài khoản của bạn (kể cả lần thất bại). Nếu thấy lần lạ, hãy đổi mật khẩu ngay."
+               FontSize="12.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+        <CollectionView x:Name="DsLichSu" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="Chưa có lịch sử đăng nhập." FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" HorizontalOptions="Center" Margin="0,40,0,0" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:NhatKyThaoTac">
+                    <Frame Style="{StaticResource CardFrame}" Padding="14,10" Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="{Binding BieuTuong}" FontSize="22" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                <Label Text="{Binding HanhDong}" FontAttributes="Bold" FontSize="13.5" />
+                                <Label Text="{Binding ThoiGianHienThi}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                <Label Text="{Binding ChiTiet}" FontSize="11.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

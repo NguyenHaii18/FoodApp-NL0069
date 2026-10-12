@@ -1,0 +1,402 @@
+/* =========================================================================
+   FoodServiceApp — Design System (lấy cảm hứng giao diện Shopee)
+   Tím sáng #8B5CF6 làm chủ đạo, nền xám nhạt, card bo góc nhỏ, phẳng, rõ ràng.
+   ========================================================================= */
+:root {
+  --primary: #8B5CF6;
+  --primary-dark: #6D28D9;
+  --primary-light: #F3E8FF;
+  --accent: #A855F7;
+  --bg: #F5F5F5;
+  --card: #FFFFFF;
+  --text-dark: #222222;
+  --text-grey: #757575;
+  --text-light-grey: #9B9B9B;
+  --danger: #D0011B;
+  --success: #26AA99;
+  --warning: #F4A80D;
+  --star: #FFCE3D;
+  --border: #EFEFEF;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06);
+  --shadow-hover: 0 4px 16px rgba(0,0,0,.10);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-dark);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .brand-font { font-family: 'Be Vietnam Pro', sans-serif; }
+
+a { color: var(--primary); text-decoration: none; }
+
+::-webkit-scrollbar { height: 6px; width: 6px; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 999px; }
+
+/* ---------- Layout: sidebar + content (Gian hàng / Quản trị / Tài xế) ---------- */
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 240px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 20px 14px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding: 0 6px; }
+.sidebar-brand .logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.sidebar-brand h1 { font-size: 14px; font-weight: 700; margin: 0; }
+.sidebar-brand p { font-size: 11px; color: var(--text-grey); margin: 0; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-lg); margin-bottom: 4px;
+  color: var(--text-dark); font-size: 14px; font-weight: 500;
+}
+.nav-item:hover { background: var(--primary-light); color: var(--primary); }
+.nav-item.active { background: var(--primary); color: #fff; }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+.main-content { flex: 1; padding: 26px 32px; max-width: 1200px; }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 10px; }
+.topbar h2 { margin: 0; font-size: 20px; }
+
+/* ---------- Card ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.stat-card .label { font-size: 12px; opacity: .9; }
+.stat-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+
+.quick-nav-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px; cursor: pointer; transition: box-shadow .15s, transform .15s;
+}
+.quick-nav-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.quick-nav-card .emoji { font-size: 22px; }
+.quick-nav-card .title { font-weight: 700; font-size: 14px; margin-top: 4px; }
+.quick-nav-card .sub { font-size: 12px; color: var(--text-grey); }
+
+/* ---------- Table ---------- */
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.data-table th {
+  text-align: left; padding: 10px 12px; color: var(--text-grey);
+  font-weight: 600; font-size: 12px; text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+table.data-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #FAFAFA; }
+
+/* ---------- Badge trạng thái ---------- */
+.badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge-warning { background: #FEF2E0; color: var(--warning); }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-success { background: #E4F6F3; color: var(--success); }
+.badge-danger { background: #FBE4E4; color: var(--danger); }
+.badge-grey { background: #F0F0F0; color: var(--text-grey); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 18px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600;
+  border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); color: #fff; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #9333EA; color: #fff; }
+.btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text-dark); }
+.btn-outline:hover { background: var(--bg); color: var(--text-dark); }
+.btn-outline-danger { background: #fff; border: 1px solid var(--danger); color: var(--danger); }
+.btn-outline-danger:hover { background: #FBE4E4; }
+.btn-danger { background: #fff; border: 1px solid var(--danger); color: var(--danger); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12.5px; }
+.btn-full { width: 100%; }
+
+/* ---------- Forms ---------- */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.form-control {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 14px; font-family: 'Inter', sans-serif; background: #fff;
+}
+.form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+textarea.form-control { resize: vertical; min-height: 80px; }
+.validation-summary-errors { color: var(--danger); font-size: 13px; margin-bottom: 14px; }
+.field-validation-error { color: var(--danger); font-size: 12px; }
+
+/* ---------- Toggle switch ---------- */
+.toggle-wrap { display: flex; align-items: center; gap: 8px; }
+.toggle-switch { position: relative; width: 42px; height: 24px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 999px; transition: .2s;
+}
+.toggle-slider:before {
+  content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background: white; border-radius: 50%; transition: .2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--success); }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+/* ---------- Login page (dùng chung 4 vai trò) ---------- */
+.login-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(120deg, #C4B5FD 0%, #8B5CF6 45%, #6D28D9 100%);
+}
+.login-card { width: 380px; background: #fff; border-radius: var(--radius-lg); padding: 32px; box-shadow: 0 20px 50px -15px rgba(0,0,0,.35); }
+.login-card .logo {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display:flex; align-items:center; justify-content:center; font-size:22px; margin: 0 auto 14px;
+}
+.login-card h2 { text-align: center; margin: 0 0 4px; font-size: 18px; }
+.login-card p.sub { text-align: center; color: var(--text-grey); font-size: 13px; margin: 0 0 24px; }
+
+.text-muted { color: var(--text-grey); }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-grey); }
+.mt-2 { margin-top: 8px; } .mt-3 { margin-top: 16px; } .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 16px; }
+
+.alert-success { background:#E4F6F3; border:1px solid var(--success); color:#1B7A6E; border-radius:var(--radius-lg); padding:12px 16px; }
+.alert-danger { background:#FBE4E4; border:1px solid var(--danger); color:var(--danger); border-radius:var(--radius-lg); padding:12px 16px; }
+
+/* =========================================================================
+   Khu vực Khách hàng (storefront) — phong cách Shopee
+   ========================================================================= */
+
+/* Header cam có thanh tìm kiếm */
+.shopee-header {
+  background: linear-gradient(90deg, #A855F7, #8B5CF6);
+  padding: 14px 28px 40px;
+  position: sticky; top: 0; z-index: 20;
+}
+.shopee-header-row { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; gap: 28px; }
+.shopee-logo { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 800; font-size: 21px; flex-shrink: 0; }
+.shopee-logo .logo-icon { font-size: 26px; }
+.shopee-search { flex: 1; display: flex; background: #fff; border-radius: 2px; overflow: hidden; }
+.shopee-search input { flex: 1; border: none; outline: none; padding: 10px 16px; font-size: 14px; font-family: 'Inter', sans-serif; }
+.shopee-search button {
+  border: none; background: var(--primary); color: #fff; padding: 0 22px; cursor: pointer;
+  font-size: 15px; display: flex; align-items: center;
+}
+.shopee-search button:hover { background: var(--primary-dark); }
+.shopee-header-actions { display: flex; align-items: center; gap: 22px; color: #fff; font-size: 13.5px; flex-shrink: 0; }
+.shopee-header-actions a, .shopee-header-actions button { color: #fff; }
+.shopee-header-actions form button { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+.shopee-cart { position: relative; font-size: 22px; }
+.shopee-cart .badge-count {
+  position: absolute; top: -8px; right: -10px; background: #fff; color: var(--primary);
+  border-radius: 999px; font-size: 10.5px; font-weight: 800; padding: 1px 5px; min-width: 16px; text-align: center;
+}
+.shopee-header-search-wrap { max-width: 1120px; margin: 6px auto 0; }
+.shopee-search-tags { display: flex; gap: 14px; margin-top: 6px; font-size: 11.5px; color: rgba(255,255,255,.85); }
+
+/* Card nổi lên khỏi header cam, giống thanh danh mục Shopee */
+.shopee-main { max-width: 1120px; margin: -26px auto 40px; padding: 0 20px; }
+
+/* Banner hero */
+.hero-banner {
+  background: linear-gradient(120deg, #C4B5FD, #8B5CF6 60%, #6D28D9);
+  border-radius: var(--radius-lg); color: #fff; padding: 26px 30px; margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  box-shadow: var(--shadow);
+}
+.hero-banner h1 { margin: 0 0 6px; font-size: 24px; }
+.hero-banner p { margin: 0; opacity: .92; font-size: 13.5px; }
+.hero-banner .hero-emoji { font-size: 54px; }
+
+/* Danh mục icon ngang, cuộn */
+.category-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 14px; }
+.category-pill {
+  flex-shrink: 0; width: 84px; text-align: center; background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 12px 6px; font-size: 11.5px; color: var(--text-dark); cursor: default;
+}
+.category-pill .ic { font-size: 24px; display: block; margin-bottom: 6px; }
+
+/* Card gian hàng (trang chủ) */
+.shop-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  overflow: hidden; display: block; text-decoration: none; color: inherit;
+  transition: box-shadow .15s, transform .15s;
+}
+.shop-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-3px); }
+.shop-card .thumb {
+  height: 118px; background: var(--bg); display: flex; align-items: center; justify-content: center;
+  font-size: 38px; position: relative; overflow: hidden;
+}
+.shop-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.shop-card .thumb .open-badge {
+  position: absolute; top: 8px; left: 8px; background: var(--success); color: #fff;
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+}
+.shop-card .body { padding: 12px; }
+.shop-card .name { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.shop-card .addr { font-size: 12px; color: var(--text-grey); margin-bottom: 6px;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.shop-card .rating { font-size: 12px; color: var(--text-grey); display: flex; align-items: center; gap: 4px; }
+.shop-card .rating .stars { color: var(--star); }
+
+/* Trang chi tiết gian hàng — cover + avatar kiểu shop Shopee */
+.shop-header-cover {
+  background: linear-gradient(120deg, #C4B5FD, #8B5CF6 60%, #6D28D9);
+  border-radius: var(--radius-lg); padding: 22px 24px; color: #fff; margin-bottom: 16px;
+  display: flex; gap: 16px; align-items: center; box-shadow: var(--shadow);
+}
+.shop-header-cover .avatar {
+  width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.6); overflow: hidden;
+}
+.shop-header-cover .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.shop-header-cover h2 { margin: 0 0 4px; font-size: 19px; }
+.shop-header-cover .meta { font-size: 12.5px; opacity: .92; }
+.shop-header-cover .rating-line { margin-top: 6px; font-size: 13px; }
+
+.category-tab-label {
+  font-size: 15px; font-weight: 700; margin: 22px 0 10px; padding-left: 10px; border-left: 3px solid var(--primary);
+}
+
+/* Card món ăn */
+.food-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  display: flex; gap: 12px; align-items: center; padding: 12px; transition: box-shadow .15s;
+}
+.food-card:hover { box-shadow: var(--shadow-hover); }
+.food-card .thumb {
+  width: 64px; height: 64px; border-radius: var(--radius); background: var(--bg); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 26px; overflow: hidden;
+}
+.food-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.food-card .info { flex: 1; min-width: 0; }
+.food-card .info .name { font-weight: 600; font-size: 13.5px; margin-bottom: 4px;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.food-card .info .price { color: var(--primary); font-weight: 700; font-size: 14px; }
+
+.qty-stepper { display: flex; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.qty-stepper button {
+  width: 26px; height: 26px; border: none; background: #fff; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.qty-stepper button:hover { background: var(--bg); }
+.qty-stepper input {
+  width: 34px; border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  text-align: center; font-size: 13px; padding: 5px 0;
+}
+
+/* Thanh giỏ hàng dính đáy */
+.sticky-cart-bar {
+  position: sticky; bottom: 14px; margin-top: 18px;
+  background: #fff; border-radius: var(--radius-lg); box-shadow: 0 -6px 24px rgba(0,0,0,.12);
+  padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid var(--border);
+}
+.sticky-cart-bar .info { font-size: 14px; font-weight: 600; }
+.sticky-cart-bar .info .amount { color: var(--primary); font-weight: 800; }
+
+/* Trang giỏ hàng kiểu Shopee */
+.cart-shop-block { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 14px; }
+.cart-shop-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 14px; display:flex; align-items:center; gap:8px; }
+.cart-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.cart-row:last-child { border-bottom: none; }
+.cart-row .cart-thumb { width: 52px; height: 52px; border-radius: var(--radius); background: var(--bg); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:22px; }
+.cart-row .cart-name { flex: 1; font-size: 13.5px; }
+.cart-row .cart-unit-price { width: 90px; font-size: 13px; color: var(--text-grey); }
+.cart-row .cart-subtotal { width: 100px; text-align: right; font-weight: 700; color: var(--primary); }
+.cart-summary-bar {
+  position: sticky; bottom: 14px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px 22px; display: flex; align-items: center; justify-content: flex-end; gap: 24px;
+  box-shadow: 0 -6px 24px rgba(0,0,0,.10);
+}
+.cart-summary-bar .total-label { font-size: 13.5px; }
+.cart-summary-bar .total-amount { font-size: 22px; font-weight: 800; color: var(--primary); }
+
+/* Checkout */
+.checkout-section { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 14px; }
+.checkout-section .section-title { font-weight: 700; font-size: 14px; margin-bottom: 12px; display:flex; align-items:center; gap:8px; }
+.checkout-item-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; }
+.payment-option { display: block; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; cursor: pointer; font-size: 13.5px; }
+.payment-option input { margin-right: 8px; }
+.payment-option.selected, .payment-option:has(input:checked) { border-color: var(--primary); background: var(--primary-light); }
+
+/* Trạng thái đơn hàng — tab kiểu Shopee "Đơn mua" */
+.order-tabs { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4px; margin-bottom: 16px; overflow-x:auto; }
+.order-tabs a { padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 600; color: var(--text-grey); white-space: nowrap; }
+.order-tabs a.active { background: var(--primary); color: #fff; }
+
+.shopee-footer { text-align: center; padding: 30px 20px; color: var(--text-light-grey); font-size: 12px; }
+
+@media (max-width: 720px) {
+  .grid-3, .grid-4, .grid-5, .grid-6 { grid-template-columns: repeat(2, 1fr); }
+  .shopee-header { padding: 12px 14px 34px; }
+  .shopee-header-row { gap: 12px; }
+  .shopee-header-actions { gap: 12px; }
+  .shopee-logo span.txt { display: none; }
+}
+
+/* Theo dõi đơn hàng: thanh tiến trình */
+.order-steps { list-style: none; display: flex; justify-content: space-between; margin: 0; padding: 0; position: relative; }
+.order-steps::before { content: ""; position: absolute; top: 15px; left: 12%; right: 12%; height: 3px; background: #E5E7EB; z-index: 0; }
+.order-steps li { flex: 1; text-align: center; position: relative; z-index: 1; }
+.order-steps .dot { display: inline-flex; width: 32px; height: 32px; border-radius: 50%; background: #E5E7EB; color: #6B7280; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.order-steps .lbl { display: block; margin-top: 6px; font-size: 12.5px; color: var(--text-grey); }
+.order-steps li.done .dot { background: var(--primary); color: #fff; }
+.order-steps li.current .dot { background: var(--primary); color: #fff; box-shadow: 0 0 0 5px var(--primary-light); }
+.order-steps li.current .lbl { color: var(--primary); font-weight: 700; }
+.driver-box { display: flex; align-items: center; gap: 14px; }
+.driver-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
+/* Chi tiết món, đánh giá món */
+.dish-hero img { width: 100%; max-height: 340px; object-fit: cover; border-radius: var(--radius); }
+.dish-hero-empty { height: 240px; display: flex; align-items: center; justify-content: center; font-size: 80px; background: var(--primary-light); border-radius: var(--radius); }
+.dish-price { font-size: 24px; font-weight: 800; color: var(--primary); margin: 4px 0 8px; }
+.review-row { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.review-row:last-child { border-bottom: none; }
+.dish-rate-row { display: grid; grid-template-columns: 1fr 190px; gap: 8px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+.dish-rate-row .dish-rate-name { grid-column: 1 / -1; font-weight: 600; }
+.dish-rate-row input.form-control { grid-column: 1 / -1; }
+
+/* Sổ địa chỉ, phản hồi */
+.address-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.address-row:last-child { border-bottom: none; }
+.feedback-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.feedback-item:last-child { border-bottom: none; }
+.feedback-reply { background: var(--primary-light); border-radius: var(--radius); padding: 10px 12px; font-size: 13.5px; margin-top: 8px; }
+.text-danger { color: var(--danger); font-size: 12.5px; }

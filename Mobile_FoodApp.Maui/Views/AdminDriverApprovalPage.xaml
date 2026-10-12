@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminDriverApprovalPage"
+             Title="Duyệt tài xế">
+
+    <RefreshView x:Name="RefreshDs" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="10">
+
+                <HorizontalStackLayout x:Name="ThanhLoc" Spacing="8" />
+
+                <Label x:Name="LblRong" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" Margin="0,30,0,0" IsVisible="False" />
+
+                <CollectionView x:Name="DsTaiXe" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:TaiXe">
+                            <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                                <VerticalStackLayout Spacing="6">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <Frame Grid.Column="0" WidthRequest="46" HeightRequest="46" CornerRadius="23" Padding="0" IsClippedToBounds="True"
+                                               BackgroundColor="{StaticResource PrimarySoft}" HasShadow="False" BorderColor="Transparent">
+                                            <Grid>
+                                                <Image Source="{Binding AnhPath}" Aspect="AspectFill" IsVisible="{Binding CoAnh}" />
+                                                <Label Text="{Binding Anh}" FontSize="22" IsVisible="{Binding CoEmoji}" HorizontalOptions="Center" VerticalOptions="Center" />
+                                            </Grid>
+                                        </Frame>
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                                            <Label Text="{Binding HoTen}" FontAttributes="Bold" FontSize="15" />
+                                            <Label Text="{Binding NgayDangKy, StringFormat='Đăng ký {0:dd/MM/yyyy}'}" FontSize="11.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                        </VerticalStackLayout>
+                                        <Frame Grid.Column="2" Style="{StaticResource ChipFrame}" VerticalOptions="Start">
+                                            <Label Text="{Binding TrangThaiNhan}" FontSize="11.5" FontAttributes="Bold" TextColor="{StaticResource Primary}" />
+                                        </Frame>
+                                    </Grid>
+
+                                    <Label FontSize="12.5">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="📞 " /><Span Text="{Binding SoDienThoai}" />
+                                                <Span Text="    🪪 " /><Span Text="{Binding SoCccd}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label Text="{Binding ThongTinXe}" FontSize="12.5" />
+                                    <Label Text="{Binding SoGplx, StringFormat='Giấy phép lái xe: {0}'}" FontSize="12.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                    <Image Source="{Binding AnhGplxPath}" IsVisible="{Binding CoAnhGplx}" Aspect="AspectFit" HeightRequest="150" />
+                                    <Label Text="{Binding LyDoTuChoi, StringFormat='Lý do từ chối: {0}'}" FontSize="12" TextColor="{StaticResource Danger}" />
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,6,0,0" IsVisible="{Binding ChoDuyet}">
+                                        <Button Grid.Column="0" Text="Từ chối" HeightRequest="40" CornerRadius="10" BackgroundColor="Transparent"
+                                                TextColor="{StaticResource Danger}" BorderColor="{StaticResource Danger}" BorderWidth="1"
+                                                Clicked="OnTuChoiClicked" CommandParameter="{Binding .}" />
+                                        <Button Grid.Column="1" Text="Duyệt hồ sơ" Style="{StaticResource PrimaryButton}" HeightRequest="40" FontSize="13"
+                                                Clicked="OnDuyetClicked" CommandParameter="{Binding .}" />
+                                    </Grid>
+                                    <Button Text="{Binding NutKhoa}" Style="{StaticResource OutlineButton}" HeightRequest="38" Margin="0,6,0,0"
+                                            IsVisible="{Binding DaDuyet}" Clicked="OnKhoaClicked" CommandParameter="{Binding .}" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

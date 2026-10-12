@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.VendorOrdersPage"
+             Title="Đơn hàng của gian hàng">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Bộ lọc trạng thái -->
+        <ScrollView Grid.Row="0" Orientation="Horizontal" Padding="16,10">
+            <HorizontalStackLayout x:Name="KhungBoLoc" Spacing="8" />
+        </ScrollView>
+
+        <RefreshView Grid.Row="1" x:Name="RefreshDsDon" Refreshing="OnRefreshing">
+            <ScrollView>
+                <VerticalStackLayout Padding="16,0,16,16" Spacing="10">
+
+                    <Label x:Name="LblRong" Text="Không có đơn hàng nào ở trạng thái này."
+                           Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center"
+                           Margin="0,30,0,0" IsVisible="False" />
+
+                    <CollectionView x:Name="DsDonHang" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:DonHang">
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                                    <VerticalStackLayout Spacing="6">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="{Binding TieuDe}" FontAttributes="Bold" FontSize="14" />
+                                            <Label Grid.Column="1" Text="{Binding NhanHienThi}" FontSize="12"
+                                                   TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+                                        </Grid>
+                                        <Label FontSize="12" TextColor="{StaticResource TextGrey}" Text="{Binding NgayDat, StringFormat='🕒 {0:HH:mm dd/MM}'}" />
+                                        <Label Text="{Binding HanPhanHoiText}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Danger}"
+                                               IsVisible="{Binding CoHanPhanHoi}" />
+                                        <Label Text="{Binding TrangThaiTaiXeText}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}"
+                                               IsVisible="{Binding CoTrangThaiTaiXe}" />
+                                        <Label Text="{Binding LyDoTuChoiText}" FontSize="12" TextColor="{StaticResource Danger}"
+                                               IsVisible="{Binding CoLyDoTuChoi}" />
+
+                                        <CollectionView ItemsSource="{Binding ChiTiet}">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate x:DataType="models:MucGioHang">
+                                                    <Label FontSize="12.5">
+                                                        <Label.FormattedText>
+                                                            <FormattedString>
+                                                                <Span Text="{Binding SoLuong, StringFormat='x{0} '}" FontAttributes="Bold" />
+                                                                <Span Text="{Binding MonAn.TenMon}" />
+                                                            </FormattedString>
+                                                        </Label.FormattedText>
+                                                    </Label>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+
+                                        <Label FontSize="12" TextColor="{StaticResource TextGrey}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="🏁 Giao đến: " />
+                                                    <Span Text="{Binding DiaChiGiao}" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="Tổng tiền" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                                            <Label Grid.Column="1" Text="{Binding TongTien, StringFormat='{0:N0}đ'}" FontAttributes="Bold" FontSize="14" />
+                                        </Grid>
+
+                                        <!-- Nút hành động tuỳ theo trạng thái đơn -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
+                                              IsVisible="{Binding TrangThai, Converter={StaticResource TrangThaiToChoXacNhanConverter}}">
+                                            <Button Grid.Column="0" Text="Từ chối" Style="{StaticResource OutlineButton}"
+                                                    HeightRequest="38" Clicked="OnTuChoiClicked" CommandParameter="{Binding .}" />
+                                            <Button Grid.Column="1" Text="Xác nhận đơn" Style="{StaticResource PrimaryButton}"
+                                                    HeightRequest="38" FontSize="13" Clicked="OnXacNhanClicked" CommandParameter="{Binding .}" />
+                                        </Grid>
+
+                                        <Button Text="Đã chuẩn bị xong — bàn giao tài xế" Style="{StaticResource AccentButton}"
+                                                HeightRequest="38" FontSize="13"
+                                                IsVisible="{Binding CoTheBanGiao}"
+                                                Clicked="OnSanSangGiaoClicked" CommandParameter="{Binding .}" />
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

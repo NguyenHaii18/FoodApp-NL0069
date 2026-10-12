@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.MenuCartPage"
+             Title="Thực đơn">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header gian hàng -->
+        <Frame Grid.Row="0" BackgroundColor="{StaticResource Primary}" CornerRadius="0"
+               Padding="16,12" HasShadow="False">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Frame Grid.Column="0" WidthRequest="44" HeightRequest="44" CornerRadius="10"
+                       BackgroundColor="White" Padding="0">
+                    <Grid>
+                        <Image x:Name="ImgAnhGianHang" Aspect="AspectFill" IsVisible="False" />
+                        <Label TextColor="White" x:Name="LblIconGianHang" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                    <Label x:Name="LblTenGianHang" TextColor="White" FontAttributes="Bold" FontSize="15" />
+                    <Label x:Name="LblThongTinGianHang" TextColor="#CCFFFFFF" FontSize="12" />
+                </VerticalStackLayout>
+                <Label Grid.Column="2" x:Name="LblYeuThich" Text="♡" TextColor="White" FontSize="28" VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnYeuThichTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Grid>
+        </Frame>
+
+        <!-- Danh sách món theo danh mục -->
+        <CollectionView Grid.Row="1" x:Name="DsMonAn" Margin="16">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:MonAn">
+                    <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="50,*,Auto" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="{Binding HinhAnh}" FontSize="26"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="{Binding TenMon}" FontAttributes="Bold" FontSize="14" />
+                                <Label FontSize="13" TextColor="{StaticResource Accent}" FontAttributes="Bold">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Gia, StringFormat='{0:N0}'}" />
+                                            <Span Text="đ" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Button Grid.Column="2" Text="Thêm" Style="{StaticResource OutlineButton}"
+                                    WidthRequest="70" HeightRequest="34" FontSize="12"
+                                    Clicked="OnThemMonClicked" CommandParameter="{Binding .}" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Thanh giỏ hàng nổi phía dưới -->
+        <Button Grid.Row="2" x:Name="BtnXemGioHang" Style="{StaticResource AccentButton}"
+                Margin="16" IsVisible="False" Clicked="OnXemGioHangClicked" />
+    </Grid>
+</ContentPage>

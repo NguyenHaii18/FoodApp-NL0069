@@ -1,0 +1,93 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng";
+    var loc = (string)ViewBag.TrangThaiDangLoc;
+
+    var boLoc = new (string Key, string Nhan)[]
+    {
+        ("", "Tất cả"),
+        ("ChoXacNhan", "Chờ xác nhận"),
+        ("DaXacNhan", "Đang chuẩn bị"),
+        ("DangGiao", "Đang giao"),
+        ("DaGiao", "Hoàn thành"),
+        ("DaHuy", "Đã hủy"),
+    };
+}
+
+<div class="topbar">
+    <h2>Đơn hàng</h2>
+</div>
+
+<div class="card mb-3" style="display:flex; gap:8px; flex-wrap:wrap; padding:12px;">
+    @foreach (var (key, nhan) in boLoc)
+    {
+        <a asp-action="Index" asp-route-trangThai="@key"
+           class="btn btn-sm @(loc == key ? "btn-primary" : "btn-outline")">@nhan</a>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Không có đơn hàng nào trong mục này.</div></div>
+}
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th><th>Thời gian</th><th>Món</th><th>Địa chỉ giao</th>
+                    <th>Tổng tiền</th><th>Trạng thái</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var don in Model)
+                {
+                    <tr>
+                        <td>#@don.MaDonHang</td>
+                        <td>@don.NgayDat.ToString("HH:mm dd/MM")</td>
+                        <td>@string.Join(", ", don.ChiTiets.Select(c => $"{c.MonAn?.TenMon} x{c.SoLuong}"))</td>
+                        <td>@don.DiaChiGiaoHang</td>
+                        <td>@don.TongTien.ToString("N0")đ</td>
+                        <td>@await Html.PartialAsync("~/Views/Dashboard/_BadgeTrangThaiDonHang.cshtml", don.TrangThai)</td>
+                        <td style="white-space:nowrap;">
+                            <a asp-action="ChiTiet" asp-route-id="@don.MaDonHang" class="btn btn-outline btn-sm">Chi tiết</a>
+
+                            @if (don.TrangThai == "ChoXacNhan")
+                            {
+                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@don.MaDonHang" />
+                                    <input type="hidden" name="trangThaiMoi" value="DaXacNhan" />
+                                    <button type="submit" class="btn btn-primary btn-sm">Xác nhận</button>
+                                </form>
+                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@don.MaDonHang" />
+                                    <input type="hidden" name="trangThaiMoi" value="DaHuy" />
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Hủy đơn #@don.MaDonHang?')">Hủy</button>
+                                </form>
+                            }
+                            else if (don.TrangThai == "DaXacNhan")
+                            {
+                                <span class="text-muted" style="font-size:12px;">Đang chờ tài xế nhận đơn</span>
+                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@don.MaDonHang" />
+                                    <input type="hidden" name="trangThaiMoi" value="DaHuy" />
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Hủy đơn #@don.MaDonHang?')">Hủy</button>
+                                </form>
+                            }
+                            else if (don.TrangThai == "DangGiao")
+                            {
+                                <span class="text-muted" style="font-size:12px;">Tài xế đang giao hàng</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

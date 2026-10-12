@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.DriverRegisterPage"
+             Title="Đăng ký làm tài xế">
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,28" Spacing="12">
+
+            <Frame Style="{StaticResource CardFrame}" BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySoft}, Dark={StaticResource CardColorDark}}">
+                <Label FontSize="12.5" Text="Hồ sơ của bạn sẽ được quản trị viên xem xét. Sau khi được duyệt, bạn mới đăng nhập và nhận đơn được." />
+            </Frame>
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Thông tin cá nhân" Style="{StaticResource TitleLabel}" FontSize="15" />
+                    <Entry x:Name="EntryHoTen" Placeholder="Họ và tên" />
+                    <Entry x:Name="EntrySdt" Placeholder="Số điện thoại" Keyboard="Telephone" />
+                    <Entry x:Name="EntryCccd" Placeholder="Số CCCD / CMND (9 hoặc 12 số)" Keyboard="Numeric" MaxLength="12" />
+                    <Entry x:Name="EntryMatKhau" Placeholder="Mật khẩu (tối thiểu 6 ký tự)" IsPassword="True" />
+                    <Entry x:Name="EntryNhapLai" Placeholder="Nhập lại mật khẩu" IsPassword="True" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Phương tiện và giấy phép" Style="{StaticResource TitleLabel}" FontSize="15" />
+                    <Picker x:Name="PickerLoaiXe" Title="Loại xe" />
+                    <Entry x:Name="EntryBienSo" Placeholder="Biển số xe (VD 59A1-123.45)" />
+                    <Entry x:Name="EntryGplx" Placeholder="Số giấy phép lái xe" />
+                    <Button Text="📷 Tải ảnh giấy phép lái xe" Style="{StaticResource OutlineButton}" Clicked="OnTaiGplxClicked" />
+                    <Label x:Name="LblGplx" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" Text="Chưa chọn ảnh (không bắt buộc, giúp duyệt nhanh hơn)" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12.5" IsVisible="False" />
+            <ActivityIndicator x:Name="Dang" IsRunning="False" IsVisible="False" />
+            <Button x:Name="BtnGui" Text="Gửi hồ sơ" Style="{StaticResource PrimaryButton}" Clicked="OnGuiClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,96 @@
+@model DonHang
+@{
+    ViewData["Title"] = $"Đơn #{Model.MaDonHang}";
+    Layout = "_AdminLayout";
+    var ls = (List<LichSuTrangThaiDon>)ViewBag.LichSu;
+    var dp = (List<DieuPhoiLog>)ViewBag.DieuPhoi;
+    var ht = (List<YeuCauHoanTien>)ViewBag.HoanTien;
+    var ph = (List<PhanHoi>)ViewBag.PhanHoi;
+    var nguoi = (Dictionary<int, string>)ViewBag.NguoiTao;
+    var tamTinh = Model.ChiTiets.Sum(c => c.ThanhTien);
+}
+<div class="topbar"><h2>Đơn #@Model.MaDonHang — @Model.TrangThai</h2><a asp-action="Index" class="btn btn-outline">← Danh sách</a></div>
+<div class="grid-2">
+    <div class="card">
+        <h3 style="margin-top:0;">@Model.GianHang?.TenCuaHang</h3>
+        <p>Khách: <b>@Model.KhachHang?.HoTen</b> · @Model.KhachHang?.SDT<br />Giao đến: @Model.DiaChiGiaoHang<br />Ngày đặt: @Model.NgayDat.ToString("HH:mm dd/MM/yyyy")@if (!string.IsNullOrEmpty(Model.GhiChu)) { <text><br />Ghi chú: @Model.GhiChu</text> }</p>
+        <table class="data-table"><thead><tr><th>Món</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead><tbody>
+        @foreach (var c in Model.ChiTiets) { <tr><td>@c.MonAn?.TenMon@if (!string.IsNullOrWhiteSpace(c.TuyChon)) { <span class="text-muted"> (@c.TuyChon)</span> }</td><td>@c.SoLuong</td><td>@c.DonGia.ToString("N0")đ</td><td>@c.ThanhTien.ToString("N0")đ</td></tr> }
+        </tbody></table>
+        <div style="text-align:right; line-height:1.8; margin-top:8px;">Tạm tính: @tamTinh.ToString("N0")đ<br />Phí giao: @Model.PhiGiaoHang.ToString("N0")đ<br />@if (Model.TienGiam > 0) { <text>Giảm giá: -@Model.TienGiam.ToString("N0")đ<br /></text> }<b>Tổng: @Model.TongTien.ToString("N0")đ</b></div>
+        <p>Thanh toán: <b>@Model.ThanhToan?.HinhThuc</b> — @Model.ThanhToan?.TrangThai @if (!string.IsNullOrEmpty(Model.ThanhToan?.MaGiaoDich)) { <text>· Mã GD <code>@Model.ThanhToan!.MaGiaoDich</code></text> }</p>
+        @if (Model.GiaoHang != null && (!string.IsNullOrEmpty(Model.GiaoHang.AnhBangChung) || !string.IsNullOrEmpty(Model.GiaoHang.LyDoThatBai) || Model.GiaoHang.TienThuCOD != null))
+        {
+            <div class="card" style="background:#fafafa; margin:8px 0;"><b>Bằng chứng giao hàng</b><br />
+                @if (!string.IsNullOrEmpty(Model.GiaoHang.LyDoThatBai)) { <text>Giao thất bại: @Model.GiaoHang.LyDoThatBai · @(Model.GiaoHang.TinhPhiThatBai ? "lỗi phía khách, tài xế vẫn nhận phí giao" : "tài xế không nhận phí giao")<br /></text> }
+                @if (Model.GiaoHang.TienThuCOD != null) { <text>Tiền mặt đã thu: @Model.GiaoHang.TienThuCOD.Value.ToString("N0")đ<br /></text> }
+                @if (Model.GiaoHang.ViDoGiao != null) { <text>Vị trí lúc giao: @Model.GiaoHang.ViDoGiao, @Model.GiaoHang.KinhDoGiao<br /></text> }
+                @if (!string.IsNullOrEmpty(Model.GiaoHang.AnhBangChung)) { <a href="@Model.GiaoHang.AnhBangChung" target="_blank"><img src="@Model.GiaoHang.AnhBangChung" style="max-width:240px; border-radius:8px;" /></a> }
+            </div>
+        }
+        <p>Tài xế: @(Model.GiaoHang?.TaiXe != null ? $"{Model.GiaoHang.TaiXe.HoTen} ({Model.GiaoHang.TaiXe.SDT}) — {Model.GiaoHang.TrangThai}" : "chưa có")</p>
+        @if (!string.IsNullOrEmpty(Model.LyDoTuChoi)) { <p style="color:#b02a37;">Lý do hủy/từ chối: @Model.LyDoTuChoi</p> }
+    </div>
+    <div>
+        <div class="card mb-3">
+            <h3 style="margin-top:0;">Lịch sử chuyển trạng thái</h3>
+            @if (!ls.Any()) { <div class="empty-state">Chưa có dữ liệu (đơn tạo trước khi bật theo dõi).</div> }
+            @foreach (var l in ls) { <div style="font-size:13px; padding:4px 0; border-bottom:1px solid #eee;">@l.ThoiGian.ToString("dd/MM HH:mm:ss") — @(l.TuTrangThai ?? "(mới)") → <b>@l.DenTrangThai</b>@if (!string.IsNullOrEmpty(l.LyDo)) { <span class="text-muted"> · @l.LyDo</span> }@if (l.MaTK != null && nguoi.TryGetValue(l.MaTK.Value, out var n)) { <span class="text-muted"> · bởi @n</span> }</div> }
+        </div>
+        @if (dp.Any())
+        {
+            <div class="card mb-3"><h3 style="margin-top:0;">Lịch sử điều phối</h3>
+            @foreach (var l in dp) { <div style="font-size:13px; padding:4px 0; border-bottom:1px solid #eee;">@l.ThoiGian.ToString("dd/MM HH:mm") — @l.HanhDong (TX @(l.MaTaiXeCu?.ToString() ?? "-") → @(l.MaTaiXeMoi?.ToString() ?? "-")): @l.LyDo</div> }</div>
+        }
+        @if (ht.Any() || ph.Any())
+        {
+            <div class="card mb-3"><h3 style="margin-top:0;">Hoàn tiền & khiếu nại</h3>
+            @foreach (var y in ht) { <div style="font-size:13px;">Hoàn tiền #@y.MaYeuCau — @y.SoTien.ToString("N0")đ — <b>@y.TrangThai</b> — @y.LyDo</div> }
+            @foreach (var p in ph) { <div style="font-size:13px;">Phản hồi #@p.MaPhanHoi (@p.Loai/@p.TrangThai): @p.TieuDe</div> }
+            <a asp-controller="AdminThanhToan" asp-action="HoanTien">Đến trang hoàn tiền →</a></div>
+        }
+        @{
+            var gdtt = ViewBag.GiaoDichTT as List<GiaoDichThanhToan>;
+            var lsgh = ViewBag.LichSuGH as List<LichSuGiaoHang>;
+        }
+        @if (gdtt != null && gdtt.Count > 0)
+        {
+            <div class="card">
+                <h3 style="margin-top:0;">Sổ giao dịch thanh toán</h3>
+                <table class="table" style="font-size:13px;">
+                    <tr><th>Thời gian</th><th>Hành động</th><th>Hình thức</th><th>Trạng thái</th><th>Số tiền</th><th>Mã GD cổng</th></tr>
+                    @foreach (var g in gdtt)
+                    {
+                        <tr><td>@g.ThoiGian.ToString("dd/MM HH:mm:ss")</td><td>@g.HanhDong</td><td>@g.HinhThuc</td><td>@(g.TuTrangThai ?? "—") → @g.DenTrangThai</td><td>@g.SoTien.ToString("N0")đ</td><td>@g.MaGiaoDichCong</td></tr>
+                    }
+                </table>
+            </div>
+        }
+        @if (lsgh != null && lsgh.Count > 0)
+        {
+            <div class="card">
+                <h3 style="margin-top:0;">Lịch sử giao hàng</h3>
+                <table class="table" style="font-size:13px;">
+                    <tr><th>Thời gian</th><th>Tài xế</th><th>Bước</th><th>Vị trí</th><th>Ghi chú</th></tr>
+                    @foreach (var g in lsgh)
+                    {
+                        <tr><td>@g.ThoiGian.ToString("dd/MM HH:mm:ss")</td><td>#@g.MaTaiXe</td><td>@(g.TuTrangThai ?? "—") → @g.DenTrangThai</td><td>@(g.ViDo != null ? $"{g.ViDo:0.0000}, {g.KinhDo:0.0000}" : "")</td><td>@g.GhiChu</td></tr>
+                    }
+                </table>
+            </div>
+        }
+        @if (Model.TrangThai != "DaGiao" && Model.TrangThai != "DaHuy")
+        {
+            <div class="card" style="border:1px solid #f5c2c7;">
+                <h3 style="margin-top:0; color:#b02a37;">Can thiệp đơn: hủy đơn</h3>
+                @if (Model.TrangThai == "DangGiao" && Model.SoLanSaiMa > 0) { <form asp-action="MoKhoaMa" asp-route-id="@Model.MaDonHang" method="post" style="margin-bottom:6px;">@Html.AntiForgeryToken()<button class="btn btn-outline btn-sm">🔓 Mở khóa & đổi mã xác nhận (đã sai @Model.SoLanSaiMa lần)</button></form> }
+                <form asp-action="Huy" asp-route-id="@Model.MaDonHang" method="post" onsubmit="return confirm('Hủy đơn này?');">
+                    @Html.AntiForgeryToken()
+                    <textarea name="lyDo" class="form-control" required minlength="5" placeholder="Lý do can thiệp (bắt buộc)"></textarea>
+                    <button class="btn btn-danger" style="margin-top:8px;">Hủy đơn</button>
+                </form>
+                <p class="text-muted" style="font-size:12px;">Đơn đã thanh toán online sẽ tự tạo yêu cầu hoàn tiền chờ duyệt. Đổi tài xế: trang <a asp-controller="AdminDieuPhoi" asp-action="Index">Điều phối</a>.</p>
+            </div>
+        }
+    </div>
+</div>

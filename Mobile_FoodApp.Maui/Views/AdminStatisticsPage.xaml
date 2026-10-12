@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.AdminStatisticsPage"
+             Title="Thống kê &amp; báo cáo">
+
+    <RefreshView x:Name="RefreshThongKe" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="14">
+
+                <!-- Bộ lọc khoảng thời gian -->
+                <ScrollView Orientation="Horizontal" Margin="-16,0,-16,0" Padding="16,0">
+                    <HorizontalStackLayout x:Name="KhungBoLoc" Spacing="8" />
+                </ScrollView>
+
+                <!-- Tổng quan -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Frame Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Tổng doanh thu" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblTongDoanhThu" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource TextDark}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Đơn hoàn thành" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblTongDonHoanThanh" FontAttributes="Bold" FontSize="18" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Frame Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Giá trị đơn trung bình" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblGiaTriTrungBinh" FontAttributes="Bold" FontSize="18" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Tỉ lệ đơn bị hủy" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblTiLeHuy" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Danger}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Phí nền tảng (chi phí vận hành hệ thống) -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Frame Grid.Column="0" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="LblNhanPhi" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblPhiNenTang" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Success}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1" Style="{StaticResource CardFrame}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Thực nhận của đối tác" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                            <Label x:Name="LblThucNhanDoiTac" FontAttributes="Bold" FontSize="18" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Doanh thu theo ngày / tháng / năm -->
+                <Label Text="Doanh thu theo kỳ" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+                <HorizontalStackLayout x:Name="KhungKy" Spacing="8" />
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout x:Name="KhungDoanhThuKy" Spacing="10" />
+                </Frame>
+
+                <!-- Doanh số theo gian hàng -->
+                <Label Text="Doanh số theo gian hàng" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+                <Label x:Name="LblRongGianHang" Text="Chưa có dữ liệu doanh số trong khoảng thời gian này."
+                       Style="{StaticResource SubtitleLabel}" IsVisible="False" />
+                <Frame x:Name="FrameDoanhSoGianHang" Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout x:Name="KhungDoanhSoGianHang" Spacing="10" />
+                </Frame>
+
+                <!-- Món ăn bán chạy toàn hệ thống -->
+                <Label Text="Món ăn bán chạy toàn hệ thống" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout x:Name="KhungMonBanChay" Spacing="10" />
+                </Frame>
+
+                <!-- Hiệu quả khuyến mãi -->
+                <Label Text="Hiệu quả chương trình khuyến mãi" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout x:Name="KhungKhuyenMai" Spacing="12" />
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

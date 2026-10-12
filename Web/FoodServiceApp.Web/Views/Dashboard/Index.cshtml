@@ -1,0 +1,81 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="topbar">
+    <h2>Trang chủ</h2>
+    <form asp-controller="Dashboard" asp-action="ToggleMoCua" method="post">
+        @Html.AntiForgeryToken()
+        <div class="toggle-wrap">
+            <span style="font-size:13px; color:var(--text-grey);">
+                @(Model.GianHang.TrangThaiKinhDoanh == "DangMo" ? "Đang mở bán" : "Tạm đóng cửa")
+            </span>
+            <label class="toggle-switch">
+                <input type="checkbox" onchange="this.form.submit()" checked="@(Model.GianHang.TrangThaiKinhDoanh == "DangMo")" />
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </form>
+</div>
+
+<div class="grid-2 mb-3">
+    <div class="stat-card">
+        <div class="label">Doanh thu hôm nay</div>
+        <div class="value">@Model.DoanhThuHomNay.ToString("N0")đ</div>
+    </div>
+    <div class="stat-card" style="background: var(--accent);">
+        <div class="label">Đơn hoàn thành hôm nay</div>
+        <div class="value">@Model.SoDonHomNay</div>
+    </div>
+</div>
+
+<div class="grid-4 mb-3">
+    <a asp-controller="DonHang" asp-action="Index" class="quick-nav-card" style="text-decoration:none;">
+        <div class="emoji">📦</div>
+        <div class="title">Đơn hàng</div>
+        <div class="sub" style="color:var(--accent); font-weight:600;">@Model.SoDonChoXacNhan chờ xác nhận</div>
+    </a>
+    <a asp-controller="MonAn" asp-action="Index" class="quick-nav-card" style="text-decoration:none;">
+        <div class="emoji">🍲</div>
+        <div class="title">Thực đơn</div>
+        <div class="sub">@Model.SoMonAn món đang bán</div>
+    </a>
+    <a asp-controller="DoanhThu" asp-action="Index" class="quick-nav-card" style="text-decoration:none;">
+        <div class="emoji">📈</div>
+        <div class="title">Doanh thu</div>
+        <div class="sub">Xem báo cáo kinh doanh</div>
+    </a>
+    <a asp-controller="HoSo" asp-action="Index" class="quick-nav-card" style="text-decoration:none;">
+        <div class="emoji">🏬</div>
+        <div class="title">Hồ sơ cửa hàng</div>
+        <div class="sub">Thông tin, mô tả</div>
+    </a>
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Đơn hàng gần đây</h3>
+    @if (!Model.DonMoiNhat.Any())
+    {
+        <div class="empty-state">Chưa có đơn hàng nào.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr><th>Mã đơn</th><th>Thời gian</th><th>Tổng tiền</th><th>Trạng thái</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var don in Model.DonMoiNhat)
+                {
+                    <tr>
+                        <td>#@don.MaDonHang</td>
+                        <td>@don.NgayDat.ToString("HH:mm dd/MM")</td>
+                        <td>@don.TongTien.ToString("N0")đ</td>
+                        <td>@await Html.PartialAsync("_BadgeTrangThaiDonHang", don.TrangThai)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -1,0 +1,62 @@
+@model List<MonAn>
+@{
+    ViewData["Title"] = "Thực đơn";
+    var nhomTheoDanhMuc = Model.GroupBy(m => m.DanhMuc?.TenDanhMuc ?? "Khác");
+}
+
+<div class="topbar">
+    <h2>Thực đơn</h2>
+    <a asp-action="Create" class="btn btn-accent">+ Thêm món mới</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Chưa có món ăn nào. Bấm "Thêm món mới" để bắt đầu.</div></div>
+}
+
+@foreach (var nhom in nhomTheoDanhMuc)
+{
+    <div class="card mb-3">
+        <h3 style="margin-top:0;">@nhom.Key</h3>
+        <table class="data-table">
+            <thead><tr><th>Ảnh</th><th>Tên món</th><th>Giá</th><th>Tình trạng</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var mon in nhom)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(mon.HinhAnh))
+                            {
+                                <img src="@mon.HinhAnh" style="width:44px;height:44px;border-radius:8px;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <span style="font-size:24px;">🍲</span>
+                            }
+                        </td>
+                        <td>@mon.TenMon</td>
+                        <td>@mon.Gia.ToString("N0")đ</td>
+                        <td>
+                            @if (mon.TinhTrang == "ConHang")
+                            {
+                                <span class="badge badge-success">Còn hàng</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-grey">Hết hàng</span>
+                            }
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <a asp-action="Edit" asp-route-id="@mon.MaMonAn" class="btn btn-outline btn-sm">Sửa</a>
+                            <form asp-action="Delete" asp-route-id="@mon.MaMonAn" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Xoá món \'@mon.TenMon\'?')">Xoá</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 340" width="400" height="340">
+<rect width="400" height="340" fill="#FFF3E0"/>
+<circle cx="200.0" cy="150" r="120" fill="#FFFFFF"/>
+<ellipse cx="200" cy="150" rx="115" ry="55" fill="#E8B366"/>
+<ellipse cx="200" cy="142" rx="100" ry="42" fill="#F0C27B"/>
+<rect x="115" y="140" width="170" height="26" rx="10" fill="#8D5524"/>
+<rect x="115" y="140" width="170" height="10" rx="5" fill="#2E7D32"/>
+<circle cx="140" cy="155" r="8" fill="#EF6C00"/>
+<circle cx="255" cy="158" r="8" fill="#EF6C00"/>
+<text x="200.0" y="300" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#154D73" text-anchor="middle">Bánh Mì Thịt Nướng</text>
+</svg>

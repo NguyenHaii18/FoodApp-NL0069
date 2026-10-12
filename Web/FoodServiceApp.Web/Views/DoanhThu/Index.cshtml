@@ -1,0 +1,81 @@
+@model DoanhThuViewModel
+@{
+    ViewData["Title"] = "Doanh thu";
+    var nhan = Model.DoanhThuTheoNgay.Select(x => x.Ngay.ToString("dd/MM")).ToList();
+    var giaTri = Model.DoanhThuTheoNgay.Select(x => x.DoanhThu).ToList();
+}
+
+<div class="topbar">
+    <h2>Doanh thu (30 ngày gần nhất)</h2>
+</div>
+
+<div class="grid-2 mb-3">
+    <div class="stat-card">
+        <div class="label">Tổng doanh thu</div>
+        <div class="value">@Model.TongDoanhThu30Ngay.ToString("N0")đ</div>
+    </div>
+    <div class="stat-card" style="background: var(--accent);">
+        <div class="label">Đơn hoàn thành</div>
+        <div class="value">@Model.TongDonHoanThanh30Ngay</div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <h3 style="margin-top:0;">Doanh thu theo ngày</h3>
+    @if (!Model.DoanhThuTheoNgay.Any())
+    {
+        <div class="empty-state">Chưa có đơn hàng hoàn thành trong 30 ngày qua.</div>
+    }
+    else
+    {
+        <canvas id="bieuDoDoanhThu" height="90"></canvas>
+    }
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Món bán chạy</h3>
+    @if (!Model.MonBanChay.Any())
+    {
+        <div class="empty-state">Chưa có dữ liệu.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Món</th><th>Số lượng đã bán</th></tr></thead>
+            <tbody>
+                @foreach (var (ten, soLuong) in Model.MonBanChay)
+                {
+                    <tr><td>@ten</td><td>@soLuong</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    @if (Model.DoanhThuTheoNgay.Any())
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+        <script>
+            const ctx = document.getElementById('bieuDoDoanhThu');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(nhan)),
+                    datasets: [{
+                        label: 'Doanh thu (đ)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(giaTri)),
+                        borderColor: '#8B5CF6',
+                        backgroundColor: 'rgba(139,92,246,0.10)',
+                        fill: true,
+                        tension: 0.3,
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        </script>
+    }
+}

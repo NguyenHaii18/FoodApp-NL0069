@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400"><defs><linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E6FA5"/><stop offset="1" stop-color="#154D73"/></linearGradient></defs>
+<rect width="640" height="400" fill="url(#bgGrad)"/>
+<circle cx="200" cy="195" r="100" fill="#F0C27B" opacity="0"/>
+<ellipse cx="180" cy="195" rx="55" ry="45" fill="#C9822D"/>
+<ellipse cx="235" cy="215" rx="35" ry="28" fill="#D4923A"/>
+<path d="M 255 230 L 295 250 L 280 210 Z" fill="#E8D6A0"/>
+<circle cx="165" cy="175" r="6" fill="#7A4A1E"/>
+<circle cx="195" cy="210" r="6" fill="#7A4A1E"/>
+<text x="320" y="350" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#FFFFFF" text-anchor="middle">Gà Rán Cô Út</text>
+<text x="320" y="380" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="500" fill="#FFE0B2" text-anchor="middle">Giòn rụm • Combo học sinh sinh viên</text>
+</svg>

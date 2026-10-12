@@ -1,0 +1,50 @@
+@model List<MonAn>
+@{
+    ViewData["Title"] = "Kiểm duyệt món ăn";
+    Layout = "_AdminLayout";
+    var ghs = (IEnumerable<dynamic>)ViewBag.GianHangs;
+}
+<div class="topbar"><h2>Kiểm duyệt món ăn</h2></div>
+<div class="card mb-3">
+    <form method="get" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <select name="maGianHang" class="form-control" style="width:220px;">
+            <option value="">— Tất cả gian hàng —</option>
+            @foreach (var g in ghs) { <option value="@g.MaGianHang" selected="@((int?)ViewBag.MaGianHang == (int)g.MaGianHang)">@g.TenCuaHang</option> }
+        </select>
+        <input name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control" style="width:240px;" placeholder="Tên món / mô tả..." />
+        <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" name="daAn" value="true" checked="@((bool)ViewBag.DaAn)" style="width:auto;" /> Chỉ món đã bị ẩn</label>
+        <button class="btn btn-primary">Lọc</button>
+    </form>
+</div>
+@if (!Model.Any()) { <div class="card"><div class="empty-state">Không có món nào.</div></div> }
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead><tr><th>Món</th><th>Gian hàng</th><th>Giá</th><th>Tình trạng</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td><b>@m.TenMon</b><div class="text-muted" style="font-size:12px;">@m.MoTa</div>@if (!string.IsNullOrEmpty(m.HinhAnh)) { <a href="@m.HinhAnh" target="_blank" style="font-size:12px;">Xem ảnh</a> }</td>
+                    <td>@m.DanhMuc?.GianHang?.TenCuaHang</td>
+                    <td>@m.Gia.ToString("N0")đ</td>
+                    <td>@m.TinhTrang@if (!string.IsNullOrEmpty(m.LyDoAn)) { <div style="font-size:12px; color:var(--danger);">Đã ẩn: @m.LyDoAn</div> }</td>
+                    <td style="white-space:nowrap;">
+                        @if (!string.IsNullOrEmpty(m.LyDoAn))
+                        {
+                            <form asp-action="Hien" asp-route-id="@m.MaMonAn" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline btn-sm">Hiện lại</button></form>
+                        }
+                        else
+                        {
+                            <form asp-action="An" asp-route-id="@m.MaMonAn" method="post" style="display:flex; gap:4px;">@Html.AntiForgeryToken()
+                                <input name="lyDo" class="form-control" style="width:170px;" placeholder="Lý do ẩn (bắt buộc)" required />
+                                <button class="btn btn-danger btn-sm">Ẩn</button></form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

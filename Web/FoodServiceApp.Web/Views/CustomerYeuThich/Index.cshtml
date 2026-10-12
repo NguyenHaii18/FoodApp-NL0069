@@ -1,0 +1,50 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Yêu thích";
+    Layout = "_CustomerLayout";
+    var quan = (List<GianHang>)ViewBag.Quan;
+    var mon = (List<MonAn>)ViewBag.Mon;
+}
+<div class="topbar"><h2>❤️ Yêu thích</h2></div>
+
+<h3 class="category-tab-label">Gian hàng yêu thích</h3>
+@if (!quan.Any()) { <div class="card"><div class="empty-state">Bạn chưa lưu gian hàng nào.</div></div> }
+else
+{
+    <div class="grid-4">
+    @foreach (var g in quan)
+    {
+        <div class="shop-card">
+            <a asp-controller="CustomerHome" asp-action="ChiTiet" asp-route-id="@g.MaGianHang" style="text-decoration:none;color:inherit;">
+                <div class="thumb">@if (!string.IsNullOrEmpty(g.HinhAnh)) { <img src="@g.HinhAnh" alt="@g.TenCuaHang" /> } else { <span>🍲</span> }</div>
+                <div class="body"><div class="name">@g.TenCuaHang</div><div class="addr">@g.DiaChi</div></div>
+            </a>
+            <form asp-action="BatTat" method="post" style="padding:0 12px 12px;">@Html.AntiForgeryToken()
+                <input type="hidden" name="loai" value="GianHang" /><input type="hidden" name="id" value="@g.MaGianHang" />
+                <button class="btn btn-sm btn-outline">Bỏ yêu thích</button></form>
+        </div>
+    }
+    </div>
+}
+
+<h3 class="category-tab-label" style="margin-top:20px;">Món ăn yêu thích</h3>
+@if (!mon.Any()) { <div class="card"><div class="empty-state">Bạn chưa lưu món ăn nào.</div></div> }
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead><tr><th>Món</th><th>Gian hàng</th><th>Giá</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var m in mon)
+            {
+                <tr>
+                    <td><a asp-controller="CustomerHome" asp-action="ChiTietMon" asp-route-id="@m.MaMonAn">@m.TenMon</a> @if (m.TinhTrang != "ConHang") { <span class="badge badge-grey">@(m.TinhTrang == "TamNgung" ? "Ngừng bán" : "Hết hàng")</span> }</td>
+                    <td>@m.DanhMuc?.GianHang?.TenCuaHang</td>
+                    <td>@m.Gia.ToString("N0")đ</td>
+                    <td><form asp-action="BatTat" method="post">@Html.AntiForgeryToken()<input type="hidden" name="loai" value="MonAn" /><input type="hidden" name="id" value="@m.MaMonAn" /><button class="btn btn-sm btn-outline">Bỏ</button></form></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

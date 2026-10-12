@@ -1,0 +1,42 @@
+@using FoodServiceApp.Web.Models.Entities
+@{
+    ViewData["Title"] = "Giao dịch thanh toán";
+    Layout = "_AdminLayout";
+    var ds = (List<(ThanhToan t, DonHang d)>)ViewBag.Ds;
+}
+<div class="topbar"><h2>💳 Giao dịch thanh toán</h2>
+    <div><a asp-action="HoanTien" class="btn btn-outline">Hoàn tiền</a>
+    <a class="btn btn-outline" asp-action="Index" asp-all-route-data="@(new Dictionary<string,string?>{ ["q"]=(string?)ViewBag.Q, ["hinhThuc"]=(string?)ViewBag.HinhThuc, ["trangThai"]=(string?)ViewBag.TrangThai, ["tu"]=(string?)ViewBag.Tu, ["den"]=(string?)ViewBag.Den, ["chuaDoiSoat"]=((bool)ViewBag.ChuaDoiSoat).ToString(), ["xuat"]="csv" })">⬇️ Xuất CSV</a></div></div>
+<div class="card mb-3" style="background:#F7F7F7;">
+    💵 <b>Tiền COD cần đối chiếu:</b> @ViewBag.CodSo đơn — @(((decimal)ViewBag.CodTien).ToString("N0"))đ (đơn tiền mặt đã giao, chưa đối soát)
+    &nbsp;|&nbsp; ⏳ Giao dịch online treo > 1 giờ: <b>@ViewBag.ChoThanhToanLau</b>
+</div>
+<form method="get" class="card mb-3" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+    <div><label>Mã giao dịch / mã đơn / khách</label><input name="q" value="@ViewBag.Q" class="form-control" /></div>
+    <div><label>Hình thức</label><select name="hinhThuc" class="form-control"><option value="">Tất cả</option>@foreach (var t in new[] { "TienMat", "VNPay", "Momo", "ChuyenKhoan", "ViDienTu" }) { <option value="@t" selected="@((string?)ViewBag.HinhThuc == t)">@t</option> }</select></div>
+    <div><label>Trạng thái</label><select name="trangThai" class="form-control"><option value="">Tất cả</option>@foreach (var t in new[] { "ChoThanhToan", "DaThanhToan", "ThatBai", "DaHoanTien" }) { <option value="@t" selected="@((string?)ViewBag.TrangThai == t)">@t</option> }</select></div>
+    <div><label>Từ</label><input type="date" name="tu" value="@ViewBag.Tu" class="form-control" /></div>
+    <div><label>Đến</label><input type="date" name="den" value="@ViewBag.Den" class="form-control" /></div>
+    <label style="margin-bottom:8px;"><input type="checkbox" name="chuaDoiSoat" value="true" checked="@((bool)ViewBag.ChuaDoiSoat)" /> Chưa đối soát</label>
+    <button class="btn btn-primary">Lọc</button>
+</form>
+<div class="card">
+    <table class="data-table">
+        <thead><tr><th>Đơn</th><th>Ngày</th><th>Khách</th><th>Hình thức</th><th>Trạng thái</th><th>Mã giao dịch</th><th>Số tiền</th><th>Đối soát</th></tr></thead>
+        <tbody>
+        @foreach (var (t, d) in ds)
+        {
+            <tr>
+                <td><a asp-controller="AdminDonHang" asp-action="ChiTiet" asp-route-id="@d.MaDonHang">#@d.MaDonHang</a></td>
+                <td>@d.NgayDat.ToString("dd/MM HH:mm")</td><td>@d.KhachHang?.HoTen</td><td>@t.HinhThuc</td><td>@t.TrangThai@if (t.NgayHoan != null) { <div class="text-muted" style="font-size:11px;">Hoàn @t.NgayHoan.Value.ToString("dd/MM HH:mm") · <code>@t.MaGiaoDichHoan</code></div> }</td>
+                <td><code>@t.MaGiaoDich</code></td><td>@d.TongTien.ToString("N0")đ</td>
+                <td>@if (t.DaDoiSoat) { <span class="badge badge-success">@t.NgayDoiSoat?.ToString("dd/MM")</span> }
+                    else if (t.TrangThai == "DaThanhToan" || (t.HinhThuc == "TienMat" && d.TrangThai == "DaGiao")) { <form asp-action="DoiSoat" asp-route-maThanhToan="@t.MaThanhToan" method="post" style="display:inline;">@Html.AntiForgeryToken()<button class="btn btn-outline btn-sm">Đối soát</button></form> }
+                    else { <span class="text-muted">—</span> }</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (!ds.Any()) { <div class="empty-state">Không có giao dịch nào.</div> }
+    <form asp-action="DoiSoatTatCa" method="post" onsubmit="return confirm('Đánh dấu đã đối soát toàn bộ giao dịch đủ điều kiện?');" style="margin-top:10px;">@Html.AntiForgeryToken()<button class="btn btn-accent btn-sm">Đối soát tất cả</button></form>
+</div>

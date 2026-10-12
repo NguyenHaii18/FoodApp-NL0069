@@ -1,0 +1,54 @@
+@model FoodServiceApp.Web.Controllers.DriverHoSoViewModel
+@{
+    ViewData["Title"] = "Hồ sơ";
+    Layout = "_DriverLayout";
+}
+
+<div class="topbar">
+    <h2>Hồ sơ tài xế</h2>
+</div>
+
+<div class="card" style="max-width:480px;">
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="form-group">
+            <label asp-for="HoTen">Họ tên</label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SDT">Số điện thoại</label>
+            <input asp-for="SDT" class="form-control" />
+            <span asp-validation-for="SDT" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PhuongTien">Phương tiện</label>
+            <input asp-for="PhuongTien" class="form-control" placeholder="vd: Xe máy" />
+        </div>
+        <div class="form-group">
+            <label asp-for="BienSo">Biển số</label>
+            <input asp-for="BienSo" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="KhuVucHoatDong">Khu vực hoạt động</label>
+            <input asp-for="KhuVucHoatDong" class="form-control" placeholder="vd: Quận 1, Quận 5" />
+        </div>
+
+        <hr style="border-color:var(--border); margin:20px 0;" />
+        <p class="text-muted" style="font-size:13px;">Đổi mật khẩu (bỏ trống nếu không muốn đổi)</p>
+
+        <div class="form-group">
+            <label asp-for="MatKhauMoi">Mật khẩu mới</label>
+            <input asp-for="MatKhauMoi" type="password" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="XacNhanMatKhauMoi">Xác nhận mật khẩu mới</label>
+            <input asp-for="XacNhanMatKhauMoi" type="password" class="form-control" />
+            <span asp-validation-for="XacNhanMatKhauMoi" class="field-validation-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    </form>
+</div>

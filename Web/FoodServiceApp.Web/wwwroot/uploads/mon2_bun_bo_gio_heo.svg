@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 340" width="400" height="340">
+<rect width="400" height="340" fill="#FFF3E0"/>
+<circle cx="200.0" cy="150" r="120" fill="#FFFFFF"/>
+<ellipse cx="200" cy="160" rx="95" ry="57.0" fill="#FFFFFF"/>
+<ellipse cx="200" cy="155" rx="80" ry="44.0" fill="#8D2E2E"/>
+<ellipse cx="200" cy="145" rx="65" ry="32.5" fill="#C62828"/>
+<circle cx="170" cy="140" r="16" fill="#FFFFFF" opacity="0.9"/>
+<circle cx="235" cy="155" r="12" fill="#EF6C00"/>
+<circle cx="190" cy="165" r="8" fill="#2E7D32"/>
+<text x="200.0" y="300" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#154D73" text-anchor="middle">Bún Bò Giò Heo</text>
+</svg>

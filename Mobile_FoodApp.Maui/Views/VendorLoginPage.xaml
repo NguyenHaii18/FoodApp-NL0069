@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.VendorLoginPage"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,40" Spacing="14">
+
+            <Frame WidthRequest="72" HeightRequest="72" CornerRadius="18"
+                   BackgroundColor="{StaticResource Primary}"
+                   HorizontalOptions="Center" Padding="0">
+                <Label TextColor="White" Text="🏪" FontSize="34" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Frame>
+
+            <Label Text="Cổng Đối Tác Gian Hàng" Style="{StaticResource TitleLabel}" HorizontalOptions="Center" />
+            <Label Text="Đăng nhập để quản lý cửa hàng, thực đơn và đơn hàng"
+                   Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" Margin="0,0,0,10" />
+
+            <Entry x:Name="EntryEmail" Placeholder="Email đăng ký gian hàng" Keyboard="Email" />
+            <Entry x:Name="EntryMatKhau" Placeholder="Mật khẩu" IsPassword="True" />
+
+            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False"
+                                Color="{StaticResource Primary}" />
+
+            <Button x:Name="BtnDangNhap" Text="Đăng nhập" Style="{StaticResource PrimaryButton}"
+                    Clicked="OnDangNhapClicked" />
+
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12"
+                   HorizontalOptions="Center" IsVisible="False" />
+
+            <Label Text="Quên mật khẩu?" TextColor="{StaticResource Primary}"
+                   FontSize="13" HorizontalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnQuenMatKhauTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label Text="Chưa có gian hàng? Đăng ký tham gia ngay" TextColor="{StaticResource Accent}"
+                   FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,16,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDangKyTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label Text="← Quay lại đăng nhập khách hàng" TextColor="{StaticResource TextGrey}"
+                   FontSize="13" HorizontalOptions="Center" Margin="0,8,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnQuayLaiTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

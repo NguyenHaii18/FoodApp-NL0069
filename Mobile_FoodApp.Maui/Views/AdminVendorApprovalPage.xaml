@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminVendorApprovalPage"
+             Title="Duyệt gian hàng mới">
+
+    <RefreshView x:Name="RefreshDsChoDuyet" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="10">
+
+                <Label x:Name="LblRong" Text="Không có hồ sơ gian hàng nào đang chờ duyệt."
+                       Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center"
+                       Margin="0,30,0,0" IsVisible="False" />
+
+                <CollectionView x:Name="DsChoDuyet" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:GianHang">
+                            <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                                <VerticalStackLayout Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding TenGianHang}" FontAttributes="Bold" FontSize="15" />
+                                        <Label Grid.Column="1" Text="{Binding NgayDangKy, StringFormat='{0:dd/MM/yyyy}'}"
+                                               FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                    </Grid>
+                                    <Label FontSize="12.5" TextColor="{StaticResource TextGrey}" Text="{Binding DiaChi}" />
+                                    <Label FontSize="12.5">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="📞 " />
+                                                <Span Text="{Binding SoDienThoai}" />
+                                                <Span Text="   ✉️ " />
+                                                <Span Text="{Binding Email}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label FontSize="12.5" FontAttributes="Italic" TextColor="{StaticResource TextGrey}" Text="{Binding MoTa}" />
+                                    <Label Text="{Binding TomTatGiayTo}" FontSize="12.5" FontAttributes="Bold" />
+                                    <Label Text="⚠ Hồ sơ chưa đủ giấy tờ (thiếu số giấy phép hoặc CCCD chủ quán)" FontSize="12" TextColor="{StaticResource Danger}" IsVisible="{Binding ThieuGiayTo}" />
+                                    <Image Source="{Binding AnhGiayPhepPath}" IsVisible="{Binding CoAnhGiayPhep}" Aspect="AspectFit" HeightRequest="160" />
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,6,0,0">
+                                        <Button Grid.Column="0" Text="Từ chối" HeightRequest="40" CornerRadius="10"
+                                                BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
+                                                BorderColor="{StaticResource Danger}" BorderWidth="1"
+                                                Clicked="OnTuChoiClicked" CommandParameter="{Binding .}" />
+                                        <Button Grid.Column="1" Text="Duyệt hồ sơ" Style="{StaticResource PrimaryButton}"
+                                                HeightRequest="40" FontSize="13" Clicked="OnDuyetClicked" CommandParameter="{Binding .}" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

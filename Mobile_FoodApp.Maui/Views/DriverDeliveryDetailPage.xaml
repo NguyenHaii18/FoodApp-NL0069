@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.DriverDeliveryDetailPage"
+             Title="Chi tiết giao hàng">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- Trạng thái + 3 bước -->
+            <Grid Padding="18,18,18,52">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource PrimaryDark}" Offset="0.0" />
+                <GradientStop Color="{StaticResource Primary}" Offset="0.6" />
+                <GradientStop Color="{StaticResource Accent}" Offset="1.0" />
+            </LinearGradientBrush>
+                </Grid.Background>
+                <VerticalStackLayout Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" x:Name="LblMaDon" TextColor="White" FontAttributes="Bold" FontSize="17" />
+                        <Frame Grid.Column="1" BackgroundColor="#26FFFFFF" CornerRadius="12" Padding="10,3" HasShadow="False" BorderColor="Transparent">
+                            <Label x:Name="LblPhiGiao" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                        </Frame>
+                    </Grid>
+                    <Label x:Name="LblTrangThaiHienTai" TextColor="#F1E9FF" FontSize="13" />
+
+                    <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
+                        <Frame Grid.Row="0" Grid.Column="0" x:Name="Dot1" WidthRequest="30" HeightRequest="30" CornerRadius="15" Padding="0" HasShadow="False" BorderColor="Transparent">
+                            <Label x:Name="LblDot1" Text="✓" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Frame>
+                        <BoxView Grid.Row="0" Grid.Column="1" x:Name="Line1" HeightRequest="3" VerticalOptions="Center" CornerRadius="1.5" Margin="6,0" />
+                        <Frame Grid.Row="0" Grid.Column="2" x:Name="Dot2" WidthRequest="30" HeightRequest="30" CornerRadius="15" Padding="0" HasShadow="False" BorderColor="Transparent">
+                            <Label x:Name="LblDot2" Text="2" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Frame>
+                        <BoxView Grid.Row="0" Grid.Column="3" x:Name="Line2" HeightRequest="3" VerticalOptions="Center" CornerRadius="1.5" Margin="6,0" />
+                        <Frame Grid.Row="0" Grid.Column="4" x:Name="Dot3" WidthRequest="30" HeightRequest="30" CornerRadius="15" Padding="0" HasShadow="False" BorderColor="Transparent">
+                            <Label x:Name="LblDot3" Text="3" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Frame>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Nhận đơn" FontSize="11" TextColor="#F1E9FF" HorizontalOptions="Center" Margin="0,4,0,0" />
+                        <Label Grid.Row="1" Grid.Column="2" Text="Lấy hàng" FontSize="11" TextColor="#F1E9FF" HorizontalOptions="Center" Margin="0,4,0,0" />
+                        <Label Grid.Row="1" Grid.Column="4" Text="Đã giao" FontSize="11" TextColor="#F1E9FF" HorizontalOptions="Center" Margin="0,4,0,0" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Grid>
+
+            <VerticalStackLayout Padding="16,0,16,28" Margin="0,-34,0,0" Spacing="14">
+
+                <!-- Tuyến đường -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <Grid ColumnDefinitions="16,*,Auto" RowDefinitions="Auto,18,Auto" ColumnSpacing="10">
+                        <BoxView Grid.Row="0" Grid.Column="0" WidthRequest="12" HeightRequest="12" CornerRadius="6" Color="{StaticResource Accent}" VerticalOptions="Start" Margin="0,3,0,0" />
+                        <BoxView Grid.Row="1" Grid.Column="0" WidthRequest="2" Color="{AppThemeBinding Light={StaticResource BorderColor}, Dark={StaticResource BorderColorDark}}" HorizontalOptions="Center" />
+                        <BoxView Grid.Row="2" Grid.Column="0" WidthRequest="12" HeightRequest="12" CornerRadius="6" Color="{StaticResource Success}" VerticalOptions="Start" Margin="0,3,0,0" />
+
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="0">
+                            <Label Text="Điểm lấy hàng" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label x:Name="LblGianHang" FontAttributes="Bold" FontSize="14.5" />
+                            <Label x:Name="LblDiaChiLay" FontSize="12.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Grid.Row="0" Grid.Column="2" Spacing="10" VerticalOptions="Start">
+                            <Label Text="🗺️" FontSize="20"><Label.GestureRecognizers><TapGestureRecognizer Tapped="OnBanDoLayTapped" /></Label.GestureRecognizers></Label>
+                            <Label Text="📋" FontSize="20"><Label.GestureRecognizers><TapGestureRecognizer Tapped="OnSaoChepLayTapped" /></Label.GestureRecognizers></Label>
+                        </HorizontalStackLayout>
+
+                        <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="0">
+                            <Label Text="Điểm giao hàng" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label x:Name="LblDiaChiGiao" FontAttributes="Bold" FontSize="14" />
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Grid.Row="2" Grid.Column="2" Spacing="10" VerticalOptions="Start">
+                            <Label Text="🗺️" FontSize="20"><Label.GestureRecognizers><TapGestureRecognizer Tapped="OnBanDoGiaoTapped" /></Label.GestureRecognizers></Label>
+                            <Label Text="📋" FontSize="20"><Label.GestureRecognizers><TapGestureRecognizer Tapped="OnSaoChepGiaoTapped" /></Label.GestureRecognizers></Label>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Frame>
+
+                <!-- Quãng đường + thời gian ước tính -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                            <VerticalStackLayout Grid.Column="0" Spacing="1">
+                                <Label Text="📏 Khoảng cách" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                <Label x:Name="LblKhoangCach" FontAttributes="Bold" FontSize="15" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                <Label Text="⏱ Ước tính" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                <Label x:Name="LblThoiGian" FontAttributes="Bold" FontSize="15" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" Spacing="1">
+                                <Label Text="🗺 Khu vực" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                <Label x:Name="LblKhuVuc" FontAttributes="Bold" FontSize="13" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Label x:Name="LblGhiChuUocTinh" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Phí giao hàng (theo khoảng cách + khu vực) -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Phí giao hàng" FontAttributes="Bold" FontSize="14" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" x:Name="LblNhanPhiKm" FontSize="12.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label Grid.Column="1" x:Name="LblPhiKm" FontSize="12.5" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" x:Name="RowPhuPhi">
+                            <Label Grid.Column="0" x:Name="LblNhanPhuPhi" FontSize="12.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label Grid.Column="1" x:Name="LblPhuPhi" FontSize="12.5" />
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource BorderColor}, Dark={StaticResource BorderColorDark}}" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="Bạn nhận" FontAttributes="Bold" FontSize="13.5" />
+                            <Label Grid.Column="1" x:Name="LblPhiTong" FontAttributes="Bold" FontSize="14.5" TextColor="{StaticResource Success}" />
+                        </Grid>
+                        <Label x:Name="LblGhiChuPhi" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" IsVisible="False" />
+                        <Button x:Name="BtnDieuChinhPhi" Text="✏ Báo khoảng cách thực tế / điều chỉnh phí"
+                                Style="{StaticResource OutlineButton}" FontSize="12.5" HeightRequest="38" Clicked="OnDieuChinhPhiClicked" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Chia sẻ vị trí cho khách theo dõi -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="📡 Chia sẻ vị trí cho khách" FontAttributes="Bold" FontSize="14" />
+                            <Label x:Name="LblTrangThaiViTri" FontSize="11.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" x:Name="SwChiaSeViTri" VerticalOptions="Center" Toggled="OnChiaSeViTriToggled" />
+                    </Grid>
+                </Frame>
+
+                <!-- Tiền cần thu -->
+                <Frame x:Name="KhungThuHo" Style="{StaticResource CardFrame}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Grid.Column="0" x:Name="LblIconThuHo" Text="💵" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                            <Label x:Name="LblThuHoTieuDe" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label x:Name="LblThuHoSoTien" FontAttributes="Bold" FontSize="18" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Frame>
+
+                <!-- Khách hàng -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Grid.Column="0" Text="👤" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                            <Label Text="Khách hàng" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label x:Name="LblKhachTen" FontAttributes="Bold" FontSize="15" />
+                            <Label x:Name="LblKhachSdt" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Frame>
+
+                <Label Text="Món trong đơn" Style="{StaticResource TitleLabel}" FontSize="15" />
+                <Frame Style="{StaticResource CardFrame}" Padding="14,8">
+                    <CollectionView x:Name="DsMon" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:MucGioHang">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,6">
+                                    <Label Grid.Column="0" FontSize="13.5">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding SoLuong}" FontAttributes="Bold" />
+                                                <Span Text="×  " FontAttributes="Bold" />
+                                                <Span Text="{Binding MonAn.TenMon}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label Grid.Column="1" Text="{Binding ThanhTien, StringFormat='{0:N0}đ'}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Frame>
+
+                <Button x:Name="BtnHanhDongChinh" Style="{StaticResource PrimaryButton}" Margin="0,6,0,0" Clicked="OnHanhDongChinhClicked" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="📞 Gọi khách" Style="{StaticResource OutlineButton}" Clicked="OnGoiKhachClicked" />
+                    <Button Grid.Column="1" Text="💬 Nhắn tin" Style="{StaticResource OutlineButton}" Clicked="OnNhanTinClicked" />
+                </Grid>
+                <Button Text="🧭 Chỉ đường (Google Maps)" Style="{StaticResource OutlineButton}" Clicked="OnChiDuongClicked" />
+                <Button Text="📞 Gọi quán" Style="{StaticResource OutlineButton}" Clicked="OnGoiQuanClicked" />
+                <Button x:Name="BtnGiaoThatBai" Text="⚠️ Giao không thành công" Style="{StaticResource OutlineButton}"
+                        TextColor="{StaticResource Danger}" BorderColor="{StaticResource Danger}" Clicked="OnThatBaiClicked" />
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

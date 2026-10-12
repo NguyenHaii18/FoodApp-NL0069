@@ -1,0 +1,161 @@
+@model List<DanhMuc>
+@{
+    var gianHang = (GianHang?)ViewBag.GianHang;
+    ViewData["Title"] = gianHang?.TenCuaHang ?? "Gian hàng";
+    Layout = "_CustomerLayout";
+    var gioHang = (Cart)ViewBag.GioHang;
+    var dangMo = (bool)(ViewBag.DangMo ?? false);
+    var nhanDon = (bool)(ViewBag.NhanDon ?? false);
+    var banChay = (List<MonAn>)ViewBag.MonBanChay;
+    var monCoTuyChon = (HashSet<int>)ViewBag.MonCoTuyChon;
+    var khuyenMais = (List<KhuyenMai>)ViewBag.KhuyenMais;
+    var monYeuThich = (HashSet<int>)ViewBag.MonYeuThich;
+    var danhGias = (List<DanhGia>)ViewBag.DanhGiaGanDay;
+    var tenKhach = (Dictionary<int, string>)ViewBag.TenKhach;
+}
+
+@if (gianHang == null)
+{
+    <div class="card"><div class="empty-state">Không tìm thấy gian hàng.</div></div>
+}
+else
+{
+    <div class="shop-header-cover">
+        <div class="avatar">
+            @if (!string.IsNullOrEmpty(gianHang.HinhAnh)) { <img src="@gianHang.HinhAnh" alt="@gianHang.TenCuaHang" /> } else { <span>🍲</span> }
+        </div>
+        <div>
+            <h2>@gianHang.TenCuaHang
+                @if (Context.User.IsInRole("KhachHang"))
+                {
+                    <form asp-controller="CustomerYeuThich" asp-action="BatTat" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="loai" value="GianHang" /><input type="hidden" name="id" value="@gianHang.MaGianHang" />
+                        <input type="hidden" name="quayVe" value="@Context.Request.Path" />
+                        <button class="btn btn-sm btn-outline" title="Yêu thích">@((bool)ViewBag.YeuThich ? "❤️ Đã lưu" : "🤍 Lưu quán")</button>
+                    </form>
+                }
+            </h2>
+            <div class="meta">📍 @gianHang.DiaChi &nbsp;·&nbsp; ☎ @gianHang.SDT</div>
+            <div class="meta" style="margin-top:4px;">
+                @if (dangMo) { <span class="badge badge-success">Đang mở cửa</span> } else { <span class="badge badge-grey">Đóng cửa</span> }
+                @if (dangMo && !nhanDon) { <span class="badge badge-warning">Tạm dừng nhận đơn</span> }
+                &nbsp;🕒 @ViewBag.GioKinhDoanh &nbsp;·&nbsp; 🛵 @ViewBag.PhiGiao
+            </div>
+            @if (!string.IsNullOrEmpty(gianHang.MoTa)) { <div class="meta" style="margin-top:4px;">@gianHang.MoTa</div> }
+            <div class="rating-line">
+                @if ((int)ViewBag.SoDanhGia > 0) { <span>⭐ @(((double)ViewBag.DiemTrungBinh).ToString("0.0")) &nbsp;(@ViewBag.SoDanhGia đánh giá)</span> }
+                else { <span class="text-muted">Chưa có đánh giá</span> }
+            </div>
+        </div>
+    </div>
+
+    @if (!nhanDon)
+    {
+        <div class="alert-danger mb-3">Gian hàng hiện không nhận đơn (đóng cửa hoặc tạm dừng). Bạn vẫn có thể xem thực đơn.</div>
+    }
+
+    @if (khuyenMais.Any())
+    {
+        <div class="card mb-3">
+            <b>🏷️ Khuyến mãi</b>
+            @foreach (var km in khuyenMais)
+            {
+                <div style="font-size:13.5px; margin-top:4px;">
+                    <span class="badge badge-primary">@km.MaCode</span>
+                    @(km.PhanTramGiam != null ? $"Giảm {km.PhanTramGiam:0.#}%" : $"Giảm {km.SoTienGiam:N0}đ") — mã <b>@km.MaCode</b>@(string.IsNullOrWhiteSpace(km.MoTa) ? "" : " · " + km.MoTa)
+                    <span class="text-muted">(đến @km.NgayKetThuc.ToString("dd/MM/yyyy"))</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (banChay.Any())
+    {
+        <h3 class="category-tab-label">🔥 Món bán chạy</h3>
+        <div class="grid-2">
+            @foreach (var mon in banChay)
+            {
+                <div class="food-card">
+                    <div class="thumb">@if (!string.IsNullOrEmpty(mon.HinhAnh)) { <img src="@mon.HinhAnh" alt="@mon.TenMon" /> } else { <span>🍲</span> }</div>
+                    <div class="info">
+                        <div class="name"><a asp-action="ChiTietMon" asp-route-id="@mon.MaMonAn" style="color:inherit;">@mon.TenMon</a></div>
+                        <div class="price">@mon.Gia.ToString("N0")đ</div>
+                    </div>
+                    <a asp-action="ChiTietMon" asp-route-id="@mon.MaMonAn" class="btn btn-accent btn-sm">Chọn</a>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!Model.Any(d => d.MonAns.Any()))
+    {
+        <div class="card"><div class="empty-state">Gian hàng chưa có món ăn nào.</div></div>
+    }
+
+    @foreach (var danhMuc in Model.Where(d => d.MonAns.Any()))
+    {
+        <h3 class="category-tab-label">@danhMuc.TenDanhMuc</h3>
+        <div class="grid-2">
+            @foreach (var mon in danhMuc.MonAns)
+            {
+                <div class="food-card">
+                    <div class="thumb">@if (!string.IsNullOrEmpty(mon.HinhAnh)) { <img src="@mon.HinhAnh" alt="@mon.TenMon" /> } else { <span>🍲</span> }</div>
+                    <div class="info">
+                        <div class="name"><a asp-action="ChiTietMon" asp-route-id="@mon.MaMonAn" style="color:inherit;">@(monYeuThich.Contains(mon.MaMonAn) ? "❤️ " : "")@mon.TenMon</a></div>
+                        <div class="price">@mon.Gia.ToString("N0")đ</div>
+                    </div>
+                    @if (mon.TinhTrang != "ConHang")
+                    {
+                        <span class="badge badge-grey">@(mon.TinhTrang == "TamNgung" ? "Ngừng bán" : "Hết hàng")</span>
+                    }
+                    else if (!nhanDon)
+                    {
+                        <span class="badge badge-grey">Chưa nhận đơn</span>
+                    }
+                    else if (monCoTuyChon.Contains(mon.MaMonAn) || mon.ChoGhiChu)
+                    {
+                        <a asp-action="ChiTietMon" asp-route-id="@mon.MaMonAn" class="btn btn-accent btn-sm">Tùy chọn</a>
+                    }
+                    else
+                    {
+                        <form asp-action="ThemVaoGio" asp-route-maGianHang="@gianHang.MaGianHang" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maMonAn" value="@mon.MaMonAn" />
+                            <input type="hidden" name="soLuong" value="1" />
+                            <button type="submit" class="btn btn-accent btn-sm">+ Thêm</button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <div class="card" style="margin-top:20px;">
+        <h3 style="margin-top:0;">Đánh giá gần đây</h3>
+        @if (!danhGias.Any()) { <div class="empty-state">Chưa có đánh giá nào.</div> }
+        @foreach (var dg in danhGias)
+        {
+            <div class="review-row">
+                <div><strong>@(tenKhach.TryGetValue(dg.MaKH, out var tk) ? tk : "Khách hàng")</strong> &nbsp; @(new string('⭐', dg.SoSao)) <span class="text-muted" style="font-size:12px;">· @dg.NgayDanhGia.ToString("dd/MM/yyyy")</span></div>
+                @if (!string.IsNullOrWhiteSpace(dg.NoiDung)) { <div style="font-size:13.5px; margin-top:2px;">@dg.NoiDung</div> }
+                @if (!string.IsNullOrWhiteSpace(dg.PhanHoi)) { <div style="font-size:13px; margin:4px 0 0 12px; padding-left:8px; border-left:3px solid var(--primary);"><b>Phản hồi của quán:</b> @dg.PhanHoi</div> }
+                @if (Context.User.IsInRole("KhachHang"))
+                {
+                    <form asp-controller="CustomerOrder" asp-action="BaoCaoDanhGia" method="post" style="display:inline;" onsubmit="var l=prompt('Lý do báo cáo đánh giá này?'); if(!l) return false; this.lyDo.value=l; return true;">
+                        @Html.AntiForgeryToken()<input type="hidden" name="maDanhGia" value="@dg.MaDanhGia" /><input type="hidden" name="lyDo" />
+                        <button class="btn btn-sm btn-outline" style="font-size:11px;">⚑ Báo cáo</button>
+                    </form>
+                }
+            </div>
+        }
+    </div>
+
+    @if (gioHang.Items.Any() && gioHang.MaGianHang == gianHang.MaGianHang)
+    {
+        <div class="sticky-cart-bar">
+            <span class="info">🛒 @gioHang.TongSoMon món — <span class="amount">@gioHang.TongTien.ToString("N0")đ</span></span>
+            <a asp-controller="CustomerCart" asp-action="Index" class="btn btn-primary">Xem giỏ hàng →</a>
+        </div>
+    }
+}

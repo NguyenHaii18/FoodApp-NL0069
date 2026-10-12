@@ -1,0 +1,65 @@
+@model AdminCreateDriverViewModel
+@{
+    ViewData["Title"] = "Thêm tài xế";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Thêm tài xế mới</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Quay lại</a>
+</div>
+
+<div class="card" style="max-width:520px;">
+    <p class="text-muted" style="margin-top:0; font-size:13px;">
+        Tài khoản tài xế do Quản trị viên tạo trực tiếp (không tự đăng ký như Gian hàng).
+        Gửi tên đăng nhập + mật khẩu này cho tài xế để họ đăng nhập tại cổng riêng.
+    </p>
+
+    <form asp-action="Them" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="form-group">
+            <label asp-for="HoTen">Họ tên</label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SDT">Số điện thoại</label>
+            <input asp-for="SDT" class="form-control" />
+            <span asp-validation-for="SDT" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PhuongTien">Phương tiện (vd: Xe máy)</label>
+            <input asp-for="PhuongTien" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="BienSo">Biển số</label>
+            <input asp-for="BienSo" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="KhuVucHoatDong">Khu vực hoạt động</label>
+            <input asp-for="KhuVucHoatDong" class="form-control" />
+        </div>
+
+        <hr style="border-color:var(--border); margin:16px 0;" />
+
+        <div class="form-group">
+            <label asp-for="TenDangNhap">Tên đăng nhập</label>
+            <input asp-for="TenDangNhap" class="form-control" />
+            <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="MatKhau">Mật khẩu</label>
+            <input asp-for="MatKhau" type="password" class="form-control" />
+            <span asp-validation-for="MatKhau" class="field-validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="XacNhanMatKhau">Xác nhận mật khẩu</label>
+            <input asp-for="XacNhanMatKhau" type="password" class="form-control" />
+            <span asp-validation-for="XacNhanMatKhau" class="field-validation-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Tạo tài khoản tài xế</button>
+    </form>
+</div>

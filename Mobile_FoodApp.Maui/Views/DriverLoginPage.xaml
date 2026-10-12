@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.DriverLoginPage"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <Grid Padding="24,52,24,70">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource PrimaryDark}" Offset="0.0" />
+                <GradientStop Color="{StaticResource Primary}" Offset="0.6" />
+                <GradientStop Color="{StaticResource Accent}" Offset="1.0" />
+            </LinearGradientBrush>
+                </Grid.Background>
+                <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Frame WidthRequest="80" HeightRequest="80" CornerRadius="24" BackgroundColor="White"
+                           HorizontalOptions="Center" Padding="0" HasShadow="False" BorderColor="Transparent">
+                        <Label Text="🛵" FontSize="40" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Frame>
+                    <Label Text="Cổng Tài Xế" FontSize="24" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
+                    <Label Text="Đăng nhập để bắt đầu nhận đơn giao hàng" FontSize="13.5" TextColor="#E9DDFF" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <VerticalStackLayout Padding="20,0,20,28" Margin="0,-42,0,0" Spacing="14">
+                <Frame Style="{StaticResource CardFrame}" Padding="18">
+                    <VerticalStackLayout Spacing="12">
+                        <Entry x:Name="EntrySdt" Placeholder="Số điện thoại" Keyboard="Telephone" />
+                        <Entry x:Name="EntryMatKhau" Placeholder="Mật khẩu" IsPassword="True" />
+
+                        <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False"
+                                            Color="{StaticResource Accent}" />
+
+                        <Button x:Name="BtnDangNhap" Text="Đăng nhập" Style="{StaticResource PrimaryButton}"
+                                Clicked="OnDangNhapClicked" />
+
+                        <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12.5"
+                               HorizontalOptions="Center" IsVisible="False" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="Quên mật khẩu?" TextColor="{StaticResource Accent}" FontSize="13" HorizontalOptions="End">
+                    <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnQuenMatKhauTapped" /></Label.GestureRecognizers>
+                </Label>
+                <Button Text="Đăng ký làm tài xế" Style="{StaticResource OutlineButton}" Clicked="OnDangKyClicked" />
+
+                <Label Text="← Quay lại đăng nhập khách hàng" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}"
+                       FontSize="13" HorizontalOptions="Center" Margin="0,10,0,0">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnQuayLaiTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.ReviewPage"
+             Title="Đánh giá đơn hàng">
+
+    <Grid>
+        <ScrollView x:Name="KhungForm">
+            <VerticalStackLayout Padding="16" Spacing="16">
+                <Frame Style="{StaticResource CardFrame}">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="🏪" FontSize="22" />
+                        <VerticalStackLayout>
+                            <Label x:Name="LblTenGianHang" FontAttributes="Bold" FontSize="14" />
+                            <Label x:Name="LblMaDon" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Frame>
+
+                <Label Text="Chất lượng món ăn" HorizontalOptions="Center" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                <HorizontalStackLayout x:Name="SaoMonAn" HorizontalOptions="Center" Spacing="4" />
+
+                <Label Text="Dịch vụ giao hàng" HorizontalOptions="Center" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                <HorizontalStackLayout x:Name="SaoGiaoHang" HorizontalOptions="Center" Spacing="4" />
+
+                <Label Text="Bạn thích điều gì? (tuỳ chọn)" FontSize="13" FontAttributes="Bold" />
+                <FlexLayout x:Name="DsThe" Wrap="Wrap" JustifyContent="Center" />
+
+                <Label Text="Nhận xét chi tiết (tuỳ chọn)" FontSize="13" FontAttributes="Bold" />
+                <Frame Style="{StaticResource CardFrame}">
+                    <Editor x:Name="EditorNoiDung" HeightRequest="90"
+                            Placeholder="Chia sẻ trải nghiệm của bạn về món ăn và dịch vụ..." />
+                </Frame>
+
+                <Button Text="Gửi đánh giá" Style="{StaticResource PrimaryButton}" Clicked="OnGuiDanhGiaClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Màn hình cảm ơn sau khi gửi -->
+        <VerticalStackLayout x:Name="KhungCamOn" IsVisible="False" Padding="24"
+                              VerticalOptions="Center" Spacing="14">
+            <Frame WidthRequest="76" HeightRequest="76" CornerRadius="38"
+                   BackgroundColor="{StaticResource Success}" HorizontalOptions="Center" Padding="0">
+                <Label Text="✓" FontSize="34" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Frame>
+            <Label Text="Cảm ơn bạn đã đánh giá!" FontAttributes="Bold" FontSize="16" HorizontalOptions="Center" />
+            <Label Text="Phản hồi của bạn giúp gian hàng cải thiện chất lượng phục vụ."
+                   HorizontalTextAlignment="Center" TextColor="{StaticResource TextGrey}" FontSize="13" />
+            <Button Text="Quay lại" Style="{StaticResource PrimaryButton}" Clicked="OnQuayLaiClicked"
+                    WidthRequest="160" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

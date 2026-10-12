@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.VendorReviewsPage"
+             Title="Đánh giá của khách">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="16,12,16,0">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                <Label Grid.Column="0" x:Name="LblDiemTrungBinh" FontSize="34" FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                    <Label x:Name="LblSaoTrungBinh" FontSize="18" TextColor="{StaticResource Accent}" />
+                    <Label x:Name="LblTomTat" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                </VerticalStackLayout>
+            </Grid>
+        </Frame>
+
+        <ScrollView Grid.Row="1" Orientation="Horizontal" Padding="16,10" HorizontalScrollBarVisibility="Never">
+            <HorizontalStackLayout x:Name="KhungBoLoc" Spacing="8" />
+        </ScrollView>
+
+        <RefreshView Grid.Row="2" x:Name="RefreshDs" Refreshing="OnRefreshing">
+            <ScrollView>
+                <VerticalStackLayout Padding="16,0,16,16" Spacing="10">
+
+                    <Label x:Name="LblRong" Text="Chưa có đánh giá nào."
+                           Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center"
+                           Margin="0,30,0,0" IsVisible="False" />
+
+                    <CollectionView x:Name="DsDanhGia" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:DanhGiaGianHang">
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                                    <VerticalStackLayout Spacing="5">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="{Binding TieuDeText}" FontAttributes="Bold" FontSize="13" />
+                                            <Label Grid.Column="1" Text="{Binding NgayText}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                        </Grid>
+                                        <Label Text="{Binding SaoText}" FontSize="18" TextColor="{StaticResource Accent}" />
+                                        <Label Text="{Binding SaoGiaoHangText}" FontSize="11.5" TextColor="{StaticResource TextGrey}" />
+                                        <Label Text="{Binding TheText}" FontSize="12" TextColor="{StaticResource Primary}" IsVisible="{Binding CoThe}" />
+                                        <Label Text="{Binding NoiDung}" FontSize="13" IsVisible="{Binding CoNoiDung}" />
+                                        <Frame BackgroundColor="{StaticResource PrimarySoft}" HasShadow="False" Padding="10" CornerRadius="10"
+                                               IsVisible="{Binding CoPhanHoi}">
+                                            <Label Text="{Binding PhanHoiText}" FontSize="12.5" />
+                                        </Frame>
+                                        <Button Text="{Binding NutPhanHoiText}" Style="{StaticResource OutlineButton}"
+                                                HeightRequest="36" FontSize="12.5" Clicked="OnPhanHoiClicked" CommandParameter="{Binding .}" />
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

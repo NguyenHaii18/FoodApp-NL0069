@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.QuenMatKhauPage"
+             Title="Quên mật khẩu">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14">
+            <Label Text="🔑" FontSize="44" HorizontalOptions="Center" Margin="0,6,0,0" />
+            <Label x:Name="LblHuongDan" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" HorizontalTextAlignment="Center" />
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Bước 1 · Nhận mã OTP" Style="{StaticResource TitleLabel}" FontSize="15" />
+                    <Entry x:Name="EntryDinhDanh" />
+                    <Button x:Name="BtnGuiMa" Text="Gửi mã OTP" Style="{StaticResource PrimaryButton}" Clicked="OnGuiMaClicked" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame x:Name="KhungBuoc2" IsVisible="False" Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Bước 2 · Đặt mật khẩu mới" Style="{StaticResource TitleLabel}" FontSize="15" />
+                    <Frame x:Name="KhungMaDemo" IsVisible="False" Style="{StaticResource CardFrame}" BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySoft}, Dark={StaticResource BorderColorDark}}" Padding="10">
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="LblGhiChuDemo" FontSize="11.5" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
+                            <Label x:Name="LblMaDemo" FontSize="24" FontAttributes="Bold" CharacterSpacing="6" HorizontalOptions="Center" TextColor="{StaticResource Primary}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Entry x:Name="EntryOtp" Placeholder="Mã OTP 6 số" Keyboard="Numeric" MaxLength="6" />
+                    <Entry x:Name="EntryMatKhauMoi" Placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" IsPassword="True" />
+                    <Entry x:Name="EntryNhapLai" Placeholder="Nhập lại mật khẩu mới" IsPassword="True" />
+                    <Button x:Name="BtnDatLai" Text="Đặt lại mật khẩu" Style="{StaticResource PrimaryButton}" Clicked="OnDatLaiClicked" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label x:Name="LblLoi" TextColor="{StaticResource Danger}" FontSize="12.5" IsVisible="False" HorizontalTextAlignment="Center" />
+            <ActivityIndicator x:Name="Dang" IsRunning="False" IsVisible="False" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

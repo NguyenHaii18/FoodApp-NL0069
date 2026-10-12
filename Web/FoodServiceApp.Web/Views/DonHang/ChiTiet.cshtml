@@ -1,0 +1,47 @@
+@model DonHang
+@{
+    ViewData["Title"] = $"Đơn #{Model.MaDonHang}";
+}
+
+<div class="topbar">
+    <h2>Đơn hàng #@Model.MaDonHang</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Quay lại danh sách</a>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h3 style="margin-top:0;">Chi tiết món</h3>
+        <table class="data-table">
+            <thead><tr><th>Món</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+            <tbody>
+                @foreach (var ct in Model.ChiTiets)
+                {
+                    <tr>
+                        <td>@ct.MonAn?.TenMon</td>
+                        <td>@ct.SoLuong</td>
+                        <td>@ct.DonGia.ToString("N0")đ</td>
+                        <td>@ct.ThanhTien.ToString("N0")đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div style="text-align:right; margin-top:12px; font-weight:700; font-size:16px;">
+            Tổng cộng: @Model.TongTien.ToString("N0")đ
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Thông tin đơn hàng</h3>
+        <p><strong>Trạng thái:</strong> @await Html.PartialAsync("~/Views/Dashboard/_BadgeTrangThaiDonHang.cshtml", Model.TrangThai)</p>
+        <p><strong>Thời gian đặt:</strong> @Model.NgayDat.ToString("HH:mm dd/MM/yyyy")</p>
+        <p><strong>Địa chỉ giao:</strong> @Model.DiaChiGiaoHang</p>
+        @if (!string.IsNullOrEmpty(Model.GhiChu))
+        {
+            <p><strong>Ghi chú:</strong> @Model.GhiChu</p>
+        }
+        @if (Model.ThanhToan != null)
+        {
+            <p><strong>Thanh toán:</strong> @Model.ThanhToan.HinhThuc — @Model.ThanhToan.TrangThai</p>
+        }
+    </div>
+</div>

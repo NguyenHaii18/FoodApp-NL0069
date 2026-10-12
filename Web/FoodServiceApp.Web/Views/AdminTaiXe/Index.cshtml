@@ -1,0 +1,76 @@
+@model List<(TaiXe TaiXe, TaiKhoan TaiKhoan)>
+@{
+    ViewData["Title"] = "Tài xế";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Quản lý tài xế</h2>
+    <div style="display:flex; gap:8px;">
+        <a asp-action="ChoDuyet" class="btn btn-accent">
+            Chờ duyệt @(((int)ViewBag.SoChoDuyet) > 0 ? $"({ViewBag.SoChoDuyet})" : "")
+        </a>
+        <a asp-action="Them" class="btn btn-primary">+ Thêm tài xế</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <form method="get" style="display:flex; gap:8px;">
+        <input type="text" name="timKiem" value="@ViewBag.TimKiem" class="form-control" placeholder="Tìm theo họ tên hoặc số điện thoại..." />
+        <button type="submit" class="btn btn-primary">Tìm</button>
+    </form>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Chưa có tài xế nào.</div></div>
+}
+else
+{
+    <div class="card">
+        <table class="data-table">
+            <thead><tr><th>Họ tên</th><th>SĐT</th><th>Phương tiện</th><th>Khu vực</th><th>Trạng thái</th><th>Tài khoản</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var (tx, tk) in Model)
+                {
+                    <tr>
+                        <td>@tx.HoTen</td>
+                        <td>@tx.SDT</td>
+                        <td>@tx.PhuongTien @(!string.IsNullOrEmpty(tx.BienSo) ? $"({tx.BienSo})" : "")</td>
+                        <td>@tx.KhuVucHoatDong</td>
+                        <td>
+                            @{
+                                var (css, nhan) = tx.TrangThai switch
+                                {
+                                    "SanSang" => ("badge-success", "Sẵn sàng"),
+                                    "DangGiao" => ("badge-primary", "Đang giao"),
+                                    _ => ("badge-grey", "Ngoại tuyến")
+                                };
+                            }
+                            <span class="badge @css">@nhan</span>
+                        </td>
+                        <td>
+                            @if (tk.TrangThai)
+                            {
+                                <span class="badge badge-success">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Đã khoá</span>
+                            }
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <form asp-action="ToggleKhoa" asp-route-maTK="@tk.MaTK" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm @(tk.TrangThai ? "btn-danger" : "btn-outline")"
+                                        onclick="return confirm('@(tk.TrangThai ? "Khoá" : "Mở khoá") tài khoản \'@tx.HoTen\'?')">
+                                    @(tk.TrangThai ? "Khoá" : "Mở khoá")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

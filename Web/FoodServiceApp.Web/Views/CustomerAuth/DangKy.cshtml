@@ -1,0 +1,59 @@
+@model CustomerRegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-page">
+    <div class="login-card" style="width:420px;">
+        <div class="logo">🍽️</div>
+        <h2>Tạo tài khoản mới</h2>
+        <p class="sub">Đăng ký để bắt đầu đặt món</p>
+
+        <form asp-controller="CustomerAuth" asp-action="DangKy" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+            <div class="form-group">
+                <label asp-for="HoTen">Họ tên</label>
+                <input asp-for="HoTen" class="form-control" />
+                <span asp-validation-for="HoTen" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SDT">Số điện thoại (hoặc nhập email)</label>
+                <input asp-for="SDT" class="form-control" />
+                <span asp-validation-for="SDT" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email">Email (hoặc nhập số điện thoại)</label>
+                <input asp-for="Email" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="TenDangNhap">Tên đăng nhập</label>
+                <input asp-for="TenDangNhap" class="form-control" />
+                <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MatKhau">Mật khẩu</label>
+                <input asp-for="MatKhau" type="password" class="form-control" />
+                <span asp-validation-for="MatKhau" class="field-validation-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="XacNhanMatKhau">Xác nhận mật khẩu</label>
+                <input asp-for="XacNhanMatKhau" type="password" class="form-control" />
+                <span asp-validation-for="XacNhanMatKhau" class="field-validation-error"></span>
+            </div>
+
+            <label style="display:block; margin:6px 0 12px; font-size:13px;">
+                <input type="checkbox" asp-for="DongYDieuKhoan" /> Tôi đồng ý với <a asp-action="DieuKhoan" target="_blank">Điều khoản sử dụng &amp; Chính sách bảo mật</a>
+            </label>
+            <span asp-validation-for="DongYDieuKhoan" class="field-validation-error"></span>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+                Đăng ký
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:16px; font-size:12.5px;">
+            Đã có tài khoản? <a asp-controller="CustomerAuth" asp-action="Login">Đăng nhập</a>
+        </p>
+    </div>
+</div>

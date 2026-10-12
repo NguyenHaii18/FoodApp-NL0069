@@ -1,0 +1,111 @@
+@model DonHang
+@{
+    ViewData["Title"] = "Chuyến giao hiện tại";
+    Layout = "_DriverLayout";
+}
+
+<div class="topbar">
+    <h2>Chuyến giao hiện tại</h2>
+</div>
+
+@if (Model == null)
+{
+    <div class="card">
+        <div class="empty-state">Bạn không có chuyến giao nào đang thực hiện.</div>
+        <div style="text-align:center;"><a asp-action="ChoNhan" class="btn btn-primary">Xem đơn chờ nhận</a></div>
+    </div>
+}
+else
+{
+    var trangThaiGiao = Model.GiaoHang?.TrangThai ?? "DaNhan";
+
+    <div class="card mb-3">
+        <h3 style="margin-top:0;">Đơn #@Model.MaDonHang</h3>
+        <p><strong>Lấy hàng tại:</strong> @Model.GianHang?.TenCuaHang</p>
+        <p style="color:var(--text-grey); margin-top:-8px;">@Model.GianHang?.DiaChi — @Model.GianHang?.SDT</p>
+        <p><strong>Giao đến:</strong> @Model.DiaChiGiaoHang</p>
+        <p><strong>Món:</strong> @string.Join(", ", Model.ChiTiets.Select(c => $"{c.MonAn?.TenMon} x{c.SoLuong}"))</p>
+        <p><strong>Tổng tiền thu hộ (nếu COD):</strong> @Model.TongTien.ToString("N0")đ</p>
+        <p><strong>Bạn nhận:</strong> <span style="color:var(--success); font-weight:700;">@Model.PhiGiaoHang.ToString("N0")đ</span></p>
+        @if (!string.IsNullOrEmpty(Model.GhiChu))
+        {
+            <p><strong>Ghi chú:</strong> @Model.GhiChu</p>
+        }
+
+        @{
+            // Chỉ cần "destination", Google Maps sẽ tự lấy vị trí hiện tại của tài xế (GPS thiết bị)
+            // làm điểm xuất phát khi mở trên điện thoại — không cần biết toạ độ tài xế đang ở đâu.
+            var diaChiDich = trangThaiGiao == "DaNhan" ? Model.GianHang?.DiaChi : Model.DiaChiGiaoHang;
+            var nhanNutChiDuong = trangThaiGiao == "DaNhan" ? "🗺️ Chỉ đường đến gian hàng" : "🗺️ Chỉ đường đến khách hàng";
+        }
+        @if (!string.IsNullOrEmpty(diaChiDich))
+        {
+            <a class="btn btn-outline" style="margin-top:6px;"
+               href="https://www.google.com/maps/dir/?api=1&destination=@Uri.EscapeDataString(diaChiDich)"
+               target="_blank" rel="noopener">@nhanNutChiDuong</a>
+        }
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Cập nhật trạng thái</h3>
+
+        @if (trangThaiGiao == "DaNhan")
+        {
+            <p class="text-muted">Bạn đã nhận đơn — đến quán lấy món rồi bấm "Đã lấy hàng" để bắt đầu giao.</p>
+            <form asp-action="BatDauGiao" asp-route-id="@Model.MaDonHang" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">📦 Đã lấy hàng, bắt đầu giao</button>
+            </form>
+        }
+        else if (trangThaiGiao == "DangGiao")
+        {
+            <p class="text-muted">Đang trên đường giao. Cập nhật kết quả khi đến nơi:</p>
+            <div style="display:flex; gap:10px;">
+                <form asp-action="HoanThanh" asp-route-id="@Model.MaDonHang" method="post" enctype="multipart/form-data" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="lat" class="gps-lat" /><input type="hidden" name="lng" class="gps-lng" />
+                    <input type="text" name="maXacNhan" class="form-control" style="width:150px;" placeholder="Mã 4 số của khách" inputmode="numeric" maxlength="4" autocomplete="off" />
+                    <input type="file" name="anh" accept="image/*" capture="environment" class="form-control" style="width:200px;" title="Ảnh bằng chứng giao hàng (bắt buộc với đơn không có mã)" />
+                    <button type="submit" class="btn btn-primary"
+                            onclick="return confirm('Xác nhận đã giao thành công đơn #@Model.MaDonHang?')">✓ Giao thành công</button>
+                </form>
+                <button type="button" class="btn btn-danger" onclick="document.getElementById('formThatBai').style.display='block'">
+                    ✕ Giao thất bại
+                </button>
+            </div>
+
+            <form id="formThatBai" asp-action="GiaoThatBai" asp-route-id="@Model.MaDonHang" method="post" enctype="multipart/form-data" style="display:none; margin-top:14px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="lat" class="gps-lat" /><input type="hidden" name="lng" class="gps-lng" />
+                <div class="form-group">
+                    <label>Lý do giao thất bại</label>
+                    <input type="text" name="lyDo" class="form-control" placeholder="vd: Khách không nghe máy" required />
+                    <small class="text-muted">Lỗi phía khách (không liên lạc được, từ chối, hẹn lại, sai địa chỉ): bạn vẫn nhận phí giao. Lý do khác: không tính phí.</small>
+                </div>
+                <div class="form-group"><label>Ảnh bằng chứng (nên có)</label><input type="file" name="anh" accept="image/*" capture="environment" class="form-control" /></div>
+                <button type="submit" class="btn btn-danger">Xác nhận giao thất bại</button>
+            </form>
+        }
+    </div>
+    <div id="gpsTrangThai" class="text-muted" style="margin-top:10px; font-size:13px;"></div>
+    <form id="formViTri" method="post" style="display:none;">@Html.AntiForgeryToken()</form>
+    <script>
+    (function(){
+        if(!navigator.geolocation){document.getElementById('gpsTrangThai').textContent='Thiết bị không hỗ trợ định vị.';return;}
+        var url='@Url.Action("ViTri", "DriverDonHang", new { id = Model.MaDonHang })';
+        var token=document.querySelector('#formViTri input[name="__RequestVerificationToken"]').value;
+        var lastSent=0, st=document.getElementById('gpsTrangThai');
+        navigator.geolocation.watchPosition(function(p){
+            var lat=p.coords.latitude,lng=p.coords.longitude;
+            document.querySelectorAll('.gps-lat').forEach(function(e){e.value=lat;});
+            document.querySelectorAll('.gps-lng').forEach(function(e){e.value=lng;});
+            var now=Date.now(); if(now-lastSent<5000) return; lastSent=now;
+            var b=new URLSearchParams(); b.append('lat',lat); b.append('lng',lng); b.append('__RequestVerificationToken',token);
+            fetch(url,{method:'POST',body:b,credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+              .then(function(r){st.textContent=r.ok?'📍 Đang chia sẻ vị trí cho khách':'Không gửi được vị trí';})
+              .catch(function(){st.textContent='Mất kết nối, đang thử lại...';});
+        },function(){st.textContent='Chưa bật quyền vị trí — hãy cho phép để khách theo dõi và để xác thực giao hàng.';},
+        {enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+    })();
+    </script>
+}

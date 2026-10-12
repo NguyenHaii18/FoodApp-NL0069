@@ -1,0 +1,32 @@
+@model DonHang
+@{
+    ViewData["Title"] = $"Biên nhận #{Model.MaDonHang}";
+    Layout = "_CustomerLayout";
+    var tamTinh = Model.ChiTiets.Sum(c => c.ThanhTien);
+}
+<div class="topbar"><h2>🧾 Biên nhận đơn #@Model.MaDonHang</h2></div>
+<div class="card" style="max-width:640px;">
+    <p><b>@Model.GianHang?.TenCuaHang</b><br /><span class="text-muted">@Model.GianHang?.DiaChi · @Model.GianHang?.SDT</span></p>
+    <p>Khách hàng: <b>@Model.KhachHang?.HoTen</b> · Ngày đặt: @Model.NgayDat.ToString("HH:mm dd/MM/yyyy")<br />Giao đến: @Model.DiaChiGiaoHang</p>
+    <table class="data-table">
+        <thead><tr><th>Món</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+        <tbody>
+        @foreach (var c in Model.ChiTiets)
+        {
+            <tr><td>@c.MonAn?.TenMon@if (!string.IsNullOrWhiteSpace(c.TuyChon)) { <span class="text-muted"> (@c.TuyChon)</span> }</td><td>@c.SoLuong</td><td>@c.DonGia.ToString("N0")đ</td><td>@c.ThanhTien.ToString("N0")đ</td></tr>
+        }
+        </tbody>
+    </table>
+    <div style="text-align:right; margin-top:10px; line-height:1.8;">
+        Tạm tính: @tamTinh.ToString("N0")đ<br />
+        Phí giao hàng: @Model.PhiGiaoHang.ToString("N0")đ<br />
+        @{ var giam = tamTinh + Model.PhiGiaoHang - Model.TongTien; }
+        @if (giam > 0) { <text>Giảm giá: -@giam.ToString("N0")đ<br /></text> }
+        <b style="font-size:17px;">Tổng cộng: @Model.TongTien.ToString("N0")đ</b>
+    </div>
+    @if (Model.ThanhToan != null)
+    {
+        <p style="margin-top:10px;">Thanh toán: <b>@Model.ThanhToan.HinhThuc</b> — @Model.ThanhToan.TrangThai@if (Model.ThanhToan.NgayThanhToan != null) { <text> lúc @Model.ThanhToan.NgayThanhToan.Value.ToString("HH:mm dd/MM/yyyy")</text> }@if (!string.IsNullOrEmpty(Model.ThanhToan.MaGiaoDich)) { <text><br />Mã giao dịch: @Model.ThanhToan.MaGiaoDich</text> }</p>
+    }
+    <button class="btn btn-outline" onclick="window.print()">🖨️ In / lưu PDF</button>
+</div>

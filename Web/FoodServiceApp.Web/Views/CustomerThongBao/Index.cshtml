@@ -1,0 +1,36 @@
+@using FoodServiceApp.Web.Models.Entities
+@model List<ThongBao>
+@{
+    ViewData["Title"] = "Thông báo";
+    Layout = "_CustomerLayout";
+    var kh = (KhachHang)ViewBag.KhachHang;
+}
+<div class="topbar">
+    <h2>🔔 Thông báo</h2>
+    <form asp-action="DocTatCa" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline btn-sm">Đánh dấu đã đọc tất cả</button></form>
+</div>
+
+<div class="card mb-3" style="max-width:640px;">
+    <b>Cài đặt thông báo</b>
+    <form asp-action="CaiDat" method="post" style="margin-top:8px;">
+        @Html.AntiForgeryToken()
+        <label style="display:block;"><input type="checkbox" name="donHang" value="true" checked="@kh.NhanTbDonHang" /> Đơn hàng & trạng thái giao hàng</label>
+        <label style="display:block;"><input type="checkbox" name="thanhToan" value="true" checked="@kh.NhanTbThanhToan" /> Thanh toán</label>
+        <label style="display:block;"><input type="checkbox" name="khuyenMai" value="true" checked="@kh.NhanTbKhuyenMai" /> Khuyến mãi</label>
+        <button class="btn btn-primary btn-sm" style="margin-top:8px;">Lưu cài đặt</button>
+    </form>
+</div>
+
+<div class="card">
+@if (!Model.Any()) { <div class="empty-state">Chưa có thông báo.</div> }
+else
+{
+    @foreach (var t in Model)
+    {
+        <a asp-action="Mo" asp-route-id="@t.MaThongBao" style="display:block; padding:10px 0; border-bottom:1px solid #eee; text-decoration:none; color:inherit; @(t.DaDoc ? "" : "font-weight:600;")">
+            @(t.DaDoc ? "" : "🔵 ")@t.TieuDe <span class="text-muted" style="font-size:12px;">· @t.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+            <div style="font-weight:400; font-size:13.5px;">@t.NoiDung</div>
+        </a>
+    }
+}
+</div>

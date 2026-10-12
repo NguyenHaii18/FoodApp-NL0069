@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.AdminIssuesPage"
+             Title="Vấn đề phát sinh">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+            <CollectionView x:Name="DsVanDe" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:VanDeHeThong">
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0" Text="{Binding TieuDe}" FontAttributes="Bold" FontSize="14" />
+                                </Grid>
+                                <Label FontSize="12" TextColor="{StaticResource TextGrey}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="🏪 " />
+                                            <Span Text="{Binding NguonGoc}" />
+                                            <Span Text="{Binding NgayBaoCao, StringFormat='   •   {0:HH:mm dd/MM}'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label Text="{Binding MoTa}" FontSize="12.5" />
+
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Frame Grid.Column="0" Padding="10,4" CornerRadius="8" HasShadow="False"
+                                           BackgroundColor="{StaticResource Background}">
+                                        <Label Text="{Binding TrangThai, Converter={StaticResource TrangThaiVanDeToTextConverter}}"
+                                               FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Primary}" />
+                                    </Frame>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
+                                      IsVisible="{Binding TrangThai, Converter={StaticResource VanDeChuaGiaiQuyetConverter}}">
+                                    <Button Grid.Column="0" Text="Đang xử lý" Style="{StaticResource OutlineButton}"
+                                            HeightRequest="36" FontSize="12.5" Clicked="OnDangXuLyClicked" CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="1" Text="Đánh dấu đã giải quyết" Style="{StaticResource AccentButton}"
+                                            HeightRequest="36" FontSize="12.5" Clicked="OnGiaiQuyetClicked" CommandParameter="{Binding .}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

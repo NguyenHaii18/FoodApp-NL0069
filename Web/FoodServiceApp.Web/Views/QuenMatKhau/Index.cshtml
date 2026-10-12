@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Quên mật khẩu";
+    Layout = "_LoginLayout";
+}
+<div class="login-page">
+    <div class="login-card">
+        <div class="logo">🔑</div>
+        <h2>Quên mật khẩu</h2>
+        <p class="sub">Nhập tên đăng nhập, email hoặc số điện thoại đã đăng ký để nhận mã xác thực (OTP).</p>
+        @if (ViewBag.Loi != null) { <div class="validation-summary-errors">@ViewBag.Loi</div> }
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label>Tên đăng nhập / Email / Số điện thoại</label>
+                <input name="taiKhoan" class="form-control" autofocus required />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">Gửi mã xác thực</button>
+        </form>
+        <p style="margin-top:14px; text-align:center;"><a href="/">← Về trang đăng nhập</a></p>
+    </div>
+</div>

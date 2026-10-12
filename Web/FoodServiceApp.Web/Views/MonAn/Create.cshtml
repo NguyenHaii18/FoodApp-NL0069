@@ -1,0 +1,15 @@
+@model MonAnFormViewModel
+@{ ViewData["Title"] = "Thêm món ăn"; }
+
+<div class="topbar">
+    <h2>Thêm món ăn mới</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Quay lại</a>
+</div>
+
+<div class="card" style="max-width:520px;">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("_Form", Model)
+        <button type="submit" class="btn btn-primary">Lưu món ăn</button>
+    </form>
+</div>

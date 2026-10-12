@@ -1,0 +1,86 @@
+@model DiaChiFormViewModel
+@{
+    ViewData["Title"] = "Sổ địa chỉ";
+    Layout = "_CustomerLayout";
+    var danhSach = (List<DiaChiKhachHang>)ViewBag.DanhSach;
+    int? maSua = ViewBag.MaSua as int?;
+}
+@if (TempData["ThongBao"] != null) { <div class="alert-success mb-3">@TempData["ThongBao"]</div> }
+@if (TempData["LoiThongBao"] != null) { <div class="alert-danger mb-3">⚠️ @TempData["LoiThongBao"]</div> }
+
+<div class="topbar">
+    <h2>📍 Sổ địa chỉ giao hàng</h2>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h3 style="margin-top:0;">Địa chỉ đã lưu</h3>
+        @if (!danhSach.Any())
+        {
+            <div class="empty-state">Bạn chưa lưu địa chỉ nào. Thêm địa chỉ để chọn nhanh khi đặt hàng.</div>
+        }
+        else
+        {
+            @foreach (var dc in danhSach)
+            {
+                <div class="address-row">
+                    <div style="flex:1;">
+                        <strong>@dc.Nhan</strong>
+                        @if (dc.MacDinh) { <span class="badge badge-primary" style="margin-left:6px;">Mặc định</span> }
+                        <div class="text-muted" style="font-size:13px;">@string.Join(", ", new[] { dc.DiaChi, dc.Phuong, dc.Quan, dc.Tinh }.Where(x => !string.IsNullOrWhiteSpace(x)))</div>
+                        @if (!string.IsNullOrWhiteSpace(dc.HuongDan)) { <div class="text-muted" style="font-size:12px;">📝 @dc.HuongDan</div> }
+                        @if (dc.Lat != null) { <div style="font-size:12px;"><a target="_blank" href="https://www.google.com/maps?q=@dc.Lat,@dc.Lng">📍 Xem trên bản đồ</a></div> }
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        @if (!dc.MacDinh)
+                        {
+                            <form asp-action="DatMacDinh" asp-route-id="@dc.MaDiaChi" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline btn-sm">Đặt mặc định</button>
+                            </form>
+                        }
+                        <a asp-action="Sua" asp-route-id="@dc.MaDiaChi" class="btn btn-outline btn-sm">Sửa</a>
+                        <form asp-action="Xoa" asp-route-id="@dc.MaDiaChi" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xóa địa chỉ này?')">Xóa</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">@(maSua != null ? "Sửa địa chỉ" : "Thêm địa chỉ mới")</h3>
+        <form asp-action="@(maSua != null ? "Sua" : "Them")" asp-route-id="@maSua" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+            <div class="form-group">
+                <label asp-for="Nhan">Nhãn</label>
+                <input asp-for="Nhan" class="form-control" placeholder="Nhà, Cơ quan..." />
+                <span asp-validation-for="Nhan" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DiaChi">Số nhà, tên đường</label>
+                <input asp-for="DiaChi" class="form-control" placeholder="VD: 140 Lê Trọng Tấn" />
+                <span asp-validation-for="DiaChi" class="text-danger"></span>
+            </div>
+            <div class="form-group"><label asp-for="Tinh">Tỉnh/Thành phố</label><input asp-for="Tinh" class="form-control" list="dsTinh" placeholder="TP. Hồ Chí Minh" /></div>
+            <datalist id="dsTinh"><option value="TP. Hồ Chí Minh" /><option value="Hà Nội" /><option value="Đà Nẵng" /><option value="Cần Thơ" /><option value="Hải Phòng" /><option value="Bình Dương" /><option value="Đồng Nai" /></datalist>
+            <div class="form-group"><label asp-for="Quan">Quận/Huyện</label><input asp-for="Quan" class="form-control" /></div>
+            <div class="form-group"><label asp-for="Phuong">Phường/Xã</label><input asp-for="Phuong" class="form-control" /></div>
+            <div class="form-group"><label asp-for="HuongDan">Hướng dẫn giao hàng</label><input asp-for="HuongDan" class="form-control" placeholder="VD: Gọi trước khi đến, để ở bảo vệ" /></div>
+            <div class="form-group">
+                <label>Ghim vị trí (tự lấy theo địa chỉ nếu để trống)</label>
+                <div style="display:flex; gap:6px;">
+                    <input asp-for="Lat" class="form-control" placeholder="Vĩ độ" />
+                    <input asp-for="Lng" class="form-control" placeholder="Kinh độ" />
+                    <button type="button" class="btn btn-outline btn-sm" onclick="navigator.geolocation&&navigator.geolocation.getCurrentPosition(function(p){document.getElementById('Lat').value=p.coords.latitude;document.getElementById('Lng').value=p.coords.longitude;})">Vị trí của tôi</button>
+                </div>
+            </div>
+            <label style="display:block; margin-bottom:12px;"><input type="checkbox" asp-for="MacDinh" /> Đặt làm địa chỉ mặc định</label>
+            <button type="submit" class="btn btn-primary">@(maSua != null ? "Lưu thay đổi" : "Lưu địa chỉ")</button>
+            @if (maSua != null) { <a asp-action="Index" class="btn btn-outline">Hủy</a> }
+        </form>
+    </div>
+</div>

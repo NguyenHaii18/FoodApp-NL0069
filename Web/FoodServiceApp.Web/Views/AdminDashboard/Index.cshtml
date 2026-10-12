@@ -1,0 +1,105 @@
+@{
+    ViewData["Title"] = "Trang chủ Quản trị";
+    Layout = "_AdminLayout";
+    string ky = ViewBag.Ky;
+    var theoTt = (Dictionary<string, int>)ViewBag.DonTheoTrangThai;
+    var tt = (Dictionary<string, int>)ViewBag.ThanhToan;
+    int D(Dictionary<string, int> d, string k) => d.TryGetValue(k, out var v) ? v : 0;
+    var topGianHang = (IEnumerable<dynamic>)ViewBag.TopGianHang;
+    var topMon = (IEnumerable<dynamic>)ViewBag.TopMon;
+    var khuVuc = (List<KeyValuePair<string, int>>)ViewBag.KhuVuc;
+    DateTime tu = ViewBag.Tu, den = ViewBag.Den;
+}
+
+<div class="topbar">
+    <h2>Tổng quan hệ thống</h2>
+    <a asp-controller="AdminBaoCao" asp-action="Index" class="btn btn-outline btn-sm">📑 Báo cáo / xuất CSV</a>
+</div>
+
+<div class="order-tabs">
+    <a asp-action="Index" asp-route-ky="hom-nay" class="@(ky == "hom-nay" ? "active" : "")">Hôm nay</a>
+    <a asp-action="Index" asp-route-ky="7-ngay" class="@(ky == "7-ngay" ? "active" : "")">7 ngày</a>
+    <a asp-action="Index" asp-route-ky="30-ngay" class="@(ky == "30-ngay" ? "active" : "")">30 ngày</a>
+    <a asp-action="Index" asp-route-ky="nam" class="@(ky == "nam" ? "active" : "")">Năm nay</a>
+</div>
+<form method="get" style="display:flex; gap:8px; align-items:center; margin:8px 0 14px; font-size:13px;">
+    <input type="hidden" name="ky" value="tu-chon" />
+    Từ <input type="date" name="tuNgay" value="@tu.ToString("yyyy-MM-dd")" class="form-control" style="width:160px;" />
+    đến <input type="date" name="denNgay" value="@den.AddDays(-1).ToString("yyyy-MM-dd")" class="form-control" style="width:160px;" />
+    <button class="btn btn-primary btn-sm">Lọc</button>
+    <span class="text-muted">Số liệu đơn/doanh thu theo khoảng @tu.ToString("dd/MM/yyyy") – @den.AddDays(-1).ToString("dd/MM/yyyy")</span>
+</form>
+
+<div class="grid-4 mb-3">
+    <div class="stat-card"><div class="label">Khách hàng</div><div class="value">@ViewBag.TongKhachHang</div></div>
+    <div class="stat-card" style="background:#1E1E1E;"><div class="label">Gian hàng</div><div class="value">@ViewBag.TongGianHang <span style="font-size:13px; font-weight:400;">(@ViewBag.GianHangDangMo đang mở)</span></div></div>
+    <div class="stat-card" style="background:#1E1E1E;"><div class="label">Tài xế</div><div class="value">@ViewBag.TongTaiXe <span style="font-size:13px; font-weight:400;">(@ViewBag.TaiXeDaDuyet đã duyệt)</span></div></div>
+    <div class="stat-card" style="background: var(--success);"><div class="label">Doanh thu (đơn hoàn thành)</div><div class="value">@(((decimal)ViewBag.DoanhThu).ToString("N0"))đ</div></div>
+</div>
+
+<div class="grid-4 mb-3">
+    <div class="stat-card" style="background: var(--accent);"><div class="label">Tổng đơn</div><div class="value">@ViewBag.TongDon</div></div>
+    <div class="stat-card"><div class="label">Đơn mới (chờ xác nhận)</div><div class="value">@D(theoTt, "ChoXacNhan")</div></div>
+    <div class="stat-card"><div class="label">Đang xử lý / đang giao</div><div class="value">@D(theoTt, "DaXacNhan") / @D(theoTt, "DangGiao")</div></div>
+    <div class="stat-card"><div class="label">Hoàn thành / Hủy</div><div class="value">@D(theoTt, "DaGiao") / @D(theoTt, "DaHuy")</div></div>
+</div>
+
+<div class="grid-3 mb-3">
+    <div class="card">
+        <h3 style="margin-top:0;">Thanh toán</h3>
+        <p>✅ Đã thanh toán: <b>@D(tt, "DaThanhToan")</b><br />⏳ Chờ thanh toán: <b>@D(tt, "ChoThanhToan")</b><br />❌ Thất bại: <b>@D(tt, "ThatBai")</b><br />↩️ Đã hoàn tiền: <b>@D(tt, "DaHoanTien")</b></p>
+        <p class="text-muted" style="font-size:12.5px;">Phí nền tảng ước tính: @(((decimal)ViewBag.PhiNenTang).ToString("N0"))đ</p>
+        <a asp-controller="AdminThanhToan" asp-action="Index" style="font-size:13px;">Xem giao dịch →</a>
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Cần xử lý</h3>
+        <p style="line-height:1.9;">
+            <a asp-controller="AdminPhanHoi" asp-action="Index" asp-route-trangThai="ChuaXuLy">💬 Khiếu nại/phản hồi chờ: <b style="color:var(--danger);">@ViewBag.KhieuNaiCho / @ViewBag.PhanHoiCho</b></a><br />
+            <a asp-controller="AdminThanhToan" asp-action="HoanTien">↩️ Yêu cầu hoàn tiền chờ duyệt: <b>@ViewBag.HoanTienCho</b></a><br />
+            <a asp-controller="AdminDanhGia" asp-action="Index">⭐ Báo cáo đánh giá chờ: <b>@ViewBag.BaoCaoDanhGiaCho</b></a><br />
+            <a asp-controller="AdminGianHang" asp-action="ChoDuyet">🏬 Gian hàng chờ duyệt: <b>@ViewBag.SoChoDuyet</b></a><br />
+            <a asp-controller="AdminTaiXe" asp-action="ChoDuyet">🛵 Tài xế chờ duyệt: <b>@ViewBag.TaiXeChoDuyet</b></a><br />
+            <a asp-controller="AdminSuCo" asp-action="Index">🛠️ Đơn giao thất bại cần can thiệp: <b>@ViewBag.SoSuCo</b></a>
+        </p>
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Khu vực nhiều đơn</h3>
+        @if (!khuVuc.Any()) { <div class="empty-state">Chưa có dữ liệu.</div> }
+        else { <table class="data-table"><tbody>@foreach (var k in khuVuc) { <tr><td>@k.Key</td><td style="text-align:right;"><b>@k.Value</b> đơn</td></tr> }</tbody></table> }
+    </div>
+</div>
+
+<div class="grid-2 mb-3">
+    <div class="card">
+        <h3 style="margin-top:0;">Top gian hàng theo doanh thu</h3>
+        @if (!topGianHang.Any()) { <div class="empty-state">Chưa có dữ liệu.</div> }
+        else
+        {
+            <table class="data-table"><thead><tr><th>#</th><th>Gian hàng</th><th>Đơn</th><th>Doanh thu</th></tr></thead><tbody>
+            @foreach (var g in topGianHang.Select((x, idx) => new { x, idx }))
+            {
+                <tr><td>@(g.idx + 1)</td><td>@g.x.TenGianHang</td><td>@g.x.SoDon</td><td>@(((decimal)g.x.DoanhThu).ToString("N0"))đ</td></tr>
+            }
+            </tbody></table>
+        }
+    </div>
+    <div class="card">
+        <h3 style="margin-top:0;">Món bán chạy</h3>
+        @if (!topMon.Any()) { <div class="empty-state">Chưa có dữ liệu.</div> }
+        else
+        {
+            <table class="data-table"><thead><tr><th>#</th><th>Món</th><th>Số lượng</th></tr></thead><tbody>
+            @foreach (var m in topMon.Select((x, idx) => new { x, idx }))
+            {
+                <tr><td>@(m.idx + 1)</td><td>@m.x.TenMon</td><td>@m.x.SoLuong</td></tr>
+            }
+            </tbody></table>
+        }
+    </div>
+</div>
+
+<div class="grid-3 mb-3">
+    <a asp-controller="AdminDonHang" asp-action="Index" class="quick-nav-card" style="text-decoration:none;"><div class="emoji">📦</div><div class="title">Tất cả đơn hàng</div><div class="sub">Tìm, lọc, lịch sử trạng thái</div></a>
+    <a asp-controller="AdminDieuPhoi" asp-action="Index" class="quick-nav-card" style="text-decoration:none;"><div class="emoji">🧭</div><div class="title">Điều phối</div><div class="sub">Đơn cần giao, đổi tài xế</div></a>
+    <a asp-controller="AdminThongKe" asp-action="Index" class="quick-nav-card" style="text-decoration:none;"><div class="emoji">📊</div><div class="title">Thống kê doanh thu</div><div class="sub">Ngày / tháng / năm</div></a>
+</div>

@@ -1,0 +1,43 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    Layout = "_CustomerLayout";
+}
+
+<div class="topbar">
+    <h2>📦 Đơn mua</h2>
+</div>
+
+<div class="order-tabs">
+    <a asp-action="Index" class="active">Đang xử lý</a>
+    <a asp-action="LichSu">Lịch sử</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="empty-state">Bạn không có đơn hàng nào đang xử lý.</div>
+        <div style="text-align:center;"><a asp-controller="CustomerHome" asp-action="Index" class="btn btn-primary">Đặt món ngay</a></div>
+    </div>
+}
+else
+{
+    <div class="grid-2">
+        @foreach (var don in Model)
+        {
+            <a asp-action="ChiTiet" asp-route-id="@don.MaDonHang" class="card" style="text-decoration:none; color:inherit;">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <div>
+                        <h3 style="margin:0 0 4px;">Đơn #@don.MaDonHang</h3>
+                        <p class="text-muted" style="margin:0; font-size:12.5px;">@don.GianHang?.TenCuaHang</p>
+                    </div>
+                    @await Html.PartialAsync("~/Views/Dashboard/_BadgeTrangThaiDonHang.cshtml", don.TrangThai)
+                </div>
+                <p style="margin:10px 0 0; font-size:13px; color:var(--text-grey);">
+                    @string.Join(", ", don.ChiTiets.Select(c => $"{c.MonAn?.TenMon} x{c.SoLuong}"))
+                </p>
+                <p style="margin:8px 0 0; font-weight:700;">@don.TongTien.ToString("N0")đ</p>
+            </a>
+        }
+    </div>
+}

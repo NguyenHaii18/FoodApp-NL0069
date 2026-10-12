@@ -1,0 +1,18 @@
+@model KhuyenMaiFormViewModel
+@{
+    ViewData["Title"] = "Tạo khuyến mãi toàn hệ thống";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Tạo mã khuyến mãi toàn hệ thống</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Quay lại</a>
+</div>
+
+<div class="card" style="max-width:640px;">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("~/Views/AdminKhuyenMai/_FormAdmin.cshtml", Model)
+        <button type="submit" class="btn btn-primary">Tạo mã</button>
+    </form>
+</div>

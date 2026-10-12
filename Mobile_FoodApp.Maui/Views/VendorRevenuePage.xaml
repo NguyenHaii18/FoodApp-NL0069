@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:FoodApp.Maui.Models"
+             x:Class="FoodApp.Maui.Views.VendorRevenuePage"
+             Title="Doanh thu &amp; báo cáo">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Chọn kỳ: ngày / tháng / năm -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" x:Name="BtnKyNgay" Text="Ngày" CornerRadius="16" HeightRequest="36" FontSize="13" Clicked="OnChonKyNgay" />
+                <Button Grid.Column="1" x:Name="BtnKyThang" Text="Tháng" CornerRadius="16" HeightRequest="36" FontSize="13" Clicked="OnChonKyThang" />
+                <Button Grid.Column="2" x:Name="BtnKyNam" Text="Năm" CornerRadius="16" HeightRequest="36" FontSize="13" Clicked="OnChonKyNam" />
+            </Grid>
+
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0" Text="◀" Style="{StaticResource OutlineButton}" WidthRequest="48" HeightRequest="38" Clicked="OnKyTruoc" />
+                <Label Grid.Column="1" x:Name="LblNhanKy" FontAttributes="Bold" FontSize="15"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+                <Button Grid.Column="2" x:Name="BtnKySau" Text="▶" Style="{StaticResource OutlineButton}" WidthRequest="48" HeightRequest="38" Clicked="OnKySau" />
+            </Grid>
+
+            <!-- Tổng quan của kỳ -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Frame Grid.Column="0" Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Doanh thu" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        <Label x:Name="LblDoanhThu" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Primary}" />
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Grid.Column="1" Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Lợi nhuận ước tính" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        <Label x:Name="LblLoiNhuan" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Success}" />
+                    </VerticalStackLayout>
+                </Frame>
+            </Grid>
+            <Label x:Name="LblGhiChuLoiNhuan" FontSize="11" TextColor="{StaticResource TextGrey}" IsVisible="False" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Frame Grid.Column="0" Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Đơn hoàn thành" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        <Label x:Name="LblTongDonHoanThanh" FontAttributes="Bold" FontSize="18" />
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Grid.Column="1" Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Giá trị đơn trung bình" FontSize="12" TextColor="{StaticResource TextGrey}" />
+                        <Label x:Name="LblGiaTriTrungBinh" FontAttributes="Bold" FontSize="18" />
+                    </VerticalStackLayout>
+                </Frame>
+            </Grid>
+
+            <Button Text="💰 Xem đối soát tài chính (phí nền tảng, thực nhận)" Style="{StaticResource OutlineButton}" Clicked="OnXemTaiChinhClicked" />
+
+            <!-- Xu hướng doanh thu -->
+            <Label x:Name="LblTieuDeXuHuong" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout x:Name="KhungXuHuong" Spacing="8" />
+            </Frame>
+
+            <!-- Báo cáo đơn hàng theo trạng thái -->
+            <Label Text="Đơn hàng trong kỳ" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout x:Name="KhungTrangThai" Spacing="8" />
+            </Frame>
+
+            <!-- Món bán chạy -->
+            <Label Text="Món bán chạy" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout x:Name="KhungMonBanChay" Spacing="10" />
+            </Frame>
+
+            <!-- Lịch sử đơn hoàn thành -->
+            <Label Text="Đơn hàng đã hoàn thành" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,4,0,0" />
+            <Label x:Name="LblRong" Text="Không có đơn hoàn thành nào trong kỳ này." Style="{StaticResource SubtitleLabel}"
+                   HorizontalOptions="Center" Margin="0,10,0,0" IsVisible="False" />
+
+            <CollectionView x:Name="DsDonHoanThanh" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:DonHang">
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="{Binding Id, StringFormat='Đơn #{0}'}" FontAttributes="Bold" FontSize="13" />
+                                    <Label Text="{Binding NgayDat, StringFormat='{0:HH:mm dd/MM/yyyy}'}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding TongTien, StringFormat='+{0:N0}đ'}"
+                                       FontAttributes="Bold" FontSize="14" TextColor="{StaticResource Success}" VerticalOptions="Center" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,72 @@
+@model DanhGiaFormViewModel
+@{
+    ViewData["Title"] = "Đánh giá";
+    var sua = ViewBag.DangSua == true;
+    Layout = "_CustomerLayout";
+}
+
+<div class="topbar">
+    <h2>Đánh giá đơn hàng — @Model.TenGianHang</h2>
+</div>
+
+<div class="card" style="max-width:640px;">
+    <form asp-action="@(sua ? "SuaDanhGia" : "DanhGia")" asp-route-id="@Model.MaDonHang" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="MaDonHang" />
+        <input type="hidden" asp-for="MaGianHang" />
+        <input type="hidden" asp-for="TenGianHang" />
+
+        <h3 style="margin-top:0;">Dịch vụ của gian hàng</h3>
+        <div class="form-group">
+            <label asp-for="SoSao">Số sao</label>
+            <select asp-for="SoSao" class="form-control">
+                <option value="5">⭐⭐⭐⭐⭐ Tuyệt vời</option>
+                <option value="4">⭐⭐⭐⭐ Tốt</option>
+                <option value="3">⭐⭐⭐ Bình thường</option>
+                <option value="2">⭐⭐ Không hài lòng</option>
+                <option value="1">⭐ Rất tệ</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NoiDung">Nhận xét</label>
+            <textarea asp-for="NoiDung" class="form-control" placeholder="Chia sẻ trải nghiệm của bạn về gian hàng và dịch vụ giao hàng..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="SoSaoGiaoHang">Đánh giá tài xế (nếu có)</label>
+            <select asp-for="SoSaoGiaoHang" class="form-control">
+                <option value="0">— Bỏ qua —</option>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="1">⭐</option>
+            </select>
+        </div>
+
+        @if (Model.Mons.Any())
+        {
+            <h3>Từng món ăn <span class="text-muted" style="font-size:12px; font-weight:400;">(không bắt buộc)</span></h3>
+            @for (var i = 0; i < Model.Mons.Count; i++)
+            {
+                <div class="dish-rate-row">
+                    <input type="hidden" asp-for="Mons[i].MaMonAn" />
+                    <input type="hidden" asp-for="Mons[i].TenMon" />
+                    <div class="dish-rate-name">@Model.Mons[i].TenMon</div>
+                    <select asp-for="Mons[i].SoSao" class="form-control" style="width:190px;">
+                        <option value="0">— Bỏ qua —</option>
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐</option>
+                        <option value="3">⭐⭐⭐</option>
+                        <option value="2">⭐⭐</option>
+                        <option value="1">⭐</option>
+                    </select>
+                    <input asp-for="Mons[i].NoiDung" class="form-control" placeholder="Nhận xét về món (nếu có)" />
+                </div>
+            }
+        }
+
+        <button type="submit" class="btn btn-primary" style="margin-top:14px;">@(sua ? "Lưu chỉnh sửa" : "Gửi đánh giá")</button>
+    </form>
+</div>

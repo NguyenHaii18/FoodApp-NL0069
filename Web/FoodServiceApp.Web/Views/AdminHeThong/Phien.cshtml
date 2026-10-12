@@ -1,0 +1,15 @@
+@model List<FoodServiceApp.Web.Controllers.AdminHeThongController.PhienRow>
+@{
+    ViewData["Title"] = "Phiên đăng nhập";
+    Layout = "_AdminLayout";
+}
+<div class="topbar"><h2>🔑 Phiên đăng nhập đang hoạt động</h2><a asp-action="Index" class="btn btn-outline">← Vận hành</a></div>
+<div class="card mb-3"><form asp-action="ThuHoiTaiKhoan" method="post" style="display:flex; gap:8px;">@Html.AntiForgeryToken()
+    <input name="tenDangNhap" class="form-control" style="max-width:260px;" placeholder="Tên đăng nhập cần thu hồi mọi phiên" required /><button class="btn btn-danger btn-sm">Thu hồi tất cả phiên của tài khoản</button></form></div>
+<div class="card"><table class="data-table"><thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Kênh</th><th>Thiết bị</th><th>IP</th><th>Đăng nhập</th><th>Hoạt động cuối</th><th></th></tr></thead><tbody>
+@foreach (var p in Model)
+{
+    <tr><td>@p.TenDangNhap</td><td>@p.VaiTro</td><td>@p.Kenh</td><td style="font-size:12px; max-width:260px; overflow:hidden;">@p.ThietBi</td><td>@p.DiaChiIP</td><td>@p.NgayTao.ToString("dd/MM HH:mm")</td><td>@p.LanCuoi.ToString("dd/MM HH:mm")</td>
+    <td><form asp-action="ThuHoi" asp-route-id="@p.MaPhien" method="post">@Html.AntiForgeryToken()<button class="btn btn-outline btn-sm">Thu hồi</button></form></td></tr>
+}
+</tbody></table>@if (!Model.Any()) { <div class="empty-state">Không có phiên nào.</div> }</div>

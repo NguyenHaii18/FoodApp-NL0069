@@ -1,0 +1,55 @@
+@model List<GianHang>
+@{
+    ViewData["Title"] = "Gian hàng chờ duyệt";
+    Layout = "_AdminLayout";
+}
+
+<div class="topbar">
+    <h2>Gian hàng chờ duyệt</h2>
+    <a asp-action="Index" class="btn btn-outline btn-sm">← Danh sách gian hàng</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state">Không có hồ sơ nào đang chờ duyệt.</div></div>
+}
+else
+{
+    <div class="grid-2">
+        @foreach (var gh in Model)
+        {
+            <div class="card">
+                <h3 style="margin-top:0;">@gh.TenCuaHang</h3>
+                <p style="margin:4px 0;"><strong>Địa chỉ:</strong> @gh.DiaChi</p>
+                <p style="margin:4px 0;"><strong>SĐT:</strong> @gh.SDT</p>
+                @if (!string.IsNullOrEmpty(gh.MoTa))
+                {
+                    <p style="margin:4px 0;"><strong>Mô tả:</strong> @gh.MoTa</p>
+                }
+                <p style="margin:4px 0;" class="text-muted">Đăng ký lúc: @gh.NgayDangKy.ToString("HH:mm dd/MM/yyyy")</p>
+
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <form asp-action="Duyet" asp-route-id="@gh.MaGianHang" method="post" style="flex:1;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary" style="width:100%;"
+                                onclick="return confirm('Duyệt gian hàng \'@gh.TenCuaHang\'?')">✓ Duyệt</button>
+                    </form>
+                    <button type="button" class="btn btn-danger" style="flex:1;"
+                            onclick="document.getElementById('tuchoi-@gh.MaGianHang').style.display='block'">✕ Từ chối</button>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(gh.YeuCauBoSung)) { <p class="text-muted" style="font-size:12.5px;">Đã yêu cầu bổ sung: @gh.YeuCauBoSung</p> }
+                <form asp-action="BoSung" asp-route-id="@gh.MaGianHang" method="post" style="display:flex; gap:6px; margin-top:10px;">
+                    @Html.AntiForgeryToken()
+                    <input type="text" name="yeuCau" class="form-control" placeholder="Yêu cầu bổ sung giấy tờ/thông tin..." />
+                    <button type="submit" class="btn btn-outline btn-sm">Yêu cầu bổ sung</button>
+                </form>
+                <form id="tuchoi-@gh.MaGianHang" asp-action="TuChoi" asp-route-id="@gh.MaGianHang" method="post" style="display:none; margin-top:10px;">
+                    @Html.AntiForgeryToken()
+                    <input type="text" name="lyDo" class="form-control" placeholder="Lý do từ chối (bắt buộc)" required />
+                    <button type="submit" class="btn btn-danger btn-sm mt-2">Xác nhận từ chối</button>
+                </form>
+            </div>
+        }
+    </div>
+}
