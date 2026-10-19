@@ -12,6 +12,13 @@ public partial class AdminPromotionEditPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token))
+        {
+            await Navigation.PushAsync(new PromotionEditorPage(true));
+            Navigation.RemovePage(this);
+            return;
+        }
+
         if (!await Services.PhanQuyenService.KiemTraAsync(this, Services.Quyen.QuanLyKhuyenMai)) { await Shell.Current.GoToAsync(".."); return; }
 
         PickerLoaiGiam.SelectedIndex = 0;

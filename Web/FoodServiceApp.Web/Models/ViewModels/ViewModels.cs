@@ -15,30 +15,34 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string? LoiThongBao { get; set; }
     }
 
+
     public class VendorRegisterViewModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập tên cửa hàng")]
+        [Required(ErrorMessage = "Vui lòng nhập tên gian hàng")]
         public string TenCuaHang { get; set; } = "";
 
-        [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
-        public string DiaChi { get; set; } = "";
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string Email { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
         public string SDT { get; set; } = "";
-
-        public string? MoTa { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
         public string TenDangNhap { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
+        [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
         [DataType(DataType.Password)]
         public string MatKhau { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu")]
+        [Compare(nameof(MatKhau), ErrorMessage = "Mật khẩu xác nhận không khớp")]
         [DataType(DataType.Password)]
         public string XacNhanMatKhau { get; set; } = "";
     }
+
 
     public class DriverRegisterViewModel
     {

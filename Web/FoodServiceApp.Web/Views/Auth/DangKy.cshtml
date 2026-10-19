@@ -8,7 +8,10 @@
     <div class="login-card" style="width:440px;">
         <div class="logo">🍽️</div>
         <h2>Đăng ký gian hàng</h2>
-        <p class="sub">Tham gia nền tảng — tài khoản sẽ được Quản trị viên duyệt trước khi mở bán</p>
+        <p class="sub">
+            Bước 1: Tạo tài khoản đối tác.
+            Bạn sẽ hoàn thiện hồ sơ kinh doanh ở bước tiếp theo.
+        </p>
 
         <form asp-controller="Auth" asp-action="DangKy" method="post">
             @Html.AntiForgeryToken()
@@ -19,19 +22,17 @@
                 <input asp-for="TenCuaHang" class="form-control" />
                 <span asp-validation-for="TenCuaHang" class="field-validation-error"></span>
             </div>
+            
             <div class="form-group">
-                <label asp-for="DiaChi">Địa chỉ</label>
-                <input asp-for="DiaChi" class="form-control" />
-                <span asp-validation-for="DiaChi" class="field-validation-error"></span>
+                <label asp-for="Email">Email liên hệ</label>
+                <input asp-for="Email" type="email" class="form-control" />
+                <span asp-validation-for="Email" class="field-validation-error"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="SDT">Số điện thoại</label>
                 <input asp-for="SDT" class="form-control" />
                 <span asp-validation-for="SDT" class="field-validation-error"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MoTa">Mô tả cửa hàng</label>
-                <textarea asp-for="MoTa" class="form-control"></textarea>
             </div>
 
             <hr style="border-color:var(--border); margin:16px 0;" />

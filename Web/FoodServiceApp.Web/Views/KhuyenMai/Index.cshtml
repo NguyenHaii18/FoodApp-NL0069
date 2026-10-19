@@ -1,3 +1,5 @@
+@using Microsoft.EntityFrameworkCore
+@inject FoodServiceApp.Web.Data.AppDbContext Db
 @model List<KhuyenMai>
 @{ ViewData["Title"] = "Khuyến mãi"; }
 
@@ -20,7 +22,7 @@ else
     <div class="card">
         <table class="data-table">
             <thead>
-                <tr><th>Mã</th><th>Mức giảm</th><th>Điều kiện</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr>
+                <tr><th>Mã</th><th>Mức giảm</th><th>Điều kiện</th><th>Phạm vi / lượt dùng</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
                 @foreach (var km in Model)
@@ -29,7 +31,8 @@ else
                     <tr>
                         <td><strong>@km.MaCode</strong><div class="text-muted" style="font-size:12px;">@km.MoTa</div></td>
                         <td>
-                            @if (km.PhanTramGiam != null)
+                            @if (km.LoaiGiam == "GiamPhiVanChuyen") { @(km.SoTienGiam is null or 0 ? "Miễn phí giao hàng" : $"Giảm phí giao {km.SoTienGiam:N0}đ") }
+                            else if (km.PhanTramGiam != null)
                             {
                                 @($"Giảm {km.PhanTramGiam:0.#}%")
                             }
@@ -39,12 +42,18 @@ else
                             }
                         </td>
                         <td>@(km.DieuKienApDung ?? "—")</td>
+                        <td>@km.SoLuongDaDung / @(km.SoLuongToiDa?.ToString() ?? "∞") lượt<br />
+                        @(await Db.KhuyenMaiMonAns.CountAsync(x => x.MaKhuyenMai == km.MaKhuyenMai)) món;
+                        @(await Db.KhuyenMaiDanhMucs.CountAsync(x => x.MaKhuyenMai == km.MaKhuyenMai)) danh mục;
+                        @(await Db.KhuyenMaiGianHangs.CountAsync(x => x.MaKhuyenMai == km.MaKhuyenMai)) gian hàng giới hạn</td>
                         <td style="font-size:12.5px;">@km.NgayBatDau.ToString("dd/MM/yy") – @km.NgayKetThuc.ToString("dd/MM/yy")</td>
                         <td>
                             @if (!km.TrangThai)
                             {
                                 <span class="badge badge-grey">Đã tắt</span>
                             }
+                            else if (km.ChuaBatDau) { <span class="badge badge-grey">Chưa bắt đầu</span> }
+                            else if (km.SoLuongToiDa != null && km.SoLuongDaDung >= km.SoLuongToiDa) { <span class="badge badge-grey">Hết lượt</span> }
                             else if (hetHan)
                             {
                                 <span class="badge badge-danger">Hết hạn</span>

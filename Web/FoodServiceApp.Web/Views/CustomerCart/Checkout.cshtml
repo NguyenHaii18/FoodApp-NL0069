@@ -71,7 +71,7 @@
 
         <div class="checkout-section">
             <div class="section-title">🏷️ Mã khuyến mãi</div>
-            <form asp-action="ApDungKhuyenMai" method="post" style="display:flex; gap:8px;">
+            <form id="formVoucher" asp-action="ApDungKhuyenMai" method="post" style="display:flex; gap:8px;">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="MaYeuCauDat" value="@Model.MaYeuCauDat" />
                 <input type="hidden" name="DiaChiGiaoHang" value="@Model.DiaChiGiaoHang" />
@@ -95,10 +95,8 @@
             }
             <hr style="border:none; border-top:1px solid var(--border); margin:10px 0;" />
             <div class="checkout-item-row"><span>Tạm tính</span><span>@Model.GioHang.TongTien.ToString("N0")đ</span></div>
-            @if (Model.SoTienGiam > 0)
-            {
-                <div class="checkout-item-row" style="color:var(--success);"><span>Giảm giá</span><span>-@Model.SoTienGiam.ToString("N0")đ</span></div>
-            }
+            <div class="checkout-item-row" style="color:var(--success);"><span>Giảm giá</span><span id="voucher-discount">-@Model.SoTienGiam.ToString("N0")đ</span></div>
+            <p id="voucher-error" role="alert"></p>
             <div class="checkout-item-row" id="dong-phi-giao">
                 <span>Phí giao hàng</span>
                 <span id="gia-tri-phi-giao">@(Model.PhiGiaoHangUocTinh > 0 ? Model.PhiGiaoHangUocTinh.ToString("N0") + "đ" : "Nhập địa chỉ để xem phí")</span>
@@ -126,13 +124,23 @@
                 nutDatHang.disabled = true; nutDatHang.textContent = 'Đang xử lý...';
             });
             var tamTinhSauGiam = @Html.Raw((Model.GioHang.TongTien - Model.SoTienGiam).ToString("F0"));
-            var timer = null;
+            var timer = null, quoteVersion = 0;
+            var voucherForm = document.getElementById('formVoucher');
+            var voucherInput = voucherForm.querySelector('[name="MaKhuyenMai"]');
+            function syncVoucher() { formDat.querySelector('[name="MaKhuyenMai"]').value = voucherInput.value; }
+            voucherInput.addEventListener('input', syncVoucher);
+            formDat.addEventListener('submit', syncVoucher);
+            voucherForm.addEventListener('submit', function () {
+                ['DiaChiGiaoHang', 'GhiChu'].forEach(name => voucherForm.querySelector('[name="' + name + '"]').value = formDat.querySelector('[name="' + name + '"]').value);
+                voucherForm.querySelector('[name="HinhThucThanhToan"]').value = formDat.querySelector('[name="HinhThucThanhToan"]:checked').value;
+            });
 
             function dinhDangTien(so) {
                 return Math.round(so).toLocaleString('vi-VN') + 'đ';
             }
 
             function uocTinhPhi() {
+                var version = ++quoteVersion;
                 var diaChi = textareaDiaChi.value.trim();
                 if (!diaChi) {
                     elPhi.textContent = 'Nhập địa chỉ để xem phí';
@@ -141,13 +149,14 @@
                 elPhi.textContent = 'Đang tính...';
 
                 var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                fetch('@Url.Action("UocTinhPhi")', {
+                fetch('@Url.Action("UocTinhPhi")?maKhuyenMai=' + encodeURIComponent(document.querySelector('input[type="text"][name="MaKhuyenMai"]').value), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
                     body: JSON.stringify(diaChi)
                 })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
+                        if (version !== quoteVersion) return;
                         var phi = data.phiGiaoHang || 0;
                         var canhBao = document.getElementById('canh-bao-khu-vuc');
                         if (data.ngoaiKhuVuc) {
@@ -155,7 +164,10 @@
                             canhBao.style.display = 'block'; nutDatHang.disabled = true;
                         } else { canhBao.style.display = 'none'; nutDatHang.disabled = false; }
                         elPhi.textContent = dinhDangTien(phi);
-                        var thanhTien = tamTinhSauGiam + phi;
+                        var thanhTien = data.thanhTien;
+                        document.getElementById('voucher-discount').textContent = '-' + dinhDangTien(data.soTienGiam || 0);
+                        document.getElementById('voucher-error').textContent = data.loi || '';
+                        if (data.loi) nutDatHang.disabled = true;
                         elThanhTien.textContent = dinhDangTien(thanhTien);
                         nutDatHang.textContent = 'Đặt hàng — ' + dinhDangTien(thanhTien);
                     })
@@ -177,6 +189,7 @@
                 });
             }
 
+            document.querySelector('input[type="text"][name="MaKhuyenMai"]').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(uocTinhPhi, 700); });
             if (textareaDiaChi) {
                 textareaDiaChi.addEventListener('input', function () {
                     clearTimeout(timer);

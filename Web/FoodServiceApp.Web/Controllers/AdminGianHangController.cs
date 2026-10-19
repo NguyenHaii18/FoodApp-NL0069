@@ -48,14 +48,33 @@ namespace FoodServiceApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Duyet(int id)
         {
-            var gianHang = await _db.GianHangs.FirstOrDefaultAsync(g => g.MaGianHang == id);
-            if (gianHang == null) return NotFound();
+            var gianHang = await _db.GianHangs
+                .FirstOrDefaultAsync(g => g.MaGianHang == id);
+
+            if (gianHang == null)
+                return NotFound();
+
+            if (gianHang.TrangThaiDuyet != "ChoDuyet")
+            {
+                TempData["LoiThongBao"] =
+                    "Chỉ có thể duyệt hồ sơ đang chờ xét duyệt.";
+
+                return RedirectToAction("ChoDuyet");
+            }
 
             gianHang.TrangThaiDuyet = "DaDuyet";
-            gianHang.TrangThaiKinhDoanh = "DangMo";
+
+            // Được duyệt không có nghĩa là tự động mở bán
+            gianHang.TrangThaiKinhDoanh = "DongCua";
+            gianHang.DangNhanDon = false;
+            gianHang.YeuCauBoSung = null;
+            gianHang.LyDoTuChoi = null;
+
             await _db.SaveChangesAsync();
 
-            TempData["ThongBao"] = $"Đã duyệt gian hàng \"{gianHang.TenCuaHang}\".";
+            TempData["ThongBao"] =
+                $"Đã duyệt gian hàng \"{gianHang.TenCuaHang}\".";
+
             return RedirectToAction("ChoDuyet");
         }
 
@@ -63,15 +82,49 @@ namespace FoodServiceApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BoSung(int id, string? yeuCau)
         {
-            var gh = await _db.GianHangs.FirstOrDefaultAsync(g => g.MaGianHang == id);
-            if (gh == null) return NotFound();
-            if (string.IsNullOrWhiteSpace(yeuCau)) { TempData["LoiThongBao"] = "Nhập nội dung cần bổ sung."; return RedirectToAction("ChoDuyet"); }
-            gh.YeuCauBoSung = yeuCau.Trim();
-            _db.ThongBaos.Add(new ThongBao { MaTK = gh.MaTK, Loai = "HeThong", TieuDe = "Yêu cầu bổ sung hồ sơ gian hàng", NoiDung = gh.YeuCauBoSung });
+            var gianHang = await _db.GianHangs
+                .FirstOrDefaultAsync(g => g.MaGianHang == id);
+
+            if (gianHang == null)
+                return NotFound();
+
+            if (gianHang.TrangThaiDuyet != "ChoDuyet")
+            {
+                TempData["LoiThongBao"] =
+                    "Chỉ có thể yêu cầu bổ sung hồ sơ đang chờ duyệt.";
+
+                return RedirectToAction("ChoDuyet");
+            }
+
+            if (string.IsNullOrWhiteSpace(yeuCau))
+            {
+                TempData["LoiThongBao"] =
+                    "Vui lòng nhập nội dung cần bổ sung.";
+
+                return RedirectToAction("ChoDuyet");
+            }
+
+            gianHang.TrangThaiDuyet = "CanBoSung";
+            gianHang.TrangThaiKinhDoanh = "DongCua";
+            gianHang.DangNhanDon = false;
+            gianHang.YeuCauBoSung = yeuCau.Trim();
+
+            _db.ThongBaos.Add(new ThongBao
+            {
+                MaTK = gianHang.MaTK,
+                Loai = "HeThong",
+                TieuDe = "Yêu cầu bổ sung hồ sơ gian hàng",
+                NoiDung = gianHang.YeuCauBoSung
+            });
+
             await _db.SaveChangesAsync();
-            TempData["ThongBao"] = $"Đã yêu cầu \"{gh.TenCuaHang}\" bổ sung hồ sơ.";
+
+            TempData["ThongBao"] =
+                $"Đã yêu cầu gian hàng \"{gianHang.TenCuaHang}\" bổ sung hồ sơ.";
+
             return RedirectToAction("ChoDuyet");
         }
+
 
         [HttpPost("TuChoi/{id:int}")]
         [ValidateAntiForgeryToken]

@@ -1,61 +1,90 @@
+
 @model GianHang
 @{
-    ViewData["Title"] = "Chờ duyệt";
+    ViewData["Title"] = "Trạng thái hồ sơ gian hàng";
 }
 
 <div class="card" style="max-width:520px; margin:60px auto; text-align:center;">
-    @if (Model.TrangThaiDuyet == "ChoDuyet")
+
+    @if (Model.TrangThaiDuyet == "ChuaGuiHoSo")
     {
-        <div style="font-size:40px; margin-bottom:12px;">⏳</div>
+        <h2>Hoàn thiện hồ sơ gian hàng</h2>
+        <p class="text-muted">
+            Tài khoản đã được tạo thành công.
+            Vui lòng hoàn thiện hồ sơ trước khi gửi xét duyệt.
+        </p>
+    }
+    else if (Model.TrangThaiDuyet == "CanBoSung")
+    {
+        <h2>Hồ sơ cần bổ sung</h2>
+        <p class="text-muted">
+            Quản trị viên yêu cầu bổ sung thông tin.
+        </p>
+        <p>@Model.YeuCauBoSung</p>
+    }
+    else if (Model.TrangThaiDuyet == "ChoDuyet")
+    {
         <h2>Hồ sơ đang chờ duyệt</h2>
         <p class="text-muted">
-            Gian hàng <strong>@Model.TenCuaHang</strong> đã đăng ký thành công và đang chờ
-            Quản trị viên xét duyệt. Bạn sẽ có thể quản lý thực đơn, nhận đơn hàng ngay sau khi
-            được duyệt. Vui lòng quay lại kiểm tra sau.
+            Hồ sơ của @Model.TenCuaHang đã được gửi.
+            Vui lòng chờ quản trị viên xét duyệt.
         </p>
     }
     else if (Model.TrangThaiDuyet == "TuChoi")
     {
-        <div style="font-size:40px; margin-bottom:12px;">❌</div>
         <h2>Hồ sơ đã bị từ chối</h2>
         <p class="text-muted">
-            Rất tiếc, hồ sơ đăng ký của gian hàng <strong>@Model.TenCuaHang</strong> đã bị từ chối.
-            Vui lòng liên hệ quản trị viên để biết thêm chi tiết hoặc cập nhật lại hồ sơ ở mục Hồ sơ.
+            Lý do: @Model.LyDoTuChoi
         </p>
     }
-    <a asp-controller="HoSo" asp-action="Index" class="btn btn-outline mt-3">Xem/sửa hồ sơ</a>
-    <form asp-controller="Auth" asp-action="Logout" method="post" style="display:inline;">
+
+    @if (TempData["LoiThongBao"] is string loi)
+    {
+        <p class="text-danger">@loi</p>
+    }
+
+    @if (TempData["ThongBao"] is string thongBao)
+    {
+        <p class="text-success">@thongBao</p>
+    }
+
+    @if (Model.TrangThaiDuyet == "ChuaGuiHoSo" ||
+         Model.TrangThaiDuyet == "CanBoSung")
+    {
+        <a asp-controller="HoSo"
+           asp-action="Index"
+           class="btn btn-outline mt-3">
+            Hoàn thiện hồ sơ
+        </a>
+
+        <form asp-controller="Dashboard"
+              asp-action="GuiHoSoXetDuyet"
+              method="post"
+              style="margin-top:12px;">
+            @Html.AntiForgeryToken()
+
+            <button type="submit" class="btn btn-primary">
+                Gửi hồ sơ xét duyệt
+            </button>
+        </form>
+    }
+    else
+    {
+        <a asp-controller="HoSo"
+           asp-action="Index"
+           class="btn btn-outline mt-3">
+            Xem hồ sơ
+        </a>
+    }
+
+    <form asp-controller="Auth"
+          asp-action="Logout"
+          method="post"
+          style="margin-top:16px;">
         @Html.AntiForgeryToken()
-        
-        @if (Model.TrangThaiDuyet == "ChuaGuiHoSo" ||
-             Model.TrangThaiDuyet == "CanBoSung")
-        {
-            <h3>
-                @(Model.TrangThaiDuyet == "CanBoSung"
-                    ? "Hồ sơ cần bổ sung"
-                    : "Hoàn thiện hồ sơ gian hàng")
-            </h3>
 
-            @if (!string.IsNullOrWhiteSpace(Model.YeuCauBoSung))
-            {
-                <p class="text-muted">
-                    Yêu cầu của quản trị viên:
-                    @Model.YeuCauBoSung
-                </p>
-            }
-
-            <p>
-                Hãy cập nhật đầy đủ hồ sơ trước khi gửi xét duyệt.
-            </p>
-
-            <form asp-controller="Dashboard" asp-action="GuiHoSoXetDuyet" method="post">
-                @Html.AntiForgeryToken()
-
-                <button type="submit" class="btn btn-primary">
-                    Gửi hồ sơ xét duyệt
-                </button>
-            </form>
-        }
-        <button type="submit" class="btn btn-outline mt-3">Đăng xuất</button>
+        <button type="submit" class="btn btn-outline">
+            Đăng xuất
+        </button>
     </form>
 </div>

@@ -1,0 +1,28 @@
+@model KhuyenMaiFormViewModel
+@using Microsoft.EntityFrameworkCore
+@using FoodServiceApp.Web.Services
+@inject FoodServiceApp.Web.Data.AppDbContext Db
+@{
+    var admin = User.IsInRole("QuanTri");
+    var tk = int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+    var owner = admin ? (int?)null : await Db.GianHangs.Where(x => x.MaTK == tk).Select(x => (int?)x.MaGianHang).FirstOrDefaultAsync();
+    var stores = admin ? await Db.GianHangs.ToListAsync() : new List<FoodServiceApp.Web.Models.Entities.GianHang>();
+    var categories = await Db.DanhMucs.Where(x => admin || x.MaGianHang == owner).ToListAsync();
+    var foods = await Db.MonAns.Include(x => x.DanhMuc).Where(x => admin || x.DanhMuc!.MaGianHang == owner).ToListAsync();
+}
+<p>Để trống = không giới hạn. Món ăn và danh mục được kết hợp theo điều kiện HOẶC.</p>
+@if (admin) {
+<div class="form-group"><label>Gian hàng áp dụng</label><input type="hidden" asp-for="DsGianHang" />
+<select multiple class="form-control" data-scope="DsGianHang">
+@foreach (var x in stores) { <option value="@x.MaGianHang" selected="@(PromotionManagementService.Ids(Model.DsGianHang).Contains(x.MaGianHang))">@x.TenCuaHang</option> }
+</select></div>
+}
+<div class="form-group"><label>Danh mục áp dụng</label><input type="hidden" asp-for="DsDanhMuc" />
+<select multiple class="form-control" data-scope="DsDanhMuc">
+@foreach (var x in categories) { <option value="@x.MaDanhMuc" selected="@(PromotionManagementService.Ids(Model.DsDanhMuc).Contains(x.MaDanhMuc))">@x.TenDanhMuc</option> }
+</select></div>
+<div class="form-group"><label>Món ăn áp dụng</label><input type="hidden" asp-for="DsMonAn" />
+<select multiple class="form-control" data-scope="DsMonAn">
+@foreach (var x in foods) { <option value="@x.MaMonAn" selected="@(PromotionManagementService.Ids(Model.DsMonAn).Contains(x.MaMonAn))">@x.TenMon — @x.DanhMuc?.TenDanhMuc</option> }
+</select></div>
+<script>document.querySelectorAll('[data-scope]').forEach(s => s.addEventListener('change', () => document.getElementById(s.dataset.scope).value = Array.from(s.selectedOptions).map(x => x.value).join(',')));</script>

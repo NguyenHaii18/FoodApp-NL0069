@@ -319,9 +319,11 @@ public class KhuyenMai
         _ => $"Giảm {GiaTriGiam:N0}đ",
     };
     /// <summary>Phạm vi áp dụng để hiển thị, VD "Toàn hệ thống" hoặc tên gian hàng cụ thể.</summary>
-    public string PhamViHienThi => ApDungToanHeThong
-        ? "Toàn hệ thống"
-        : MockData.DanhSachGianHang.FirstOrDefault(g => g.Id == GianHangId)?.TenGianHang ?? "Gian hàng";
+    public string PhamViHienThi => (ApDungToanHeThong
+        ? (GianHangApDung.Count > 0 ? $"Hệ thống • {GianHangApDung.Count} gian hàng" : "Toàn hệ thống")
+        : MockData.DanhSachGianHang.FirstOrDefault(g => g.Id == GianHangId)?.TenGianHang ?? "Gian hàng")
+        + (CoGioiHanMon ? $" • {MonApDung.Count} món / {DanhMucApDung.Count} danh mục" : " • mọi món");
+    public string SoLuongToiDaHienThi => SoLuongToiDa == int.MaxValue ? "∞" : SoLuongToiDa.ToString();
 }
 
 public class MucGioHang

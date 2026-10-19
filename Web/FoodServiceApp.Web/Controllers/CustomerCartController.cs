@@ -191,7 +191,7 @@ namespace FoodServiceApp.Web.Controllers
         // không tin tưởng số phí do client gửi lên, tránh khách sửa phí qua DevTools.
         [HttpPost("uoc-tinh-phi")]
         [Authorize(Roles = "KhachHang")]
-        public async Task<IActionResult> UocTinhPhi([FromBody] string diaChiGiao)
+        public async Task<IActionResult> UocTinhPhi([FromBody] string diaChiGiao, [FromQuery] string? maKhuyenMai = null)
         {
             var gioHang = _cart.LayGioHang();
             if (!gioHang.Items.Any() || string.IsNullOrWhiteSpace(diaChiGiao))
@@ -202,7 +202,11 @@ namespace FoodServiceApp.Web.Controllers
 
             var (phi, km) = await TinhPhiGiaoHangAsync(gianHang.DiaChi, diaChiGiao);
             var banKinh = await LayBanKinhAsync();
-            return Ok(new { phiGiaoHang = phi, khoangCachKm = km, ngoaiKhuVuc = km != null && km > banKinh, banKinhKm = banKinh });
+            await DoiChieuGioAsync(gioHang);
+            var result = await new PromotionService(_db).CalculateAsync(int.Parse(User.FindFirst("MaKH")!.Value), gioHang.MaGianHang,
+                gioHang.Items.Select(x => new PromotionItem(x.MaMonAn, x.SoLuong, x.TuyChonIds)), phi, maKhuyenMai);
+            return Ok(new { phiGiaoHang = phi, khoangCachKm = km, ngoaiKhuVuc = km != null && km > banKinh, banKinhKm = banKinh,
+                soTienGiam = result.Discount, thanhTien = result.Total, loi = result.Message });
         }
 
         /// <summary>
@@ -211,51 +215,12 @@ namespace FoodServiceApp.Web.Controllers
         /// </summary>
         private async Task<(KhuyenMai? km, decimal giam, string? loi)> TinhKhuyenMaiAsync(string? ma, Cart cart, decimal phiGiao)
         {
-            if (string.IsNullOrWhiteSpace(ma)) return (null, 0, null);
-            var maCode = ma.Trim().ToUpper();
-            var now = DateTime.Now;
-            var km = await _db.KhuyenMais.FirstOrDefaultAsync(k =>
-                k.MaCode == maCode && k.TrangThai &&
-                (k.MaGianHang == null || k.MaGianHang == cart.MaGianHang) &&
-                now >= k.NgayBatDau && now <= k.NgayKetThuc);
-            if (km == null) return (null, 0, "Mã khuyến mãi không hợp lệ, đã hết hạn, hoặc không áp dụng cho gian hàng này.");
-
-            var dsQuan = await _db.KhuyenMaiGianHangs.Where(x => x.MaKhuyenMai == km.MaKhuyenMai).Select(x => x.MaGianHang).ToListAsync();
-            if (dsQuan.Any() && !dsQuan.Contains(cart.MaGianHang))
-                return (null, 0, "Mã này không áp dụng cho gian hàng trong giỏ.");
-
-            if (cart.TongTien < km.GiaTriDonToiThieu)
-                return (null, 0, $"Đơn tối thiểu {km.GiaTriDonToiThieu:N0}đ mới dùng được mã này.");
-            if (km.SoLuongToiDa != null && km.SoLuongDaDung >= km.SoLuongToiDa)
-                return (null, 0, "Mã khuyến mãi đã hết lượt sử dụng.");
-            var maKH = int.Parse(User.FindFirst("MaKH")!.Value);
-            if (km.MoiKhachMotLan && await _db.KhuyenMaiKhachDungs.AnyAsync(x => x.MaKhuyenMai == km.MaKhuyenMai && x.MaKH == maKH))
-                return (null, 0, "Bạn đã dùng mã này rồi (mỗi khách chỉ dùng một lần).");
-
-            // Phần giá trị đơn được áp dụng: nếu mã giới hạn món/danh mục thì chỉ tính các món đó
-            var dsMon = await _db.KhuyenMaiMonAns.Where(x => x.MaKhuyenMai == km.MaKhuyenMai).Select(x => x.MaMonAn).ToListAsync();
-            var dsDm = await _db.KhuyenMaiDanhMucs.Where(x => x.MaKhuyenMai == km.MaKhuyenMai).Select(x => x.MaDanhMuc).ToListAsync();
-            var coGioiHan = dsMon.Any() || dsDm.Any();
-            var coSan = cart.TongTien;
-            if (coGioiHan)
-            {
-                var maMons = cart.Items.Select(i => i.MaMonAn).ToList();
-                var dmCua = await _db.MonAns.Where(m => maMons.Contains(m.MaMonAn)).ToDictionaryAsync(m => m.MaMonAn, m => m.MaDanhMuc);
-                coSan = cart.Items.Where(i => dsMon.Contains(i.MaMonAn) || (dmCua.TryGetValue(i.MaMonAn, out var dm) && dsDm.Contains(dm)))
-                                  .Sum(i => i.Gia * i.SoLuong);
-                if (coSan <= 0) return (null, 0, "Giỏ hàng không có món nào thuộc diện áp dụng của mã này.");
-            }
-
-            decimal giam;
-            if (km.LoaiGiam == "GiamPhiVanChuyen")
-                giam = Math.Min(km.SoTienGiam ?? phiGiao, phiGiao);
-            else
-            {
-                giam = km.PhanTramGiam != null ? Math.Round(coSan * km.PhanTramGiam.Value / 100) : (km.SoTienGiam ?? 0);
-                if (km.GiamToiDa != null) giam = Math.Min(giam, km.GiamToiDa.Value);
-                giam = Math.Min(giam, coSan);
-            }
-            return (km, giam, null);
+            var result = await new PromotionService(_db).CalculateAsync(int.Parse(User.FindFirst("MaKH")!.Value),
+                cart.MaGianHang, cart.Items.Select(x => new PromotionItem(x.MaMonAn, x.SoLuong, x.TuyChonIds)), phiGiao, ma,
+                consume: _db.Database.CurrentTransaction != null);
+            if (result.Valid)
+                for (var i = 0; i < cart.Items.Count; i++) cart.Items[i].Gia = result.Lines[i].Price;
+            return (result.Voucher, result.Discount, result.Message);
         }
 
         [HttpPost("ap-dung-khuyen-mai")]
@@ -264,6 +229,8 @@ namespace FoodServiceApp.Web.Controllers
         public async Task<IActionResult> ApDungKhuyenMai(CheckoutViewModel model)
         {
             model.GioHang = _cart.LayGioHang();
+            await DoiChieuGioAsync(model.GioHang);
+            model.PhiGiaoHangUocTinh = 0;
             if (!model.GioHang.Items.Any()) return RedirectToAction("Index", "CustomerHome");
             if (string.IsNullOrEmpty(model.MaYeuCauDat)) model.MaYeuCauDat = Guid.NewGuid().ToString("N");
 
@@ -288,6 +255,12 @@ namespace FoodServiceApp.Web.Controllers
         public async Task<IActionResult> DatHang(CheckoutViewModel model)
         {
             var maKH = int.Parse(User.FindFirst("MaKH")!.Value);
+
+            if (string.IsNullOrWhiteSpace(model.MaYeuCauDat) || model.MaYeuCauDat.Length > 40)
+                return BadRequest("Yêu cầu đặt hàng thiếu mã chống trùng. Vui lòng tải lại checkout.");
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            var promotions = new PromotionService(_db);
+            await promotions.LockAsync($"checkout:customer:{maKH}");
 
             // Chống tạo đơn trùng: cùng một token chỉ tạo đúng một đơn (bấm đúp / gửi lại form / F5)
             if (!string.IsNullOrEmpty(model.MaYeuCauDat))
@@ -388,11 +361,9 @@ namespace FoodServiceApp.Web.Controllers
             });
 
             if (km != null)
-            {
-                km.SoLuongDaDung += 1;
-                _db.KhuyenMaiKhachDungs.Add(new KhuyenMaiKhachDung { MaKhuyenMai = km.MaKhuyenMai, MaKH = maKH, MaDonHang = donHang.MaDonHang });
-            }
+                promotions.Record(new PromotionResult(km, null, null, gioHang.TongTien, 0, phiGiaoHang, soTienGiam), maKH, donHang.MaDonHang);
             await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
             _cart.XoaGioHang();
 
             if (model.HinhThucThanhToan == "VNPay")

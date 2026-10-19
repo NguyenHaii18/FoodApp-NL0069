@@ -45,7 +45,7 @@
                                                     <Span Text="Đã dùng " />
                                                     <Span Text="{Binding SoLuongDaDung}" />
                                                     <Span Text="/" />
-                                                    <Span Text="{Binding SoLuongToiDa}" />
+                                                    <Span Text="{Binding SoLuongToiDaHienThi}" />
                                                     <Span Text=" lượt" />
                                                 </FormattedString>
                                             </Label.FormattedText>
@@ -58,7 +58,7 @@
                                             <Button Grid.Column="2" Text="Sửa" Style="{StaticResource OutlineButton}"
                                                     HeightRequest="34" FontSize="12" Padding="14,0"
                                                     Clicked="OnSuaClicked" CommandParameter="{Binding .}" />
-                                            <Button Grid.Column="3" Text="Xóa" HeightRequest="34" FontSize="12" Padding="14,0" CornerRadius="10"
+                                            <Button Grid.Column="3" Text="Ngừng" HeightRequest="34" FontSize="12" Padding="14,0" CornerRadius="10"
                                                     BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
                                                     BorderColor="{StaticResource Danger}" BorderWidth="1"
                                                     Clicked="OnXoaClicked" CommandParameter="{Binding .}" />

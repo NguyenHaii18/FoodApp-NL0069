@@ -17,7 +17,8 @@ public partial class AdminPromotionsPage : ContentPage
     {
         base.OnAppearing();
         if (!await Services.PhanQuyenService.KiemTraAsync(this, Services.Quyen.QuanLyKhuyenMai)) { await Shell.Current.GoToAsync(".."); return; }
-        DungBoLoc();
+        KhungBoLoc.IsVisible = !Services.DuLieuService.DangOnline && string.IsNullOrEmpty(Services.ApiClient.Token);
+        if (KhungBoLoc.IsVisible) DungBoLoc();
         NapDanhSach();
     }
 
@@ -65,8 +66,16 @@ public partial class AdminPromotionsPage : ContentPage
         NapDanhSach();
     }
 
-    private void NapDanhSach()
+    private async void NapDanhSach()
     {
+        if ((Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token)))
+        {
+            var result = await Services.ApiClient.GetAsync<List<KhuyenMai>>("api/mobile/promotions/admin");
+            if (!result.ThanhCong) { DsKhuyenMai.ItemsSource = null; await DisplayAlert("Không tải được voucher", result.ThongDiep, "OK"); return; }
+            DsKhuyenMai.ItemsSource = result.DuLieu;
+            LblRong.IsVisible = result.DuLieu?.Count == 0;
+            return;
+        }
         // TODO: thay bằng GET /api/quan-tri/khuyen-mai?gianHangId=... khi có API thật.
         var danhSach = MockData.DanhSachKhuyenMai.AsEnumerable();
 
@@ -80,10 +89,17 @@ public partial class AdminPromotionsPage : ContentPage
         LblRong.IsVisible = ketQua.Count == 0;
     }
 
-    private void OnBatTatToggled(object? sender, ToggledEventArgs e)
+    private async void OnBatTatToggled(object? sender, ToggledEventArgs e)
     {
         if (sender is not Switch { BindingContext: KhuyenMai km }) return;
 
+        if ((Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token)))
+        {
+            if (km.DangHoatDong == e.Value) return;
+            var result = await Services.ApiClient.PutAsync<object>($"api/mobile/promotions/admin/{km.Id}/status", new { dangHoatDong = e.Value });
+            if (!result.ThanhCong) { await DisplayAlert("Chưa đổi trạng thái", result.ThongDiep, "OK"); NapDanhSach(); return; }
+            km.DangHoatDong = e.Value; return;
+        }
         km.DangHoatDong = e.Value;
         Services.VendorLocalStore.Luu();
         Services.NhatKyService.GhiQuanTri(e.Value ? "Bật khuyến mãi" : "Tắt khuyến mãi", km.MaCode);
@@ -92,13 +108,27 @@ public partial class AdminPromotionsPage : ContentPage
 
     private async void OnThemClicked(object sender, EventArgs e)
     {
+        if ((Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token))) { await Navigation.PushAsync(new PromotionEditorPage(true)); return; }
         await Shell.Current.GoToAsync(nameof(AdminPromotionEditPage));
+    }
+
+    private async void OnSuaClicked(object sender, EventArgs e)
+    {
+        if (sender is Button { CommandParameter: KhuyenMai km } && (Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token)))
+            await Navigation.PushAsync(new PromotionEditorPage(true, km.Id));
     }
 
     private async void OnXoaClicked(object sender, EventArgs e)
     {
         if (sender is not Button { CommandParameter: KhuyenMai km }) return;
 
+        if ((Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token)))
+        {
+            if (!await DisplayAlert("Ngừng voucher", "Tắt voucher và giữ lịch sử sử dụng?", "Tắt", "Hủy")) return;
+            var result = await Services.ApiClient.PutAsync<object>($"api/mobile/promotions/admin/{km.Id}/status", new { dangHoatDong = false });
+            if (!result.ThanhCong) await DisplayAlert("Chưa tắt voucher", result.ThongDiep, "OK");
+            NapDanhSach(); return;
+        }
         bool xacNhan = await DisplayAlert("Xóa khuyến mãi", $"Xóa mã \"{km.MaCode}\" ({km.PhamViHienThi})?", "Xóa", "Hủy");
         if (!xacNhan) return;
 

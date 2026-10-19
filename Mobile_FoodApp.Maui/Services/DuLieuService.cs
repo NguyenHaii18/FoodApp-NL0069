@@ -97,4 +97,4 @@ public static class DuLieuService
 public class DangNhapKhachDto { public string? Token { get; set; } public KhachHang? KhachHang { get; set; } }
 public class DangNhapGianHangDto { public string? Token { get; set; } public GianHang? GianHang { get; set; } }
 public class DangNhapQuanTriDto { public string? Token { get; set; } public string? VaiTro { get; set; } public string? HoTen { get; set; } }
-public class DatHangDto { public string? Id { get; set; } }
+public class DatHangDto { public string? Id { get; set; } public decimal GiamGia { get; set; } public decimal PhiGiaoHang { get; set; } public decimal TongTien { get; set; } public string? PaymentUrl { get; set; } }

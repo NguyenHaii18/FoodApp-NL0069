@@ -1,6 +1,6 @@
 @model KhuyenMaiFormViewModel
 
-<div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+<div asp-validation-summary="All" class="validation-summary-errors"></div>
 
 <div class="form-group">
     <label asp-for="MaCode">Mã khuyến mãi</label>
@@ -36,12 +36,12 @@
 <div class="grid-2">
     <div class="form-group">
         <label asp-for="NgayBatDau">Ngày bắt đầu</label>
-        <input asp-for="NgayBatDau" type="date" class="form-control" />
+        <input asp-for="NgayBatDau" type="datetime-local" class="form-control" />
         <span asp-validation-for="NgayBatDau" class="field-validation-error"></span>
     </div>
     <div class="form-group">
         <label asp-for="NgayKetThuc">Ngày kết thúc</label>
-        <input asp-for="NgayKetThuc" type="date" class="form-control" />
+        <input asp-for="NgayKetThuc" type="datetime-local" class="form-control" />
         <span asp-validation-for="NgayKetThuc" class="field-validation-error"></span>
     </div>
 </div>
@@ -55,10 +55,15 @@
     <div class="form-group"><label asp-for="SoLuongToiDa">Tổng số lượt dùng (trống = không giới hạn)</label><input asp-for="SoLuongToiDa" type="number" min="1" class="form-control" /></div>
     <div class="form-group"><label style="display:flex; gap:8px; align-items:center; margin-top:26px;"><input asp-for="MoiKhachMotLan" type="checkbox" style="width:auto;" /> Mỗi khách chỉ dùng 1 lần</label></div>
 </div>
-<p class="text-muted" style="font-size:12.5px; margin:0 0 6px;">Phạm vi áp dụng (nhập mã số, cách nhau dấu phẩy; để trống = không giới hạn):</p>
-<div class="form-group"><label asp-for="DsGianHang">Gian hàng (MaGianHang)</label><input asp-for="DsGianHang" class="form-control" placeholder="vd: 1,2,5" /></div>
-<div class="form-group"><label asp-for="DsDanhMuc">Danh mục (MaDanhMuc)</label><input asp-for="DsDanhMuc" class="form-control" /></div>
-<div class="form-group"><label asp-for="DsMonAn">Món ăn (MaMonAn)</label><input asp-for="DsMonAn" class="form-control" /></div>
+<partial name="_PromotionScopes" model="Model" />
+<p class="text-muted">Giảm phí vận chuyển: nhập 0 để miễn toàn bộ phí giao hàng.</p>
+<script>
+(function () {
+ const type = document.getElementById('LoaiGiam'), value = document.getElementById('GiaTriGiam'), cap = document.getElementById('GiamToiDa');
+ function update() { cap.parentElement.hidden = type.value !== 'PhanTram'; value.min = type.value === 'GiamPhiVanChuyen' ? '0' : '1'; if(type.value === 'PhanTram') value.max = '100'; else value.removeAttribute('max'); }
+ type.addEventListener('change', update); update();
+})();
+</script>
 
 <div class="form-group">
     <label style="display:flex; align-items:center; gap:8px;">

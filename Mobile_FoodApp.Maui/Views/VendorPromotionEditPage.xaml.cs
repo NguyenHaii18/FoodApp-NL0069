@@ -15,9 +15,16 @@ public partial class VendorPromotionEditPage : ContentPage
         InitializeComponent();
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (Services.DuLieuService.DangOnline || !string.IsNullOrEmpty(Services.ApiClient.Token))
+        {
+            await Navigation.PushAsync(new PromotionEditorPage(false, KhuyenMaiId));
+            Navigation.RemovePage(this);
+            return;
+        }
+
 
         _kmDangSua = string.IsNullOrEmpty(KhuyenMaiId)
             ? null

@@ -1,3 +1,5 @@
+@using Microsoft.EntityFrameworkCore
+@inject FoodServiceApp.Web.Data.AppDbContext Db
 @model List<KhuyenMai>
 @{
     ViewData["Title"] = "Khuyến mãi toàn hệ thống";
@@ -25,7 +27,7 @@ else
     <div class="card">
         <table class="data-table">
             <thead>
-                <tr><th>Mã</th><th>Mức giảm</th><th>Điều kiện</th><th>Lượt dùng / chi phí</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr>
+                <tr><th>Mã</th><th>Mức giảm</th><th>Điều kiện</th><th>Lượt dùng / chi phí</th><th>Phạm vi / lượt dùng</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
                 @foreach (var km in Model)
@@ -34,15 +36,21 @@ else
                     <tr>
                         <td><strong>@km.MaCode</strong><div class="text-muted" style="font-size:12px;">@km.MoTa</div></td>
                         <td>
-                            @if (km.LoaiGiam == "GiamPhiVanChuyen") { @($"Giảm phí giao tối đa {km.SoTienGiam:N0}đ") }
+                            @if (km.LoaiGiam == "GiamPhiVanChuyen") { @(km.SoTienGiam is null or 0 ? "Miễn phí giao hàng" : $"Giảm phí giao tối đa {km.SoTienGiam:N0}đ") }
                             else if (km.PhanTramGiam != null) { @($"Giảm {km.PhanTramGiam:0.#}%") @(km.GiamToiDa != null ? $" (tối đa {km.GiamToiDa:N0}đ)" : "") }
                             else { @($"Giảm {km.SoTienGiam:N0}đ") }
                         </td>
                         <td>@(km.DieuKienApDung ?? "—")@if (km.GiaTriDonToiThieu > 0) { <div class="text-muted" style="font-size:12px;">Đơn từ @km.GiaTriDonToiThieu.ToString("N0")đ</div> }@if (km.MoiKhachMotLan) { <div class="text-muted" style="font-size:12px;">1 lần/khách</div> }</td>
                         <td>@km.SoLuongDaDung@(km.SoLuongToiDa != null ? " / " + km.SoLuongToiDa : "") lượt<div class="text-muted" style="font-size:12px;">Chi phí: @(chiPhi.TryGetValue(km.MaKhuyenMai, out var cp) ? cp.ToString("N0") : "0")đ</div>@if (lamDung.Any(x => x.MaKhuyenMai == km.MaKhuyenMai)) { <div style="font-size:12px; color:var(--danger);">⚠️ Có khách dùng ≥3 lần</div> }</td>
+                        <td>@km.SoLuongDaDung / @(km.SoLuongToiDa?.ToString() ?? "∞") lượt<br />
+                        @(await Db.KhuyenMaiMonAns.CountAsync(x => x.MaKhuyenMai == km.MaKhuyenMai)) món;
+                        @(await Db.KhuyenMaiDanhMucs.CountAsync(x => x.MaKhuyenMai == km.MaKhuyenMai)) danh mục;
+                        @(await Db.KhuyenMaiGianHangs.CountAsync(x => x.MaKhuyenMai == km.MaKhuyenMai)) gian hàng giới hạn</td>
                         <td style="font-size:12.5px;">@km.NgayBatDau.ToString("dd/MM/yy") – @km.NgayKetThuc.ToString("dd/MM/yy")</td>
                         <td>
                             @if (!km.TrangThai) { <span class="badge badge-grey">Đã tắt</span> }
+                            else if (km.ChuaBatDau) { <span class="badge badge-grey">Chưa bắt đầu</span> }
+                            else if (km.SoLuongToiDa != null && km.SoLuongDaDung >= km.SoLuongToiDa) { <span class="badge badge-grey">Hết lượt</span> }
                             else if (hetHan) { <span class="badge badge-danger">Hết hạn</span> }
                             else { <span class="badge badge-success">Đang chạy</span> }
                         </td>

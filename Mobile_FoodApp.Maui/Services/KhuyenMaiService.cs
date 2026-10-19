@@ -55,7 +55,7 @@ public static class KhuyenMaiService
                 giamShip = km.GiaTriGiam > 0 ? Math.Min(km.GiaTriGiam, phiShip) : phiShip;   // 0 = miễn phí giao
                 break;
         }
-        giamDon = Math.Min(giamDon, tamTinh);
+        giamDon = Math.Max(0, Math.Min(giamDon, coSo));
 
         var nd = km.LoaiGiam == LoaiGiamGia.GiamPhiVanChuyen ? $"Giảm {giamShip:N0}đ phí giao" : $"Giảm {giamDon:N0}đ";
         return new KetQuaVoucher(true, nd, giamDon, giamShip);
@@ -72,6 +72,7 @@ public static class KhuyenMaiService
     /// <summary>Đơn bị hủy: trả lại lượt dùng để mã không bị mất oan.</summary>
     public static void HoanSuDung(string? maCode, string? email)
     {
+        if (DuLieuService.DangOnline || !string.IsNullOrEmpty(ApiClient.Token)) return;
         if (string.IsNullOrWhiteSpace(maCode)) return;
         var km = MockData.DanhSachKhuyenMai.FirstOrDefault(k => string.Equals(k.MaCode, maCode, StringComparison.OrdinalIgnoreCase));
         if (km is null) return;

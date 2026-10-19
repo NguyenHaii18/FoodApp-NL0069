@@ -161,27 +161,35 @@ namespace FoodServiceApp.Web.Controllers.Api
         [AllowAnonymous]
         public async Task<IActionResult> KhuyenMai()
         {
-            var now = DateTime.Now;
+            var now = PromotionService.VietnamNow;
             var promotions = await _db.KhuyenMais
                 .Where(k => k.TrangThai && k.NgayBatDau <= now && k.NgayKetThuc >= now)
                 .OrderByDescending(k => k.NgayKetThuc)
                 .ToListAsync();
 
+            var ids = promotions.Select(x => x.MaKhuyenMai).ToList();
+            var dishes = await _db.KhuyenMaiMonAns.Where(x => ids.Contains(x.MaKhuyenMai)).ToListAsync();
+            var categories = await _db.KhuyenMaiDanhMucs.Where(x => ids.Contains(x.MaKhuyenMai)).ToListAsync();
+            var stores = await _db.KhuyenMaiGianHangs.Where(x => ids.Contains(x.MaKhuyenMai)).ToListAsync();
             return Ok(promotions.Select(k => new
             {
                 id = k.MaKhuyenMai,
                 maCode = k.MaCode,
-                tenChuongTrinh = k.MoTa ?? k.MaCode,
+                tenChuongTrinh = k.TenChuongTrinh ?? k.MaCode,
                 moTa = k.MoTa ?? "",
-                loaiGiam = k.PhanTramGiam != null ? "PhanTram" : "SoTien",
+                loaiGiam = k.LoaiGiam,
                 giaTriGiam = k.PhanTramGiam ?? k.SoTienGiam ?? 0,
-                giaTriDonToiThieu = 0m,
-                giamToiDa = (decimal?)null,
+                giaTriDonToiThieu = k.GiaTriDonToiThieu,
+                giamToiDa = k.GiamToiDa,
                 ngayBatDau = k.NgayBatDau,
                 ngayKetThuc = k.NgayKetThuc,
                 gianHangId = k.MaGianHang,
-                soLuongToiDa = 999999,
-                soLuongDaDung = 0,
+                soLuongToiDa = k.SoLuongToiDa ?? int.MaxValue,
+                soLuongDaDung = k.SoLuongDaDung,
+                moiKhachMotLan = k.MoiKhachMotLan,
+                monApDung = dishes.Where(x => x.MaKhuyenMai == k.MaKhuyenMai).Select(x => x.MaMonAn.ToString()),
+                danhMucApDung = categories.Where(x => x.MaKhuyenMai == k.MaKhuyenMai).Select(x => x.MaDanhMuc.ToString()),
+                gianHangApDung = stores.Where(x => x.MaKhuyenMai == k.MaKhuyenMai).Select(x => x.MaGianHang.ToString()),
                 dangHoatDong = k.TrangThai
             }));
         }
@@ -413,6 +421,23 @@ namespace FoodServiceApp.Web.Controllers.Api
             return Ok(orders.Select(o => MapMobileOrder(o, true)));
         }
 
+        [HttpPost("khuyen-mai/kiem-tra")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "KhachHang")]
+        public async Task<IActionResult> QuotePromotion(MobilePlaceOrderRequest request)
+        {
+            var kh = await CurrentCustomerAsync();
+            if (kh == null) return Unauthorized();
+            var store = await _db.GianHangs.FindAsync(request.GianHangId);
+            if (store == null || string.IsNullOrWhiteSpace(request.DiaChiGiao) || request.ChiTiet == null)
+                return Loi("Vui lòng chọn gian hàng, món ăn và địa chỉ giao hàng.");
+            var route = await CalculateDeliveryAsync(store.DiaChi, request.DiaChiGiao);
+            var result = await new PromotionService(_db).CalculateAsync(kh.MaKH, store.MaGianHang,
+                request.ChiTiet.Select(x => new PromotionItem(x.MonAnId, x.SoLuong)), route.Phi, request.MaKhuyenMai);
+            return Ok(new { hopLe = result.Valid, code = result.ErrorCode, thongDiep = result.Message,
+                tongTienMon = result.Subtotal, giaTriHopLe = result.EligibleAmount, phiGiaoHang = result.Shipping,
+                giamGia = result.Discount, tongTien = result.Total, loaiGiam = result.Voucher?.LoaiGiam });
+        }
+
         [HttpPost("don-hang")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "KhachHang")]
         public async Task<IActionResult> PlaceOrder(MobilePlaceOrderRequest request)
@@ -435,10 +460,32 @@ namespace FoodServiceApp.Web.Controllers.Api
             if (foods.Count != ids.Count || foods.Any(m => m.DanhMuc?.MaGianHang != store.MaGianHang)) return Loi("Có món ăn không thuộc gian hàng đã chọn.");
             if (foods.Any(m => m.TinhTrang != "ConHang")) return Loi("Có món ăn hiện đã hết hàng.");
 
-            var tongTienMon = request.ChiTiet.Sum(i => foods.First(f => f.MaMonAn == i.MonAnId).Gia * i.SoLuong);
-            var (giamGia, maKm) = await CalculatePromotionAsync(request.MaKhuyenMai, store.MaGianHang, tongTienMon);
+            if (string.IsNullOrWhiteSpace(request.MaYeuCauDat) || request.MaYeuCauDat.Length > 40)
+                return Loi("Thiếu mã yêu cầu đặt hàng chống trùng.");
             var route = await CalculateDeliveryAsync(store.DiaChi, request.DiaChiGiao);
-            var tongThanhToan = Math.Max(0, tongTienMon - giamGia) + route.Phi;
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            var promotions = new PromotionService(_db);
+            await promotions.LockAsync($"checkout:customer:{kh.MaKH}");
+            var existing = await _db.DonHangs.FirstOrDefaultAsync(x => x.MaKH == kh.MaKH && x.MaYeuCauDat == request.MaYeuCauDat);
+            if (existing != null)
+            {
+                var payment = await _db.ThanhToans.FirstOrDefaultAsync(x => x.MaDonHang == existing.MaDonHang);
+                var retryUrl = payment?.HinhThuc == "VNPay" && payment.TrangThai != "DaThanhToan" && existing.TrangThai != "DaHuy"
+                    ? _vnpay.CreatePaymentUrl(new VnPayCreateRequest(existing.MaDonHang, (long)existing.TongTien,
+                        $"Thanh toan don hang #{existing.MaDonHang} - FoodServiceApp", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1",
+                        Url.Action("VnPayReturn", "Payment", null, Request.Scheme)!)) : null;
+                return Ok(new { id = existing.MaDonHang, maDonHang = existing.MaDonHang,
+                    tongTienMon = existing.TongTien + existing.TienGiam - existing.PhiGiaoHang,
+                    giamGia = existing.TienGiam, phiGiaoHang = existing.PhiGiaoHang, tongTien = existing.TongTien,
+                    paymentUrl = retryUrl, duplicate = true });
+            }
+            var promotion = await promotions.CalculateAsync(kh.MaKH, store.MaGianHang,
+                request.ChiTiet.Select(x => new PromotionItem(x.MonAnId, x.SoLuong)), route.Phi, request.MaKhuyenMai, consume: true);
+            if (!promotion.Valid) return BadRequest(new { code = promotion.ErrorCode, thongDiep = promotion.Message });
+            var tongTienMon = promotion.Subtotal;
+            var giamGia = promotion.Discount;
+            var maKm = promotion.Voucher?.MaKhuyenMai;
+            var tongThanhToan = promotion.Total;
 
             var maXacNhan = FoodServiceApp.Web.Services.GiaoHangXuLy.TaoMa();   // lưu cột riêng, KHÔNG để trong ghi chú (tài xế đọc được ghi chú)
             var ghiChu = string.IsNullOrWhiteSpace(request.GhiChu) ? null : request.GhiChu.Trim();
@@ -454,6 +501,8 @@ namespace FoodServiceApp.Web.Controllers.Api
                 GhiChu = ghiChu,
                 MaXacNhanGiao = maXacNhan,
                 MaKhuyenMaiApDung = maKm,
+                TienGiam = giamGia,
+                MaYeuCauDat = request.MaYeuCauDat,
             };
             _db.DonHangs.Add(don);
             await _db.SaveChangesAsync();
@@ -466,7 +515,7 @@ namespace FoodServiceApp.Web.Controllers.Api
                     MaDonHang = don.MaDonHang,
                     MaMonAn = mon.MaMonAn,
                     SoLuong = item.SoLuong,
-                    DonGia = mon.Gia,
+                    DonGia = promotion.Lines.First(x => x.FoodId == mon.MaMonAn).Price,
                 });
             }
 
@@ -477,6 +526,9 @@ namespace FoodServiceApp.Web.Controllers.Api
                 TrangThai = IsPaymentCash(request.HinhThucThanhToan) ? "ChoThanhToan" : "ChoThanhToan"
             });
             await _db.SaveChangesAsync();
+            promotions.Record(promotion, kh.MaKH, don.MaDonHang);
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
             DeliveryRoutes[don.MaDonHang] = route;
 
             string? paymentUrl = null;
@@ -1029,7 +1081,7 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         public record MobileVendorRegisterRequest(string TenGianHang, string DiaChi, string Sdt, string Email, string MatKhau, string? MoTa, string? HinhAnh);
         public record MobilePlaceOrderItem(int MonAnId, int SoLuong);
-        public record MobilePlaceOrderRequest(int GianHangId, string DiaChiGiao, string? GhiChu, string HinhThucThanhToan, string? MaKhuyenMai, List<MobilePlaceOrderItem> ChiTiet);
+        public record MobilePlaceOrderRequest(int GianHangId, string DiaChiGiao, string? GhiChu, string HinhThucThanhToan, string? MaKhuyenMai, List<MobilePlaceOrderItem> ChiTiet, string? MaYeuCauDat = null);
         public record MobileCustomerProfileRequest(string HoTen, string? Sdt, string? DiaChi);
         public record MobileIssueRequest(int? DonHangId, string TieuDe, string MoTa);
         public record MobileReviewRequest(int DonHangId, int SoSaoMonAn, int SoSaoGiaoHang, string? NoiDung);
@@ -1137,7 +1189,7 @@ namespace FoodServiceApp.Web.Controllers.Api
                     {
                         id = c.MonAn.MaMonAn,
                         tenMon = c.MonAn.TenMon,
-                        gia = c.MonAn.Gia,
+                        gia = c.DonGia,
                         hinhAnh = c.MonAn.HinhAnh ?? "🍲",
                         danhMuc = c.MonAn.DanhMuc?.TenDanhMuc ?? "",
                         gianHangId = d.MaGianHang,
@@ -1157,7 +1209,7 @@ namespace FoodServiceApp.Web.Controllers.Api
                 phiGiaoHang = hasAdjusted ? adjustedFee : d.PhiGiaoHang,
                 hinhThucThanhToan = d.ThanhToan?.HinhThuc ?? "TienMat",
                 maKhuyenMai = d.KhuyenMaiApDung?.MaCode ?? "",
-                giamGia = Math.Max(0, d.ChiTiets.Sum(c => c.DonGia * c.SoLuong) - (d.TongTien - d.PhiGiaoHang)),
+                giamGia = d.TienGiam,
                 khoangCachKm = adjustedKm > 0 ? adjustedKm : (route?.Km ?? 0d),
                 thoiGianDuKienPhut = route?.Phut ?? 0,
                 khuVucLay = "",
@@ -1312,40 +1364,22 @@ namespace FoodServiceApp.Web.Controllers.Api
             return Ok(new { trangThai = order.TrangThai });
         }
 
-        private async Task<(decimal GiamGia, int? MaKm)> CalculatePromotionAsync(string? code, int storeId, decimal amount)
-        {
-            if (string.IsNullOrWhiteSpace(code)) return (0, null);
-            var km = await _db.KhuyenMais.FirstOrDefaultAsync(k =>
-                k.MaCode == code.Trim().ToUpper() && k.TrangThai &&
-                (k.MaGianHang == null || k.MaGianHang == storeId) &&
-                DateTime.Now >= k.NgayBatDau && DateTime.Now <= k.NgayKetThuc);
-            if (km == null) return (0, null);
-            var discount = km.PhanTramGiam != null
-                ? Math.Round(amount * km.PhanTramGiam.Value / 100)
-                : Math.Max(0, km.SoTienGiam ?? 0);
-            return (Math.Min(discount, amount), km.MaKhuyenMai);
-        }
-
         private async Task<DeliveryRoute> CalculateDeliveryAsync(string from, string to)
         {
+            var settings = new CauHinhService(_db);
+            var fallback = await settings.LaySoAsync("Giao.PhiMacDinh", 15000m);
+            var perKm = await settings.LaySoAsync("Giao.PhiMoiKm", 5000m);
             try
             {
                 var origin = await _maps.GeocodeAsync(from);
                 var destination = await _maps.GeocodeAsync(to);
-                if (origin == null || destination == null) return new DeliveryRoute(0, 0, PhiCoBan, false);
+                if (origin == null || destination == null) return new DeliveryRoute(0, 0, fallback, false);
                 var result = await _maps.GetDistanceAsync(origin, destination);
-                if (result == null) return new DeliveryRoute(0, 0, PhiCoBan, false);
-                var km = result.DistanceKm;
-                var phi = km <= KmMienPhi ? PhiCoBan : PhiCoBan + (decimal)Math.Ceiling(km - KmMienPhi) * PhiMoiKmThem;
-                var ngoaiThanh = IsOutskirts(to);
-                if (ngoaiThanh) phi += PhuPhiNgoaiThanh;
-                phi = Math.Min(PhiToiDa, phi);
-                return new DeliveryRoute(km, result.DurationMinutes, phi, ngoaiThanh);
+                if (result == null) return new DeliveryRoute(0, 0, fallback, false);
+                return new DeliveryRoute(result.DistanceKm, result.DurationMinutes,
+                    Math.Ceiling((decimal)result.DistanceKm) * perKm, IsOutskirts(to));
             }
-            catch
-            {
-                return new DeliveryRoute(0, 0, PhiCoBan, false);
-            }
+            catch { return new DeliveryRoute(0, 0, fallback, false); }
         }
 
         private static bool IsOutskirts(string address)

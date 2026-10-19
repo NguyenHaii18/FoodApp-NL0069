@@ -62,7 +62,7 @@ namespace FoodServiceApp.Web.Models.Dtos
         string DiaChiGiaoHang,
         string? GhiChu,
         string? MaKhuyenMai,
-        string HinhThucThanhToan = "TienMat");
+        string HinhThucThanhToan = "TienMat", string? MaYeuCauDat = null);
 
     public record DiaChiDto(int MaDiaChi, string Nhan, string DiaChi, bool MacDinh);
     public record DiaChiRequest(string Nhan, string DiaChi, bool MacDinh = false);

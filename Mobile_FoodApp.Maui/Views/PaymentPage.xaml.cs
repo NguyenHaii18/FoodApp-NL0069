@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 
 namespace FoodApp.Maui.Views;
 
-public enum HinhThucThanhToan { TienMat, ChuyenKhoan, ViDienTu }
+public enum HinhThucThanhToan { TienMat, ChuyenKhoan, ViDienTu, VNPay }
 
 [QueryProperty(nameof(GioHang), "GioHang")]
 [QueryProperty(nameof(TenGianHang), "TenGianHang")]
@@ -22,12 +22,48 @@ public partial class PaymentPage : ContentPage
     private KhuyenMai? _kmDangDung;               // voucher đang áp dụng
     // Phí giao hàng tính theo khoảng cách quán → địa chỉ khách và khu vực (xem GiaoHangService)
     private KetQuaTuyen _tuyen = GiaoHangService.UocTinh(null, null);
-    private decimal PhiGiaoHang => _tuyen.Phi;
+    private decimal? _serverShipping, _serverSubtotal;
+    private readonly string _requestId = Guid.NewGuid().ToString("N");
+    private int _quoteVersion;
+    private bool _placing;
+    private bool Online => DuLieuService.DangOnline || !string.IsNullOrEmpty(ApiClient.Token);
+    private decimal PhiGiaoHang => _serverShipping ?? _tuyen.Phi;
+    public sealed class Quote
+    {
+        public bool HopLe { get; set; }
+        public string? ThongDiep { get; set; }
+        public decimal TongTienMon { get; set; }
+        public decimal PhiGiaoHang { get; set; }
+        public decimal GiamGia { get; set; }
+        public decimal TongTien { get; set; }
+        public string? LoaiGiam { get; set; }
+    }
+    private async Task<bool> QuoteAsync()
+    {
+        var version = ++_quoteVersion;
+        var result = await ApiClient.PostAsync<Quote>("api/mobile/khuyen-mai/kiem-tra", new {
+            gianHangId = GianHangId, diaChiGiao = EntryDiaChi.Text ?? "", hinhThucThanhToan = "TienMat",
+            maKhuyenMai = EntryMaKhuyenMai.Text, chiTiet = GioHang.Select(x => new { monAnId = x.MonAn.Id, soLuong = x.SoLuong })
+        });
+        if (version != _quoteVersion) return false;
+        _giamGia = _giamShip = 0;
+        if (!result.ThanhCong || result.DuLieu == null)
+        { HienKetQuaVoucher(false, result.ThongDiep); CapNhatTongTien(); return false; }
+        var quote = result.DuLieu;
+        _serverShipping = quote.PhiGiaoHang; _serverSubtotal = quote.TongTienMon;
+        if (quote.HopLe)
+        {
+            if (quote.LoaiGiam == "GiamPhiVanChuyen") _giamShip = quote.GiamGia; else _giamGia = quote.GiamGia;
+        }
+        HienKetQuaVoucher(quote.HopLe, quote.ThongDiep ?? $"Giảm {quote.GiamGia:N0}đ");
+        CapNhatTongTien(); return quote.HopLe;
+    }
 
     private void OnDiaChiChanged(object? sender, TextChangedEventArgs e) => TinhLaiPhi();
 
-    private void TinhLaiPhi()
+    private async void TinhLaiPhi()
     {
+        if (Online) { if (GioHang.Count > 0) await QuoteAsync(); return; }
         var diaChiQuan = MockData.DanhSachGianHang.FirstOrDefault(g => g.Id == GianHangId)?.DiaChi;
         _tuyen = GiaoHangService.UocTinh(diaChiQuan, EntryDiaChi.Text);
         CapNhatTongTien();
@@ -54,6 +90,7 @@ public partial class PaymentPage : ContentPage
     private readonly (HinhThucThanhToan Loai, string Nhan, string Icon)[] _dsHinhThuc =
     {
         (HinhThucThanhToan.TienMat, "Tiền mặt khi nhận hàng", "💵"),
+        (HinhThucThanhToan.VNPay, "VNPay", "🏦"),
         (HinhThucThanhToan.ChuyenKhoan, "Chuyển khoản ngân hàng", "🏦"),
         (HinhThucThanhToan.ViDienTu, "Ví điện tử (Momo/ZaloPay)", "👛"),
     };
@@ -68,6 +105,7 @@ public partial class PaymentPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        if (Online && _hinhThucChon is not (HinhThucThanhToan.TienMat or HinhThucThanhToan.VNPay)) _hinhThucChon = HinhThucThanhToan.TienMat;
         DsChiTiet.ItemsSource = GioHang;
         VeDanhSachHinhThuc();
         TinhLaiPhi();
@@ -77,7 +115,7 @@ public partial class PaymentPage : ContentPage
     private void VeDanhSachHinhThuc()
     {
         DanhSachHinhThuc.Children.Clear();
-        foreach (var ht in _dsHinhThuc)
+        foreach (var ht in _dsHinhThuc.Where(x => !Online || x.Loai is HinhThucThanhToan.TienMat or HinhThucThanhToan.VNPay))
         {
             var chon = ht.Loai == _hinhThucChon;
             var row = new Grid { Padding = new Thickness(12, 10) };
@@ -107,7 +145,7 @@ public partial class PaymentPage : ContentPage
         }
     }
 
-    private decimal TamTinh => GioHang.Sum(x => x.ThanhTien);
+    private decimal TamTinh => _serverSubtotal ?? GioHang.Sum(x => x.ThanhTien);
     private decimal TongCong => Math.Max(0, TamTinh + PhiGiaoHang - _giamGia - _giamShip);
 
     private void CapNhatTongTien()
@@ -123,6 +161,7 @@ public partial class PaymentPage : ContentPage
 
     private async void OnApDungKhuyenMaiClicked(object sender, EventArgs e)
     {
+        if (Online) { await QuoteAsync(); return; }
         var maCode = EntryMaKhuyenMai.Text?.Trim();
         if (string.IsNullOrEmpty(maCode)) return;
 
@@ -144,8 +183,9 @@ public partial class PaymentPage : ContentPage
     }
 
     /// <summary>Kiểm tra và áp dụng voucher vào đơn hiện tại (km = null: gỡ voucher).</summary>
-    private void DatVoucher(KhuyenMai? km)
+    private async void DatVoucher(KhuyenMai? km)
     {
+        if (Online) { EntryMaKhuyenMai.Text = km?.MaCode ?? ""; await QuoteAsync(); return; }
         _kmDangDung = null; _giamGia = 0; _giamShip = 0;
         if (km is not null)
         {
@@ -159,6 +199,16 @@ public partial class PaymentPage : ContentPage
 
     private async void OnChonUuDaiClicked(object sender, EventArgs e)
     {
+        if (Online)
+        {
+            var result = await ApiClient.GetAsync<List<KhuyenMai>>("api/mobile/khuyen-mai");
+            if (!result.ThanhCong) { await DisplayAlert("Ưu đãi", result.ThongDiep, "OK"); return; }
+            var list = result.DuLieu ?? new();
+            var selected = await DisplayActionSheet("Chọn mã để máy chủ kiểm tra", "Đóng", "Bỏ mã đang dùng", list.Select(x => x.MaCode).ToArray());
+            if (selected is null or "Đóng") return;
+            EntryMaKhuyenMai.Text = selected == "Bỏ mã đang dùng" ? "" : selected;
+            await QuoteAsync(); return;
+        }
         var ds = KhuyenMaiService.DanhSachUuDai(GianHangId, GioHang, PhiGiaoHang, Phien.Khach?.Email);
         if (ds.Count == 0) { await DisplayAlert("Ưu đãi", "Hiện chưa có ưu đãi nào cho gian hàng này.", "OK"); return; }
 
@@ -183,6 +233,11 @@ public partial class PaymentPage : ContentPage
 
     private async void OnXacNhanDatHangClicked(object sender, EventArgs e)
     {
+        if (_placing) return;
+        _placing = true;
+        try
+        {
+        if (Online && !await QuoteAsync()) return;
         if (Preferences.Default.Get("cd-xacnhandat", false) && GioHang.Count > 0 &&
             !await DisplayAlert("Xác nhận đặt hàng", $"Đặt {GioHang.Sum(x => x.SoLuong)} món tại {TenGianHang}, tổng {TongCong:N0}đ?", "Đặt hàng", "Xem lại"))
             return;
@@ -196,7 +251,7 @@ public partial class PaymentPage : ContentPage
         }
 
         // Kiểm tra lại voucher ngay lúc đặt hàng (có thể đã hết hạn/hết lượt/giỏ hàng đã đổi từ lúc áp dụng)
-        if (_kmDangDung is not null)
+        if (!Online && _kmDangDung is not null)
         {
             var kq = KhuyenMaiService.KiemTra(_kmDangDung, GianHangId, GioHang, PhiGiaoHang, Phien.Khach?.Email);
             if (!kq.HopLe)
@@ -240,7 +295,7 @@ public partial class PaymentPage : ContentPage
                 GioHenGiao = PickerGioGiao.SelectedIndex > 0 ? (string)PickerGioGiao.SelectedItem : "",
                 HenGiaoLuc = PickerGioGiao.SelectedIndex > 0 ? _gioBatDau[PickerGioGiao.SelectedIndex - 1] : null,
                 HinhThucThanhToan = _dsHinhThuc.First(h => h.Loai == _hinhThucChon).Nhan,
-                MaKhuyenMai = _kmDangDung?.MaCode ?? "",
+                MaKhuyenMai = Online ? EntryMaKhuyenMai.Text?.Trim() ?? "" : _kmDangDung?.MaCode ?? "",
                 GiamGia = _giamGia + _giamShip,           // gồm cả phần giảm phí giao hàng
                 PhiGiaoHang = PhiGiaoHang,
                 DiaChiLayHang = MockData.DanhSachGianHang.FirstOrDefault(g => g.Id == GianHangId)?.DiaChi ?? "",
@@ -248,19 +303,27 @@ public partial class PaymentPage : ContentPage
             GiaoHangService.GanTuyenVaoDon(don, _tuyen);                       // khoảng cách, khu vực, phí theo biểu phí
             don.MaXacNhanGiao = Random.Shared.Next(1000, 10000).ToString();   // khách đọc mã này cho tài xế khi nhận hàng
 
-            if (DuLieuService.DangOnline)
+            if (Online)
             {
                 var kq = await ApiClient.PostAsync<DatHangDto>("api/mobile/don-hang", new
                 {
                     gianHangId = GianHangId,
                     diaChiGiao = don.DiaChiGiao,
                     hinhThucThanhToan = _hinhThucChon.ToString(),
-                    maKhuyenMai = _kmDangDung?.MaCode,
+                    maKhuyenMai = EntryMaKhuyenMai.Text,
+                    maYeuCauDat = _requestId,
                     chiTiet = GioHang.Select(x => new { monAnId = x.MonAn.Id, soLuong = x.SoLuong })
                 });
                 if (!kq.ThanhCong) { await DisplayAlert("Đặt hàng thất bại", kq.ThongDiep, "OK"); return; }
                 if (!string.IsNullOrEmpty(kq.DuLieu?.Id)) don.Id = kq.DuLieu!.Id!;
+                don.GiamGia = kq.DuLieu?.GiamGia ?? don.GiamGia;
+                don.PhiGiaoHang = kq.DuLieu?.PhiGiaoHang ?? don.PhiGiaoHang;
                 await DuLieuService.TaiDonHangKhachAsync();
+                if (!string.IsNullOrWhiteSpace(kq.DuLieu?.PaymentUrl))
+                {
+                    try { await Launcher.Default.OpenAsync(kq.DuLieu.PaymentUrl); }
+                    catch { await DisplayAlert("Đơn đã được tạo", "Không mở được VNPay. Bạn có thể thanh toán lại từ đơn hàng.", "OK"); }
+                }
             }
             else
             {
@@ -275,7 +338,7 @@ public partial class PaymentPage : ContentPage
             // khi quán xác nhận / bàn giao, khách thấy trạng thái đổi theo).
             if (MockData.DonHangCuaGianHang.All(d => d.Id != don.Id))
                 MockData.DonHangCuaGianHang.Insert(0, don);
-            if (!DuLieuService.DangOnline && _kmDangDung is not null)
+            if (!Online && _kmDangDung is not null)
                 KhuyenMaiService.GhiNhanSuDung(_kmDangDung, Phien.Khach?.Email);     // tăng lượt dùng, ghi nhớ khách đã dùng
             DoiTacService.GuiThongBao(GianHangId, ThongBaoGianHang.DonMoi, "Có đơn hàng mới",
                 $"Đơn #{don.Id} · {don.ChiTiet.Sum(x => x.SoLuong)} món · {don.TongTien:N0}đ. Hãy phản hồi trong {DonHang.PhutPhanHoiToiDa} phút.", don.Id);
@@ -289,6 +352,8 @@ public partial class PaymentPage : ContentPage
             LoadingXacNhan.IsRunning = false;
             BtnXacNhanDatHang.IsEnabled = true;
         }
+            }
+        finally { _placing = false; }
     }
 
     private async void OnChonBanDoTapped(object? sender, TappedEventArgs e)

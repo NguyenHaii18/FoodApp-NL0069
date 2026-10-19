@@ -76,48 +76,87 @@ namespace FoodServiceApp.Web.Controllers
         [HttpGet]
         public IActionResult DangKy() => View(new VendorRegisterViewModel());
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DangKy(VendorRegisterViewModel model)
+        public async Task<IActionResult> DangKy(
+            VendorRegisterViewModel model)
         {
-            if (model.MatKhau != model.XacNhanMatKhau)
-                ModelState.AddModelError(nameof(model.XacNhanMatKhau), "Xác nhận mật khẩu không khớp.");
+            model.TenCuaHang = model.TenCuaHang?.Trim() ?? "";
+            model.Email = model.Email?.Trim() ?? "";
+            model.SDT = model.SDT?.Trim() ?? "";
+            model.TenDangNhap = model.TenDangNhap?.Trim() ?? "";
 
-            if (await _db.TaiKhoans.AnyAsync(t => t.TenDangNhap == model.TenDangNhap))
-                ModelState.AddModelError(nameof(model.TenDangNhap), "Tên đăng nhập đã tồn tại.");
+            if (await _db.TaiKhoans.AnyAsync(
+                t => t.TenDangNhap == model.TenDangNhap))
+            {
+                ModelState.AddModelError(
+                    nameof(model.TenDangNhap),
+                    "Tên đăng nhập đã tồn tại.");
+            }
 
-            if (!ModelState.IsValid) return View(model);
+            if (await _db.GianHangs.AnyAsync(
+                g => g.Email == model.Email))
+            {
+                ModelState.AddModelError(
+                    nameof(model.Email),
+                    "Email này đã được sử dụng.");
+            }
+
+            if (await _db.GianHangs.AnyAsync(
+                g => g.SDT == model.SDT))
+            {
+                ModelState.AddModelError(
+                    nameof(model.SDT),
+                    "Số điện thoại này đã được sử dụng.");
+            }
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync();
 
             var taiKhoan = new TaiKhoan
             {
                 TenDangNhap = model.TenDangNhap,
                 MatKhau = MatKhauHelper.Hash(model.MatKhau),
                 VaiTro = "GianHang",
+                TrangThai = true
             };
+
             _db.TaiKhoans.Add(taiKhoan);
             await _db.SaveChangesAsync();
 
             var gianHang = new GianHang
             {
                 MaTK = taiKhoan.MaTK,
-                TenCuaHang = model.TenCuaHang.Trim(),
-                DiaChi = model.DiaChi.Trim(),
-                SDT = model.SDT.Trim(),
-                MoTa = model.MoTa?.Trim(),
+                TenCuaHang = model.TenCuaHang,
+                Email = model.Email,
+                SDT = model.SDT,
 
+                // Hồ sơ kinh doanh sẽ được bổ sung ở bước 2.
+                DiaChi = "",
+                MoTa = null,
+
+                TrangThaiDuyet = "ChuaGuiHoSo",
                 TrangThaiKinhDoanh = "DongCua",
                 DangNhanDon = false,
-                TrangThaiDuyet = "ChuaGuiHoSo",
 
                 TyLeChietKhau =
-                    await CauHinhService.HoaHongMacDinhAsync(_db),
+                    await CauHinhService.HoaHongMacDinhAsync(_db)
             };
+
             _db.GianHangs.Add(gianHang);
             await _db.SaveChangesAsync();
 
+            await transaction.CommitAsync();
+
             await DangNhapAsync(taiKhoan, gianHang);
-            return RedirectToAction("ChoDuyet", "Dashboard");
+
+            return RedirectToAction("Index", "HoSo");
         }
+
 
         private async Task DangNhapAsync(TaiKhoan taiKhoan, GianHang gianHang)
         {

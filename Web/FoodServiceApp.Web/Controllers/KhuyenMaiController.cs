@@ -1,3 +1,4 @@
+using FoodServiceApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FoodServiceApp.Web.Data;
@@ -32,29 +33,25 @@ namespace FoodServiceApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(KhuyenMaiFormViewModel vm)
         {
-            if (vm.NgayKetThuc <= vm.NgayBatDau)
-                ModelState.AddModelError(nameof(vm.NgayKetThuc), "Ngày kết thúc phải sau ngày bắt đầu.");
-
-            if (await _db.KhuyenMais.AnyAsync(k => k.MaCode == vm.MaCode))
-                ModelState.AddModelError(nameof(vm.MaCode), "Mã khuyến mãi này đã tồn tại.");
-
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            var service = new PromotionManagementService(_db);
+            var error = await service.ValidateAsync(vm, CurrentGianHangId);
+            if (error != null) ModelState.AddModelError("", error);
             if (!ModelState.IsValid) return View(vm);
-
-            var km = new KhuyenMai
-            {
-                MaGianHang = CurrentGianHangId,
-                MaCode = vm.MaCode.Trim().ToUpper(),
-                MoTa = vm.MoTa,
-                DieuKienApDung = vm.DieuKienApDung,
-                NgayBatDau = vm.NgayBatDau,
-                NgayKetThuc = vm.NgayKetThuc,
-                TrangThai = vm.TrangThai,
-                PhanTramGiam = vm.LoaiGiam == "PhanTram" ? vm.GiaTriGiam : null,
-                SoTienGiam = vm.LoaiGiam == "SoTien" ? vm.GiaTriGiam : null,
-            };
-
+            var km = new KhuyenMai { MaGianHang = CurrentGianHangId };
             _db.KhuyenMais.Add(km);
-            await _db.SaveChangesAsync();
+            try
+            {
+                await service.SaveAsync(km, vm);
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync();
+                _db.ChangeTracker.Clear();
+                ModelState.AddModelError("", "Mã voucher đã tồn tại hoặc phạm vi dữ liệu đã thay đổi. Vui lòng kiểm tra lại.");
+                return View(vm);
+            }
             TempData["ThongBao"] = $"Đã tạo mã khuyến mãi {km.MaCode}.";
             return RedirectToAction("Index");
         }
@@ -64,18 +61,7 @@ namespace FoodServiceApp.Web.Controllers
             var km = await _db.KhuyenMais.FirstOrDefaultAsync(k => k.MaKhuyenMai == id && k.MaGianHang == CurrentGianHangId);
             if (km == null) return NotFound();
 
-            var vm = new KhuyenMaiFormViewModel
-            {
-                MaKhuyenMai = km.MaKhuyenMai,
-                MaCode = km.MaCode,
-                MoTa = km.MoTa,
-                DieuKienApDung = km.DieuKienApDung,
-                LoaiGiam = km.PhanTramGiam != null ? "PhanTram" : "SoTien",
-                GiaTriGiam = km.PhanTramGiam ?? km.SoTienGiam ?? 0,
-                NgayBatDau = km.NgayBatDau,
-                NgayKetThuc = km.NgayKetThuc,
-                TrangThai = km.TrangThai,
-            };
+            var vm = await new PromotionManagementService(_db).FormAsync(km);
             return View(vm);
         }
 
@@ -86,20 +72,26 @@ namespace FoodServiceApp.Web.Controllers
             var km = await _db.KhuyenMais.FirstOrDefaultAsync(k => k.MaKhuyenMai == id && k.MaGianHang == CurrentGianHangId);
             if (km == null) return NotFound();
 
-            if (vm.NgayKetThuc <= vm.NgayBatDau)
-                ModelState.AddModelError(nameof(vm.NgayKetThuc), "Ngày kết thúc phải sau ngày bắt đầu.");
-
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            var service = new PromotionManagementService(_db);
+            // Hold a database update lock before validating mutable usage limits.
+            await _db.KhuyenMais.FromSqlInterpolated($"SELECT * FROM dbo.KhuyenMai WITH (UPDLOCK,HOLDLOCK) WHERE MaKhuyenMai = {id}").LoadAsync();
+            await _db.Entry(km).ReloadAsync();
+            var error = await service.ValidateAsync(vm, CurrentGianHangId, id);
+            if (error != null) ModelState.AddModelError("", error);
             if (!ModelState.IsValid) return View(vm);
-
-            km.MoTa = vm.MoTa;
-            km.DieuKienApDung = vm.DieuKienApDung;
-            km.NgayBatDau = vm.NgayBatDau;
-            km.NgayKetThuc = vm.NgayKetThuc;
-            km.TrangThai = vm.TrangThai;
-            km.PhanTramGiam = vm.LoaiGiam == "PhanTram" ? vm.GiaTriGiam : null;
-            km.SoTienGiam = vm.LoaiGiam == "SoTien" ? vm.GiaTriGiam : null;
-
-            await _db.SaveChangesAsync();
+            try
+            {
+                await service.SaveAsync(km, vm);
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync();
+                _db.ChangeTracker.Clear();
+                ModelState.AddModelError("", "Mã voucher đã tồn tại hoặc phạm vi dữ liệu đã thay đổi. Vui lòng kiểm tra lại.");
+                return View(vm);
+            }
             TempData["ThongBao"] = $"Đã cập nhật mã {km.MaCode}.";
             return RedirectToAction("Index");
         }

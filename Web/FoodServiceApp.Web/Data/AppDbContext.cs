@@ -206,6 +206,11 @@ namespace FoodServiceApp.Web.Data
             modelBuilder.Entity<KhuyenMaiDanhMuc>().HasKey(x => new { x.MaKhuyenMai, x.MaDanhMuc });
             modelBuilder.Entity<KhuyenMaiGianHang>().HasKey(x => new { x.MaKhuyenMai, x.MaGianHang });
             modelBuilder.Entity<KhuyenMaiKhachDung>().HasKey(x => new { x.MaKhuyenMai, x.MaKH, x.MaDonHang });
+            modelBuilder.Entity<KhuyenMai>().HasIndex(x => x.MaCode).IsUnique();
+            modelBuilder.Entity<KhuyenMai>().Property(x => x.MaCode).HasMaxLength(50);
+            modelBuilder.Entity<KhuyenMaiKhachDung>().HasIndex(x => x.MaDonHang).IsUnique();
+            modelBuilder.Entity<DonHang>().Property(x => x.MaYeuCauDat).HasMaxLength(40);
+            modelBuilder.Entity<DonHang>().HasIndex(x => x.MaYeuCauDat).IsUnique().HasFilter("[MaYeuCauDat] IS NOT NULL");
             modelBuilder.Entity<GioHang>().HasMany(g => g.ChiTiet).WithOne().HasForeignKey(c => c.MaGioHang).OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<GianHang>()

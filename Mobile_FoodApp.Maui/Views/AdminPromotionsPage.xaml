@@ -40,18 +40,19 @@
                                                     <Span Text="Đã dùng " />
                                                     <Span Text="{Binding SoLuongDaDung}" />
                                                     <Span Text="/" />
-                                                    <Span Text="{Binding SoLuongToiDa}" />
+                                                    <Span Text="{Binding SoLuongToiDaHienThi}" />
                                                     <Span Text=" lượt   •   Hết hạn " />
                                                     <Span Text="{Binding NgayKetThuc, StringFormat='{0:dd/MM/yyyy}'}" />
                                                 </FormattedString>
                                             </Label.FormattedText>
                                         </Label>
 
-                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8" Margin="0,4,0,0">
                                             <Label Grid.Column="0" Text="Đang bật" FontSize="12" VerticalOptions="Center" />
                                             <Switch Grid.Column="1" HorizontalOptions="Start" IsToggled="{Binding DangHoatDong}"
                                                     Toggled="OnBatTatToggled" OnColor="{StaticResource TextDark}" />
-                                            <Button Grid.Column="2" Text="Xóa" HeightRequest="34" FontSize="12" Padding="14,0" CornerRadius="10"
+                                            <Button Grid.Column="2" Text="Sửa" Clicked="OnSuaClicked" CommandParameter="{Binding .}" />
+                                            <Button Grid.Column="3" Text="Ngừng" HeightRequest="34" FontSize="12" Padding="14,0" CornerRadius="10"
                                                     BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
                                                     BorderColor="{StaticResource Danger}" BorderWidth="1"
                                                     Clicked="OnXoaClicked" CommandParameter="{Binding .}" />

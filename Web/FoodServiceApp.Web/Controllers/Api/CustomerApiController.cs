@@ -46,20 +46,23 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         private async Task<decimal> TinhPhiGiaoHangAsync(string diaChiGianHang, string diaChiGiao)
         {
+            var settings = new FoodServiceApp.Web.Services.CauHinhService(_db);
+            var fallback = await settings.LaySoAsync("Giao.PhiMacDinh", PhiGiaoMacDinh);
+            var perKm = await settings.LaySoAsync("Giao.PhiMoiKm", PhiMoiKm);
             try
             {
                 var diemGian = await _mapsService.GeocodeAsync(diaChiGianHang);
                 var diemKhach = await _mapsService.GeocodeAsync(diaChiGiao);
-                if (diemGian == null || diemKhach == null) return PhiGiaoMacDinh;
+                if (diemGian == null || diemKhach == null) return fallback;
 
                 var ketQua = await _mapsService.GetDistanceAsync(diemGian, diemKhach);
-                if (ketQua == null) return PhiGiaoMacDinh;
+                if (ketQua == null) return fallback;
 
-                return Math.Ceiling((decimal)ketQua.DistanceKm) * PhiMoiKm;
+                return Math.Ceiling((decimal)ketQua.DistanceKm) * perKm;
             }
             catch
             {
-                return PhiGiaoMacDinh;
+                return fallback;
             }
         }
 
@@ -335,28 +338,21 @@ namespace FoodServiceApp.Web.Controllers.Api
                 tongTienMon += mon.Gia * item.SoLuong;
             }
 
-            decimal soTienGiam = 0;
-            int? maKhuyenMaiApDung = null;
-            if (!string.IsNullOrWhiteSpace(request.MaKhuyenMai))
-            {
-                var km = await _db.KhuyenMais.FirstOrDefaultAsync(k =>
-                    k.MaCode == request.MaKhuyenMai.Trim().ToUpper() &&
-                    k.TrangThai &&
-                    (k.MaGianHang == null || k.MaGianHang == request.MaGianHang) &&
-                    DateTime.Now >= k.NgayBatDau && DateTime.Now <= k.NgayKetThuc);
-
-                if (km != null)
-                {
-                    soTienGiam = km.PhanTramGiam != null
-                        ? Math.Round(tongTienMon * km.PhanTramGiam.Value / 100)
-                        : Math.Max(0, km.SoTienGiam ?? 0);
-                    soTienGiam = Math.Min(soTienGiam, tongTienMon);
-                    maKhuyenMaiApDung = km.MaKhuyenMai;
-                }
-            }
-
+            if (string.IsNullOrWhiteSpace(request.MaYeuCauDat) || request.MaYeuCauDat.Length > 40)
+                return BadRequest(new { message = "Thiếu mã yêu cầu chống trùng." });
             var phiGiaoHang = await TinhPhiGiaoHangAsync(store.DiaChi, request.DiaChiGiaoHang);
-            var tongTien = Math.Max(0, tongTienMon - soTienGiam) + phiGiaoHang;
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            var promotions = new FoodServiceApp.Web.Services.PromotionService(_db);
+            await promotions.LockAsync($"checkout:customer:{maKH.Value}");
+            var existing = await _db.DonHangs.FirstOrDefaultAsync(x => x.MaKH == maKH && x.MaYeuCauDat == request.MaYeuCauDat);
+            if (existing != null) return Ok(new { maDonHang = existing.MaDonHang, tongTien = existing.TongTien, duplicate = true });
+            var promotion = await promotions.CalculateAsync(maKH.Value, store.MaGianHang,
+                request.Items.Select(x => new FoodServiceApp.Web.Services.PromotionItem(x.MaMonAn, x.SoLuong)), phiGiaoHang, request.MaKhuyenMai, consume: true);
+            if (!promotion.Valid) return BadRequest(new { code = promotion.ErrorCode, message = promotion.Message });
+            tongTienMon = promotion.Subtotal;
+            var soTienGiam = promotion.Discount;
+            var maKhuyenMaiApDung = promotion.Voucher?.MaKhuyenMai;
+            var tongTien = promotion.Total;
 
             var donHang = new DonHang
             {
@@ -368,6 +364,8 @@ namespace FoodServiceApp.Web.Controllers.Api
                 DiaChiGiaoHang = request.DiaChiGiaoHang.Trim(),
                 GhiChu = string.IsNullOrWhiteSpace(request.GhiChu) ? null : request.GhiChu.Trim(),
                 MaKhuyenMaiApDung = maKhuyenMaiApDung,
+                TienGiam = soTienGiam,
+                MaYeuCauDat = request.MaYeuCauDat,
                 MaXacNhanGiao = FoodServiceApp.Web.Services.GiaoHangXuLy.TaoMa(),
             };
             _db.DonHangs.Add(donHang);
@@ -381,7 +379,7 @@ namespace FoodServiceApp.Web.Controllers.Api
                     MaDonHang = donHang.MaDonHang,
                     MaMonAn = mon.MaMonAn,
                     SoLuong = item.SoLuong,
-                    DonGia = mon.Gia,
+                    DonGia = promotion.Lines.First(x => x.FoodId == mon.MaMonAn).Price,
                 });
             }
 
@@ -393,6 +391,10 @@ namespace FoodServiceApp.Web.Controllers.Api
             });
 
             await _db.SaveChangesAsync();
+
+            promotions.Record(promotion, maKH.Value, donHang.MaDonHang);
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             string? paymentUrl = null;
             if (request.HinhThucThanhToan == "VNPay")
