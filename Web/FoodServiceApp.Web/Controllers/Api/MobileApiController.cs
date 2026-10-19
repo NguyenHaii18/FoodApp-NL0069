@@ -296,6 +296,7 @@ namespace FoodServiceApp.Web.Controllers.Api
             if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@')) return Loi("Email không hợp lệ.");
             if (request.MatKhau?.Length < 6) return Loi("Mật khẩu tối thiểu 6 ký tự.");
             if (await _db.TaiKhoans.AnyAsync(t => t.TenDangNhap == request.Email.Trim())) return Loi("Email này đã được đăng ký.", 409);
+            if (string.IsNullOrWhiteSpace(request.MatKhau)) return Loi("Vui lòng nhập mật khẩu.");
 
             var tk = new TaiKhoan
             {
@@ -710,7 +711,7 @@ namespace FoodServiceApp.Web.Controllers.Api
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "QuanTri")]
         public async Task<IActionResult> AdminUnlockCustomer(int id) => await ToggleCustomerLock(id, true);
 
-        
+
 
         [HttpPut("admin/van-de/{id:int}/dang-xu-ly")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "QuanTri")]
@@ -722,7 +723,7 @@ namespace FoodServiceApp.Web.Controllers.Api
             return Ok(new { trangThai = "DangXuLy" });
         }
 
-        
+
 
         [HttpPut("admin/van-de/{id:int}/giai-quyet")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "QuanTri")]
@@ -879,7 +880,7 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         [HttpPut("tai-xe/vi-tri")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "TaiXe")]
-        public async Task<IActionResult> DriverPosition(MobileDriverPositionRequest request)
+        public async Task<IActionResult> UpdateDriverPosition(MobileDriverPositionRequest request)
         {
             var tx = await CurrentDriverAsync();
             if (tx == null) return Loi("Tài khoản tài xế không hợp lệ.", 401);
@@ -1207,14 +1208,32 @@ namespace FoodServiceApp.Web.Controllers.Api
             return text[(end + 1)..].Trim();
         }
 
+
         private static string? GetDeliveryCode(DonHang d)
         {
-            if (!string.IsNullOrEmpty(d.MaXacNhanGiao)) return d.MaXacNhanGiao;
-            var marker = d.GhiChu?.IndexOf("[MA_GIAO:", StringComparison.Ordinal);
-            if (marker < 0) return null;
-            var start = marker + "[MA_GIAO:".Length;
-            var end = d.GhiChu!.IndexOf(']', start);
-            return end > start ? d.GhiChu[start..end] : null;
+            if (!string.IsNullOrWhiteSpace(d.MaXacNhanGiao))
+                return d.MaXacNhanGiao;
+
+            if (string.IsNullOrEmpty(d.GhiChu))
+                return null;
+
+            const string prefix = "[MA_GIAO:";
+
+            int marker = d.GhiChu.IndexOf(
+                prefix,
+                StringComparison.Ordinal);
+
+            if (marker < 0)
+                return null;
+
+            int start = marker + prefix.Length;
+
+            int end = d.GhiChu.IndexOf(']', start);
+
+            if (end < 0)
+                return null;
+
+            return d.GhiChu.Substring(start, end - start);
         }
 
         private static string? ExtractDeliveryCode(string text)

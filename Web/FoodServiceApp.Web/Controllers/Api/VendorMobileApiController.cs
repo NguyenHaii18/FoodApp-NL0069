@@ -122,22 +122,41 @@ namespace FoodServiceApp.Web.Controllers.Api
         {
             var store = await OwnStoreAsync(id);
             if (store == null) return Loi("Bạn không có quyền xem gian hàng này.", 403);
-            var from = (tu ?? DateTime.Today.AddDays(-29)).Date;
-            var to = (den ?? DateTime.Today).Date.AddDays(1);
 
-            var don = await _db.DonHangs.Include(d => d.ChiTiets)
-                .Where(d => d.MaGianHang == id && d.TrangThai == "DaGiao" && d.NgayDat >= from && d.NgayDat < to).ToListAsync();
-            // Doanh thu món = tiền hàng (không tính phí giao: phí giao thuộc về tài xế)
-            var doanhThu = don.Sum(d => d.ChiTiets.Sum(c => c.DonGia * c.SoLuong));
-            var phiNenTang = Math.Round(doanhThu * store.TyLeChietKhau, 0);
-            var giaVon = (await (from c in _db.ChiTietDonHangs
-                                 join d in _db.DonHangs on c.MaDonHang equals d.MaDonHang
-                                 join m in _db.MonAns on c.MaMonAn equals m.MaMonAn
-                                 where d.MaGianHang == id && d.TrangThai == "DaGiao" && d.NgayDat >= from && d.NgayDat < to
-                                 select (decimal?)(m.GiaVon * c.SoLuong)).SumAsync()) ?? 0m;
+            var fromDate = (tu ?? DateTime.Today.AddDays(-29)).Date;
+            var toDate = (den ?? DateTime.Today).Date.AddDays(1);
+
+            var don = await _db.DonHangs
+                .Include(d => d.ChiTiets)
+                .Where(d =>
+                    d.MaGianHang == id &&
+                    d.TrangThai == "DaGiao" &&
+                    d.NgayDat >= fromDate &&
+                    d.NgayDat < toDate)
+                .ToListAsync();
+
+            var doanhThu = don.Sum(d =>
+                d.ChiTiets.Sum(c => c.DonGia * c.SoLuong));
+
+            var phiNenTang =
+                Math.Round(doanhThu * store.TyLeChietKhau, 0);
+
+            var giaVon = (await (
+                from c in _db.ChiTietDonHangs
+                join d in _db.DonHangs
+                    on c.MaDonHang equals d.MaDonHang
+                join m in _db.MonAns
+                    on c.MaMonAn equals m.MaMonAn
+                where d.MaGianHang == id
+                    && d.TrangThai == "DaGiao"
+                    && d.NgayDat >= fromDate
+                    && d.NgayDat < toDate
+                select (decimal?)(m.GiaVon * c.SoLuong)
+            ).SumAsync()) ?? 0m;
+
             return Ok(new
             {
-                tu = from, den = to.AddDays(-1),
+                tu = fromDate, den = toDate.AddDays(-1),
                 soDon = don.Count,
                 doanhThuMon = doanhThu,
                 tyLeChietKhau = store.TyLeChietKhau,

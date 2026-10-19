@@ -36,8 +36,17 @@ namespace FoodServiceApp.Web.Models.Entities
         public string? GiayPhepKinhDoanh { get; set; } // đường dẫn ảnh/tệp giấy phép KD
         public string? GiayChungNhanATTP { get; set; } // đường dẫn giấy chứng nhận ATTP
         public string? LyDoTuChoi { get; set; }        // lý do Quản trị từ chối hồ sơ
-        public string TrangThaiKinhDoanh { get; set; } = "DangMo"; // DangMo / DongCua / TamNgung
-        public string TrangThaiDuyet { get; set; } = "ChoDuyet"; // ChoDuyet / DaDuyet / TuChoi
+
+        public string TrangThaiKinhDoanh { get; set; } = "DongCua";// DangMo / DongCua / TamNgung
+        /// <summary>
+        /// Trạng thái hồ sơ đăng ký đối tác.
+        /// ChuaGuiHoSo: chưa nộp hồ sơ
+        /// ChoDuyet: đã nộp, chờ Admin
+        /// CanBoSung: Admin yêu cầu bổ sung
+        /// DaDuyet: đã được duyệt
+        /// TuChoi: bị từ chối
+        /// </summary>
+        public string TrangThaiDuyet { get; set; } = "ChuaGuiHoSo"; // ChoDuyet / DaDuyet / TuChoi
         public DateTime NgayDangKy { get; set; } = DateTime.Now;
         // Bổ sung Đối tác (SQL/04_BoSung_DoiTac.sql)
         public TimeSpan GioMoCua { get; set; } = TimeSpan.Zero;                          // 00:00–23:59 = hoạt động cả ngày

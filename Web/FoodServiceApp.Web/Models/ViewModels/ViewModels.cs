@@ -159,6 +159,7 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public bool TrangThai { get; set; } = true;
     }
 
+
     public class HoSoViewModel
     {
         [Required(ErrorMessage = "Vui lòng nhập tên cửa hàng")]
@@ -171,12 +172,42 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string SDT { get; set; } = "";
 
         public string? MoTa { get; set; }
+
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string? Email { get; set; }
+
+        // Hình ảnh gian hàng
         public string? HinhAnhHienTai { get; set; }
         public IFormFile? AnhMoi { get; set; }
 
+        // Thời gian hoạt động
+        [RegularExpression(
+            @"^([01]\d|2[0-3]):[0-5]\d$",
+            ErrorMessage = "Giờ mở cửa phải có định dạng HH:mm")]
+        public string GioMoCua { get; set; } = "00:00";
+
+        [RegularExpression(
+            @"^([01]\d|2[0-3]):[0-5]\d$",
+            ErrorMessage = "Giờ đóng cửa phải có định dạng HH:mm")]
+        public string GioDongCua { get; set; } = "23:59";
+
+        public bool DangNhanDon { get; set; }
+
+        // Giấy tờ kinh doanh
+        public string? GiayPhepHienTai { get; set; }
+        public IFormFile? GiayPhepMoi { get; set; }
+
+        public string? GiayAttpHienTai { get; set; }
+        public IFormFile? GiayAttpMoi { get; set; }
+
+        // Đổi mật khẩu
+        [DataType(DataType.Password)]
         public string? MatKhauMoi { get; set; }
+
+        [DataType(DataType.Password)]
         public string? XacNhanMatKhauMoi { get; set; }
     }
+
 
     public class DoanhThuViewModel
     {

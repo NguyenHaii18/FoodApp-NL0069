@@ -13,7 +13,11 @@ namespace FoodServiceApp.Web.Controllers
         public AdminDanhGiaController(AppDbContext db) : base(db) { }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(string tab = "bao-cao", int? sao, int? maGianHang)
+
+        public async Task<IActionResult> Index(
+            string tab = "bao-cao",
+            int? sao = null,
+            int? maGianHang = null)
         {
             ViewBag.Tab = tab;
             if (tab == "bao-cao")

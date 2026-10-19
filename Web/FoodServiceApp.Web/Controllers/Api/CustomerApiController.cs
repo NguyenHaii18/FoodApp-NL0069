@@ -130,7 +130,7 @@ namespace FoodServiceApp.Web.Controllers.Api
 
             var categories = await _db.DanhMucs
                 .Include(d => d.MonAns)
-                .Where(d => !d.DaAn && d.MaGianHang == id)
+                .Where(d => d.MaGianHang == id)
                 .OrderBy(d => d.MaDanhMuc)
                 .Select(d => new DanhMucDto(
                     d.MaDanhMuc,
@@ -145,14 +145,14 @@ namespace FoodServiceApp.Web.Controllers.Api
                 .ToListAsync();
 
             var ratings = await _db.DanhGias
-                .Where(d => !d.DaAn && d.MaGianHang == id)
+                .Where(d => d.MaGianHang == id)
                 .OrderByDescending(d => d.NgayDanhGia)
                 .Take(10)
                 .Select(d => new StoreReviewDto(d.SoSao, d.NoiDung, d.NgayDanhGia))
                 .ToListAsync();
 
             var score = await _db.DanhGias
-                .Where(d => !d.DaAn && d.MaGianHang == id)
+                .Where(d => d.MaGianHang == id)
                 .Select(d => (double?)d.SoSao)
                 .AverageAsync() ?? 0;
 

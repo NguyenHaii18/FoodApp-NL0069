@@ -62,5 +62,54 @@ namespace FoodServiceApp.Web.Controllers
             var gianHang = await _db.GianHangs.FirstAsync(g => g.MaGianHang == CurrentGianHangId);
             return View(gianHang);
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuiHoSoXetDuyet()
+        {
+            var gianHang = await _db.GianHangs
+                .FirstOrDefaultAsync(g =>
+                    g.MaGianHang == CurrentGianHangId);
+
+            if (gianHang == null)
+                return NotFound();
+
+            if (gianHang.TrangThaiDuyet != "ChuaGuiHoSo" &&
+                gianHang.TrangThaiDuyet != "CanBoSung")
+            {
+                TempData["LoiThongBao"] =
+                    "Hồ sơ hiện không thể gửi xét duyệt.";
+
+                return RedirectToAction("ChoDuyet");
+            }
+
+            if (string.IsNullOrWhiteSpace(gianHang.TenCuaHang) ||
+                string.IsNullOrWhiteSpace(gianHang.DiaChi) ||
+                string.IsNullOrWhiteSpace(gianHang.SDT) ||
+                string.IsNullOrWhiteSpace(gianHang.Email) ||
+                string.IsNullOrWhiteSpace(gianHang.GiayPhepKinhDoanh) ||
+                string.IsNullOrWhiteSpace(gianHang.GiayChungNhanATTP))
+            {
+                TempData["LoiThongBao"] =
+                    "Vui lòng hoàn thiện tên quán, địa chỉ, " +
+                    "số điện thoại, email và giấy tờ trước khi gửi.";
+
+                return RedirectToAction("ChoDuyet");
+            }
+
+            gianHang.TrangThaiDuyet = "ChoDuyet";
+            gianHang.TrangThaiKinhDoanh = "DongCua";
+            gianHang.DangNhanDon = false;
+            gianHang.YeuCauBoSung = null;
+
+            await _db.SaveChangesAsync();
+
+            TempData["ThongBao"] =
+                "Đã gửi hồ sơ. Vui lòng chờ quản trị viên xét duyệt.";
+
+            return RedirectToAction("ChoDuyet");
+        }
+
     }
 }

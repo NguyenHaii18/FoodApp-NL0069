@@ -1,6 +1,10 @@
+
+using FoodServiceApp.Web.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FoodServiceApp.Web.Controllers
 {
@@ -10,25 +14,72 @@ namespace FoodServiceApp.Web.Controllers
         protected int CurrentGianHangId =>
             int.Parse(User.FindFirst("MaGianHang")!.Value);
 
-        // Gian hàng chưa được Quản trị duyệt thì không cho vào các trang nghiệp vụ
-        // (trừ chính trang "Chờ duyệt" và Hồ sơ, để họ vẫn xem/sửa được thông tin
-        // đã đăng ký trong lúc chờ).
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public override async Task OnActionExecutionAsync(
+            ActionExecutingContext context,
+            ActionExecutionDelegate next)
         {
-            base.OnActionExecuting(context);
-
-            var trangThaiDuyet = User.FindFirst("TrangThaiDuyet")?.Value;
-            var controllerTen = context.RouteData.Values["controller"]?.ToString();
-            var actionTen = context.RouteData.Values["action"]?.ToString();
-
-            var duocPhepKhiChuaDuyet =
-                (controllerTen == "Dashboard" && actionTen == "ChoDuyet") ||
-                controllerTen == "HoSo";
-
-            if (trangThaiDuyet != "DaDuyet" && !duocPhepKhiChuaDuyet)
+            if (User.Identity?.IsAuthenticated != true)
             {
-                context.Result = new RedirectToActionResult("ChoDuyet", "Dashboard", null);
+                await next();
+                return;
             }
+
+            var maTkClaim = User.FindFirst(
+                System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(maTkClaim?.Value, out var maTK))
+            {
+                context.Result = new ForbidResult();
+                return;
+            }
+
+            var db = context.HttpContext.RequestServices
+                .GetRequiredService<AppDbContext>();
+
+            var gianHang = await db.GianHangs
+                .AsNoTracking()
+                .Where(g => g.MaTK == maTK)
+                .Select(g => new
+                {
+                    g.MaGianHang,
+                    g.TrangThaiDuyet,
+                    TaiKhoanHoatDong =
+                        g.TaiKhoan != null &&
+                        g.TaiKhoan.TrangThai
+                })
+                .FirstOrDefaultAsync();
+
+            if (gianHang == null ||
+                !gianHang.TaiKhoanHoatDong)
+            {
+                context.Result = new ForbidResult();
+                return;
+            }
+
+            var controllerTen = context.RouteData.Values[
+                "controller"]?.ToString();
+
+            var actionTen = context.RouteData.Values[
+                "action"]?.ToString();
+
+            bool duocPhepKhiChuaDuyet =
+                controllerTen == "HoSo" ||
+                (controllerTen == "Dashboard" &&
+                 (actionTen == "ChoDuyet" ||
+                  actionTen == "GuiHoSoXetDuyet"));
+
+            if (gianHang.TrangThaiDuyet != "DaDuyet" &&
+                !duocPhepKhiChuaDuyet)
+            {
+                context.Result = new RedirectToActionResult(
+                    "ChoDuyet",
+                    "Dashboard",
+                    null
+                );
+                return;
+            }
+
+            await next();
         }
     }
 }

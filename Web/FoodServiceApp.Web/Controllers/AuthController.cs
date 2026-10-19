@@ -100,13 +100,17 @@ namespace FoodServiceApp.Web.Controllers
             var gianHang = new GianHang
             {
                 MaTK = taiKhoan.MaTK,
-                TenCuaHang = model.TenCuaHang,
-                DiaChi = model.DiaChi,
-                SDT = model.SDT,
-                MoTa = model.MoTa,
-                TrangThaiKinhDoanh = "TamNgung", // chưa mở bán cho tới khi được duyệt
-                TrangThaiDuyet = "ChoDuyet",
-                TyLeChietKhau = await FoodServiceApp.Web.Services.CauHinhService.HoaHongMacDinhAsync(_db),
+                TenCuaHang = model.TenCuaHang.Trim(),
+                DiaChi = model.DiaChi.Trim(),
+                SDT = model.SDT.Trim(),
+                MoTa = model.MoTa?.Trim(),
+
+                TrangThaiKinhDoanh = "DongCua",
+                DangNhanDon = false,
+                TrangThaiDuyet = "ChuaGuiHoSo",
+
+                TyLeChietKhau =
+                    await CauHinhService.HoaHongMacDinhAsync(_db),
             };
             _db.GianHangs.Add(gianHang);
             await _db.SaveChangesAsync();

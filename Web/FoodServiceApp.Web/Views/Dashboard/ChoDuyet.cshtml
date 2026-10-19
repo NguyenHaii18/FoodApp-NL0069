@@ -26,6 +26,36 @@
     <a asp-controller="HoSo" asp-action="Index" class="btn btn-outline mt-3">Xem/sửa hồ sơ</a>
     <form asp-controller="Auth" asp-action="Logout" method="post" style="display:inline;">
         @Html.AntiForgeryToken()
+        
+        @if (Model.TrangThaiDuyet == "ChuaGuiHoSo" ||
+             Model.TrangThaiDuyet == "CanBoSung")
+        {
+            <h3>
+                @(Model.TrangThaiDuyet == "CanBoSung"
+                    ? "Hồ sơ cần bổ sung"
+                    : "Hoàn thiện hồ sơ gian hàng")
+            </h3>
+
+            @if (!string.IsNullOrWhiteSpace(Model.YeuCauBoSung))
+            {
+                <p class="text-muted">
+                    Yêu cầu của quản trị viên:
+                    @Model.YeuCauBoSung
+                </p>
+            }
+
+            <p>
+                Hãy cập nhật đầy đủ hồ sơ trước khi gửi xét duyệt.
+            </p>
+
+            <form asp-controller="Dashboard" asp-action="GuiHoSoXetDuyet" method="post">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-primary">
+                    Gửi hồ sơ xét duyệt
+                </button>
+            </form>
+        }
         <button type="submit" class="btn btn-outline mt-3">Đăng xuất</button>
     </form>
 </div>

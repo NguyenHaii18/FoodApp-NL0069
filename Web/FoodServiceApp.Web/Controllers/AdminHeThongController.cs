@@ -57,7 +57,11 @@ namespace FoodServiceApp.Web.Controllers
             var tep = $"{thuMuc}\\{db}_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             try
             {
-                await Db.Database.SetCommandTimeout(300).ExecuteSqlRawAsync("BACKUP DATABASE [" + db + "] TO DISK = {0} WITH INIT", tep);
+                Db.Database.SetCommandTimeout(300);
+
+                await Db.Database.ExecuteSqlRawAsync(
+                    "BACKUP DATABASE [" + db + "] TO DISK = {0} WITH INIT",
+                    tep);
                 TempData["ThongBao"] = "Đã sao lưu: " + tep;
             }
             catch (Exception ex)
@@ -71,8 +75,10 @@ namespace FoodServiceApp.Web.Controllers
         [HttpGet("phien")]
         public async Task<IActionResult> Phien()
         {
-            var ds = await (from p in Db.PhienDangNhaps join t in Db.TaiKhoans on p.MaTK equals t.MaTK
-                            where p.ThuHoiLuc == null orderby p.LanCuoi descending
+            var ds = await (from p in Db.PhienDangNhaps
+                            join t in Db.TaiKhoans on p.MaTK equals t.MaTK
+                            where p.ThuHoiLuc == null
+                            orderby p.LanCuoi descending
                             select new PhienRow(p.MaPhien, t.TenDangNhap, t.VaiTro, p.Kenh, p.ThietBi, p.DiaChiIP, p.NgayTao, p.LanCuoi)).Take(200).ToListAsync();
             return View(ds);
         }
