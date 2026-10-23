@@ -61,23 +61,23 @@ else
                                     <input type="hidden" name="trangThaiMoi" value="DaXacNhan" />
                                     <button type="submit" class="btn btn-primary btn-sm">Xác nhận</button>
                                 </form>
-                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;">
+                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;" onsubmit="return nhapLyDoHuy(this, @don.MaDonHang)">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@don.MaDonHang" />
                                     <input type="hidden" name="trangThaiMoi" value="DaHuy" />
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Hủy đơn #@don.MaDonHang?')">Hủy</button>
+                                    <input type="hidden" name="lyDo" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Hủy</button>
                                 </form>
                             }
                             else if (don.TrangThai == "DaXacNhan")
                             {
                                 <span class="text-muted" style="font-size:12px;">Đang chờ tài xế nhận đơn</span>
-                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;">
+                                <form asp-action="CapNhatTrangThai" method="post" style="display:inline;" onsubmit="return nhapLyDoHuy(this, @don.MaDonHang)">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@don.MaDonHang" />
                                     <input type="hidden" name="trangThaiMoi" value="DaHuy" />
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Hủy đơn #@don.MaDonHang?')">Hủy</button>
+                                    <input type="hidden" name="lyDo" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Hủy</button>
                                 </form>
                             }
                             else if (don.TrangThai == "DangGiao")
@@ -91,3 +91,12 @@ else
         </table>
     </div>
 }
+
+<script>
+function nhapLyDoHuy(form, id) {
+    const lyDo = prompt(`Nhập lý do hủy đơn #${id}:`);
+    if (!lyDo || !lyDo.trim()) return false;
+    form.querySelector('[name="lyDo"]').value = lyDo.trim();
+    return confirm(`Xác nhận hủy đơn #${id}?`);
+}
+</script>

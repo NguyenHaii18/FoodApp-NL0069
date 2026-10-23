@@ -89,9 +89,13 @@ public partial class ReviewPage : ContentPage
             await DisplayAlert("Thiếu thông tin", "Vui lòng chọn số sao cho món ăn", "Đóng");
             return;
         }
+        if (DonHang is null)
+        {
+            await DisplayAlert("Không tìm thấy đơn", "Không thể gửi đánh giá vì đơn hàng không còn tồn tại.", "Đóng");
+            return;
+        }
 
         // Lưu đánh giá vào đơn (giữ qua các lần mở app) rồi gửi lên API nếu đang online.
-        if (DonHang is not null)
         {
             DonHang.DiemMonAn = _soSaoMonAn;
             DonHang.TheDanhGia = string.Join("|", _theDaChon);
@@ -115,7 +119,7 @@ public partial class ReviewPage : ContentPage
         }
 
         // Lưu để gian hàng xem được ở mục "Đánh giá", cập nhật điểm trung bình của quán và gửi thông báo cho quán.
-        DoiTacService.GhiDanhGia(DonHang, _soSaoMonAn, _soSaoGiaoHang, _theDaChon, EditorNoiDung.Text ?? "");
+        DoiTacService.GhiDanhGia(DonHang!, _soSaoMonAn, _soSaoGiaoHang, _theDaChon, EditorNoiDung.Text ?? "");
 
         KhungForm.IsVisible = false;
         KhungCamOn.IsVisible = true;

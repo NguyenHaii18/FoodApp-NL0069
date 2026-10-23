@@ -42,17 +42,42 @@ namespace FoodServiceApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MonAnFormViewModel vm)
         {
-            // Cho phép tạo danh mục mới ngay trong form nếu người dùng nhập TenDanhMucMoi
+            vm.TenMon = vm.TenMon?.Trim() ?? "";
+            if (!ModelState.IsValid)
+            {
+                vm.DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync();
+                return View(vm);
+            }
             if (vm.MaDanhMuc == 0 && !string.IsNullOrWhiteSpace(vm.TenDanhMucMoi))
             {
-                var danhMucMoi = new DanhMuc { MaGianHang = CurrentGianHangId, TenDanhMuc = vm.TenDanhMucMoi.Trim() };
-                _db.DanhMucs.Add(danhMucMoi);
-                await _db.SaveChangesAsync();
-                vm.MaDanhMuc = danhMucMoi.MaDanhMuc;
+                var tenDanhMuc = vm.TenDanhMucMoi.Trim();
+                if (tenDanhMuc.Length > 100)
+                {
+                    ModelState.AddModelError(nameof(vm.TenDanhMucMoi), "Tên danh mục tối đa 100 ký tự.");
+                    vm.DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync();
+                    return View(vm);
+                }
+                var danhMuc = await _db.DanhMucs.FirstOrDefaultAsync(d =>
+                    d.MaGianHang == CurrentGianHangId && d.TenDanhMuc.ToLower() == tenDanhMuc.ToLower());
+                if (danhMuc == null)
+                {
+                    danhMuc = new DanhMuc { MaGianHang = CurrentGianHangId, TenDanhMuc = tenDanhMuc };
+                    _db.DanhMucs.Add(danhMuc);
+                    await _db.SaveChangesAsync();
+                }
+                vm.MaDanhMuc = danhMuc.MaDanhMuc;
             }
 
             if (vm.MaDanhMuc == 0)
                 ModelState.AddModelError(nameof(vm.MaDanhMuc), "Vui lòng chọn hoặc nhập danh mục.");
+
+            var danhMucHopLe = vm.MaDanhMuc != 0 && await _db.DanhMucs
+                .AnyAsync(d => d.MaDanhMuc == vm.MaDanhMuc && d.MaGianHang == CurrentGianHangId);
+            if (vm.MaDanhMuc != 0 && !danhMucHopLe)
+                ModelState.AddModelError(nameof(vm.MaDanhMuc), "Danh mục không thuộc gian hàng của bạn.");
+
+            if (danhMucHopLe && await _db.MonAns.AnyAsync(m => m.MaDanhMuc == vm.MaDanhMuc && m.TenMon.ToLower() == vm.TenMon.ToLower()))
+                ModelState.AddModelError(nameof(vm.TenMon), "Tên món đã tồn tại trong danh mục này.");
 
             if (!ModelState.IsValid)
             {
@@ -65,8 +90,10 @@ namespace FoodServiceApp.Web.Controllers
                 MaDanhMuc = vm.MaDanhMuc,
                 TenMon = vm.TenMon,
                 Gia = vm.Gia,
+                GiaVon = vm.GiaVon,
                 MoTa = vm.MoTa,
-                TinhTrang = vm.ConHang ? "ConHang" : "HetHang",
+                TinhTrang = vm.TinhTrang,
+                ChoGhiChu = vm.ChoGhiChu,
             };
 
             if (vm.AnhMoi != null)
@@ -93,7 +120,9 @@ namespace FoodServiceApp.Web.Controllers
                 Gia = monAn.Gia,
                 MoTa = monAn.MoTa,
                 HinhAnhHienTai = monAn.HinhAnh,
-                ConHang = monAn.TinhTrang == "ConHang",
+                GiaVon = monAn.GiaVon,
+                TinhTrang = monAn.TinhTrang,
+                ChoGhiChu = monAn.ChoGhiChu,
                 DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync()
             };
             return View(vm);
@@ -107,6 +136,14 @@ namespace FoodServiceApp.Web.Controllers
                 .FirstOrDefaultAsync(m => m.MaMonAn == id && m.DanhMuc!.MaGianHang == CurrentGianHangId);
             if (monAn == null) return NotFound();
 
+            vm.TenMon = vm.TenMon?.Trim() ?? "";
+            var danhMucHopLe = await _db.DanhMucs.AnyAsync(d =>
+                d.MaDanhMuc == vm.MaDanhMuc && d.MaGianHang == CurrentGianHangId);
+            if (!danhMucHopLe)
+                ModelState.AddModelError(nameof(vm.MaDanhMuc), "Danh mục không thuộc gian hàng của bạn.");
+            if (danhMucHopLe && await _db.MonAns.AnyAsync(m => m.MaMonAn != id && m.MaDanhMuc == vm.MaDanhMuc && m.TenMon.ToLower() == vm.TenMon.ToLower()))
+                ModelState.AddModelError(nameof(vm.TenMon), "Tên món đã tồn tại trong danh mục này.");
+
             if (!ModelState.IsValid)
             {
                 vm.DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync();
@@ -115,9 +152,11 @@ namespace FoodServiceApp.Web.Controllers
 
             monAn.TenMon = vm.TenMon;
             monAn.Gia = vm.Gia;
+            monAn.GiaVon = vm.GiaVon;
             monAn.MoTa = vm.MoTa;
-            monAn.TinhTrang = vm.ConHang ? "ConHang" : "HetHang";
-            if (vm.MaDanhMuc != 0) monAn.MaDanhMuc = vm.MaDanhMuc;
+            monAn.TinhTrang = vm.TinhTrang;
+            monAn.ChoGhiChu = vm.ChoGhiChu;
+            monAn.MaDanhMuc = vm.MaDanhMuc;
 
             if (vm.AnhMoi != null)
             {
@@ -141,11 +180,11 @@ namespace FoodServiceApp.Web.Controllers
             var dangDuocDat = await _db.ChiTietDonHangs.AnyAsync(c => c.MaMonAn == id);
             if (dangDuocDat)
             {
-                // Không xoá vĩnh viễn món đã từng có trong đơn hàng — chỉ chuyển sang Hết hàng
+                // Không xoá vĩnh viễn món đã từng có trong đơn hàng — chỉ chuyển sang tạm ngừng
                 // để không phá vỡ dữ liệu lịch sử đơn hàng đã tồn tại.
-                monAn.TinhTrang = "HetHang";
+                monAn.TinhTrang = "TamNgung";
                 await _db.SaveChangesAsync();
-                TempData["ThongBao"] = $"Món \"{monAn.TenMon}\" đã có trong đơn hàng nên không thể xoá — đã chuyển sang trạng thái Hết hàng.";
+                TempData["ThongBao"] = $"Món \"{monAn.TenMon}\" đã có trong đơn hàng nên không thể xoá — đã chuyển sang trạng thái Tạm ngừng.";
             }
             else
             {

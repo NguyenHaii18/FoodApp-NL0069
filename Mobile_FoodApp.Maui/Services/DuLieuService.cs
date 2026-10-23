@@ -9,6 +9,8 @@ namespace FoodApp.Maui.Services;
 public static class DuLieuService
 {
     public static bool DangOnline { get; private set; }
+    public static bool CoPhienMayChu => DangOnline || !string.IsNullOrWhiteSpace(ApiClient.Token);
+    public static Dictionary<string, int> DanhMucGianHangIds { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Tải gian hàng, món ăn, khuyến mãi. Trả về false nếu không có API.</summary>
     public static async Task<bool> TaiDanhMucAsync()
@@ -54,6 +56,25 @@ public static class DuLieuService
         if (r.ThanhCong && r.DuLieu is not null) ThayThe(MockData.DonHangCuaGianHang, r.DuLieu);
     }
 
+    public static async Task<bool> TaiThucDonGianHangAsync(string gianHangId)
+    {
+        if (!CoPhienMayChu) return false;
+        var categories = await ApiClient.GetAsync<List<DanhMucGianHangDto>>($"api/mobile/gian-hang/{gianHangId}/danh-muc");
+        var menu = await ApiClient.GetAsync<List<MonAn>>($"api/mobile/gian-hang/{gianHangId}/thuc-don");
+        if (!categories.ThanhCong || categories.DuLieu is null || !menu.ThanhCong || menu.DuLieu is null) return false;
+        foreach (var key in DanhMucGianHangIds.Keys.Where(k => k.StartsWith(gianHangId + "|", StringComparison.OrdinalIgnoreCase)).ToList())
+            DanhMucGianHangIds.Remove(key);
+        var names = categories.DuLieu.Select(x => x.TenDanhMuc).ToList();
+        MockData.DanhMucTheoGianHang[gianHangId] = names;
+        foreach (var category in categories.DuLieu) DanhMucGianHangIds[$"{gianHangId}|{category.TenDanhMuc}"] = category.Id;
+        foreach (var old in MockData.DanhSachMonAn.Where(m => m.GianHangId == gianHangId).ToList()) MockData.DanhSachMonAn.Remove(old);
+        foreach (var item in menu.DuLieu) MockData.DanhSachMonAn.Add(item);
+        return true;
+    }
+
+    public static int? MaDanhMuc(string gianHangId, string ten) =>
+        DanhMucGianHangIds.TryGetValue($"{gianHangId}|{ten}", out var id) ? id : null;
+
     /// <summary>Tài xế (online): lấy đơn đã sẵn sàng giao từ API và thêm vào hàng đợi (không ghi đè đơn đang xử lý).</summary>
     public static async Task TaiDonChoTaiXeAsync()
     {
@@ -77,10 +98,13 @@ public static class DuLieuService
     /// <summary>Ghi thay đổi lên API (PUT/POST). Offline: bỏ qua (dữ liệu demo giữ cục bộ). Lỗi: báo người dùng.</summary>
     public static async Task<bool> GhiAsync(string method, string url, object? body = null)
     {
-        if (!DangOnline) return true;
-        var kq = method == "POST"
-            ? await ApiClient.PostAsync<object>(url, body)
-            : await ApiClient.PutAsync<object>(url, body);
+        if (!CoPhienMayChu) return true;
+        var kq = method switch
+        {
+            "POST" => await ApiClient.PostAsync<object>(url, body),
+            "DELETE" => await ApiClient.DeleteAsync<object>(url),
+            _ => await ApiClient.PutAsync<object>(url, body)
+        };
         if (!kq.ThanhCong && Application.Current?.MainPage is { } p)
             await p.DisplayAlert("Không lưu được", kq.ThongDiep, "OK");
         return kq.ThanhCong;
@@ -98,3 +122,4 @@ public class DangNhapKhachDto { public string? Token { get; set; } public KhachH
 public class DangNhapGianHangDto { public string? Token { get; set; } public GianHang? GianHang { get; set; } }
 public class DangNhapQuanTriDto { public string? Token { get; set; } public string? VaiTro { get; set; } public string? HoTen { get; set; } }
 public class DatHangDto { public string? Id { get; set; } public decimal GiamGia { get; set; } public decimal PhiGiaoHang { get; set; } public decimal TongTien { get; set; } public string? PaymentUrl { get; set; } }
+public class DanhMucGianHangDto { public int Id { get; set; } public string TenDanhMuc { get; set; } = ""; public int SoMon { get; set; } }

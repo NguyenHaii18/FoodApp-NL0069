@@ -11,9 +11,10 @@ public partial class VendorMenuPage : ContentPage
         InitializeComponent();
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await DuLieuService.TaiThucDonGianHangAsync(MockData.GianHangHienTai.Id);
         NapDanhSach();
     }
 
@@ -57,7 +58,9 @@ public partial class VendorMenuPage : ContentPage
             var ten = await DisplayPromptAsync("Thêm danh mục", "Tên danh mục", "Lưu", "Hủy", maxLength: 40);
             if (string.IsNullOrWhiteSpace(ten)) return;
             if (ds.Contains(ten.Trim(), StringComparer.OrdinalIgnoreCase)) { await DisplayAlert("Danh mục đã tồn tại", "Hãy chọn tên khác.", "Đóng"); return; }
+            if (!await DuLieuService.GhiAsync("POST", $"api/mobile/gian-hang/{gianHangId}/danh-muc", new { tenDanhMuc = ten.Trim() })) return;
             ds.Add(ten.Trim());
+            await DuLieuService.TaiThucDonGianHangAsync(gianHangId);
         }
         else if (action == "Đổi tên danh mục")
         {
@@ -68,8 +71,12 @@ public partial class VendorMenuPage : ContentPage
             if (string.IsNullOrWhiteSpace(ten)) return;
             ten = ten.Trim();
             if (ten != old && ds.Contains(ten, StringComparer.OrdinalIgnoreCase)) { await DisplayAlert("Danh mục đã tồn tại", "Hãy chọn tên khác.", "Đóng"); return; }
+            var categoryId = DuLieuService.MaDanhMuc(gianHangId, old);
+            if (DuLieuService.CoPhienMayChu && categoryId is null) { await DisplayAlert("Không thể cập nhật", "Không tìm thấy danh mục trên máy chủ.", "Đóng"); return; }
+            if (categoryId is not null && !await DuLieuService.GhiAsync("PUT", $"api/mobile/gian-hang/{gianHangId}/danh-muc/{categoryId}", new { tenDanhMuc = ten })) return;
             ds[ds.IndexOf(old)] = ten;
             foreach (var mon in MockData.MonAnCuaGianHang(gianHangId).Where(m => m.DanhMuc == old)) mon.DanhMuc = ten;
+            await DuLieuService.TaiThucDonGianHangAsync(gianHangId);
         }
         else if (action == "Xóa danh mục")
         {
@@ -79,13 +86,18 @@ public partial class VendorMenuPage : ContentPage
             var monTrongDanhMuc = MockData.MonAnCuaGianHang(gianHangId).Where(m => m.DanhMuc == ten).ToList();
             if (monTrongDanhMuc.Count > 0)
             {
+                if (DuLieuService.CoPhienMayChu) { await DisplayAlert("Danh mục đang có món", "Hãy sửa từng món sang danh mục khác trước khi xóa.", "Đóng"); return; }
                 var chuyenDen = ds.Where(x => x != ten).ToArray();
                 if (chuyenDen.Length == 0) { await DisplayAlert("Không thể xóa", "Hãy tạo danh mục khác hoặc chuyển/xóa các món trước.", "Đóng"); return; }
                 var dich = await DisplayActionSheet("Chuyển món sang danh mục", "Hủy", null, chuyenDen);
                 if (string.IsNullOrEmpty(dich) || dich == "Hủy") return;
                 foreach (var mon in monTrongDanhMuc) mon.DanhMuc = dich;
             }
+            var categoryId = DuLieuService.MaDanhMuc(gianHangId, ten);
+            if (DuLieuService.CoPhienMayChu && categoryId is null) { await DisplayAlert("Không thể xóa", "Không tìm thấy danh mục trên máy chủ.", "Đóng"); return; }
+            if (categoryId is not null && !await DuLieuService.GhiAsync("DELETE", $"api/mobile/gian-hang/{gianHangId}/danh-muc/{categoryId}")) return;
             ds.Remove(ten);
+            await DuLieuService.TaiThucDonGianHangAsync(gianHangId);
             if (_danhMucDangLoc == ten) _danhMucDangLoc = null;
         }
         VendorLocalStore.Luu();
@@ -102,6 +114,8 @@ public partial class VendorMenuPage : ContentPage
 
         mon.ConHang = chon == "Còn hàng";
         mon.TamNgungBan = chon == "Tạm ngừng bán";   // ConHang luôn false khi tạm ngừng → khách không thấy món
+        var tinhTrang = mon.TamNgungBan ? "TamNgung" : mon.ConHang ? "ConHang" : "HetHang";
+        if (!await DuLieuService.GhiAsync("PUT", $"api/mobile/gian-hang/{MockData.GianHangHienTai.Id}/thuc-don/{mon.Id}/trang-thai", new { tinhTrang })) return;
         VendorLocalStore.Luu();
         NapDanhSach();
     }
@@ -164,14 +178,17 @@ public partial class VendorMenuPage : ContentPage
         bool xacNhan = await DisplayAlert("Xóa món ăn", $"Xóa \"{mon.TenMon}\" khỏi thực đơn?", "Xóa", "Hủy");
         if (!xacNhan) return;
 
+        if (!await DuLieuService.GhiAsync("DELETE", $"api/mobile/gian-hang/{MockData.GianHangHienTai.Id}/thuc-don/{mon.Id}")) return;
+
         MockData.DanhSachMonAn.Remove(mon);
         VendorLocalStore.Luu();
 
         NapDanhSach();
     }
 
-    private void OnRefreshing(object? sender, EventArgs e)
+    private async void OnRefreshing(object? sender, EventArgs e)
     {
+        await DuLieuService.TaiThucDonGianHangAsync(MockData.GianHangHienTai.Id);
         NapDanhSach();
         RefreshThucDon.IsRefreshing = false;
     }

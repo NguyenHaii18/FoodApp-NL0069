@@ -182,3 +182,56 @@ Các đường dẫn rút gọn ở nhóm trên nằm trong `Web/FoodServiceApp.
 **SQL/test/tài liệu:** `Database/NangCap_v16_Voucher.sql`, `Tests/FoodServiceApp.VoucherTests/FoodServiceApp.VoucherTests.csproj`, `Tests/FoodServiceApp.VoucherTests/Program.cs`, `Tests/FoodServiceApp.VoucherTests/IntegrationTests.cs`, `README.md`.
 
 Các thay đổi có sẵn trước tác vụ trong `AdminGianHangController.cs`, `AuthController.cs`, `Models/ViewModels/ViewModels.cs`, `Views/Auth/DangKy.cshtml`, `Views/Dashboard/ChoDuyet.cshtml` và script `NangCap_CSDL_DBCu_V0.sql` không thuộc thay đổi voucher này và được giữ nguyên.
+
+## Quản lý gian hàng/đối tác
+
+Phân hệ đối tác hiện hỗ trợ trọn luồng từ đăng ký đến vận hành gian hàng trên Web và ứng dụng MAUI:
+
+- Đăng ký tài khoản gian hàng, gửi hồ sơ và chờ quản trị viên duyệt. Tài khoản bị khóa hoặc hồ sơ chưa duyệt không thể truy cập các màn hình vận hành.
+- Cập nhật tên cửa hàng, địa chỉ, số điện thoại, email, mô tả, hình ảnh, giấy phép, chứng nhận an toàn thực phẩm, giờ mở/đóng cửa, trạng thái mở cửa và việc nhận đơn.
+- Quản lý danh mục món ăn/đồ uống: thêm, đổi tên, xóa danh mục trống. Tên trùng trong cùng gian hàng bị từ chối; không thể dùng ID danh mục của gian hàng khác.
+- Quản lý thực đơn: thêm, sửa và xóa món; cập nhật giá bán, giá vốn, mô tả, hình ảnh, danh mục, quyền ghi chú và tình trạng `Còn hàng`, `Hết hàng`, `Tạm ngừng`. Món đã xuất hiện trong đơn hàng được giữ lại để bảo toàn lịch sử và chuyển sang tạm ngừng thay vì xóa vật lý.
+- Tiếp nhận đơn, xác nhận chuẩn bị, báo sẵn sàng giao hoặc từ chối/hủy. Khi hủy, gian hàng bắt buộc nhập lý do; lý do được lưu để thông báo cho khách và thanh toán online đã thu được đánh dấu hoàn tiền theo luồng hiện có.
+- Theo dõi báo cáo theo khoảng ngày (tối đa 367 ngày): doanh thu món, phí nền tảng, thực nhận, giá vốn, lợi nhuận ước tính, giá trị đơn trung bình, số/tỷ lệ đơn hủy, doanh thu theo ngày, món bán chạy và số đơn theo trạng thái. Có thể xuất danh sách đơn trong kỳ thành CSV.
+
+### Luồng vận hành
+
+```mermaid
+flowchart LR
+    A[Đăng ký đối tác] --> B[Nộp hồ sơ]
+    B --> C{Quản trị duyệt}
+    C -->|Yêu cầu bổ sung| B
+    C -->|Đã duyệt| D[Cập nhật hồ sơ và giờ hoạt động]
+    D --> E[Tạo danh mục]
+    E --> F[Thêm món, giá bán và giá vốn]
+    F --> G[Mở cửa và nhận đơn]
+    G --> H{Đơn mới}
+    H -->|Xác nhận| I[Chuẩn bị và bàn giao tài xế]
+    H -->|Từ chối kèm lý do| J[Hủy/hoàn tiền]
+    I --> K[Đơn hoàn thành]
+    K --> L[Báo cáo doanh thu và lợi nhuận]
+```
+
+Web dùng cookie và luôn lấy `MaGianHang` từ claim đăng nhập. API MAUI dùng JWT vai trò `GianHang`, đối chiếu `MaTK` trong token với chủ sở hữu gian hàng trước mọi thao tác. Client chỉ gửi dữ liệu nghiệp vụ; máy chủ tự xác định quyền sở hữu danh mục và món.
+
+### API đồng bộ ứng dụng đối tác
+
+| Endpoint | Chức năng |
+|---|---|
+| `GET/PUT /api/mobile/gian-hang/{id}/ho-so` | Đọc/cập nhật thông tin cốt lõi của cửa hàng |
+| `GET/POST /api/mobile/gian-hang/{id}/danh-muc` | Danh sách/tạo danh mục |
+| `PUT/DELETE /api/mobile/gian-hang/{id}/danh-muc/{categoryId}` | Đổi tên/xóa danh mục trống |
+| `GET/POST /api/mobile/gian-hang/{id}/thuc-don` | Danh sách/tạo món |
+| `PUT/DELETE /api/mobile/gian-hang/{id}/thuc-don/{menuId}` | Sửa/xóa hoặc tạm ngừng món đã có lịch sử |
+| `PUT /api/mobile/gian-hang/{id}/thuc-don/{menuId}/trang-thai` | Đổi nhanh tình trạng bán |
+| `GET /api/mobile/gian-hang/{id}/tai-chinh?tu=...&den=...` | Số liệu đối soát doanh thu |
+
+Ứng dụng MAUI tải lại danh mục và thực đơn từ máy chủ khi mở/kéo làm mới màn hình. Khi đang online, ứng dụng chỉ cập nhật dữ liệu cục bộ sau khi API ghi thành công; chế độ demo ngoại tuyến tiếp tục dùng `MockData` và `VendorLocalStore`.
+
+### Tệp đã thêm hoặc sửa cho phân hệ gian hàng
+
+- Web thêm `Controllers/DanhMucController.cs`, `Controllers/Api/VendorManagementApiController.cs`, `Views/DanhMuc/Index.cshtml`.
+- Web sửa controller và view của `MonAn`, `DonHang`, `DoanhThu`, view model gian hàng và menu điều hướng chung.
+- MAUI sửa `Services/DuLieuService.cs`, `Views/VendorMenuPage.xaml.cs`, `Views/VendorMenuItemEditPage.xaml.cs`, `Views/VendorProfilePage.xaml.cs` để ghi/đọc dữ liệu máy chủ; bổ sung chặn null an toàn tại `Views/ReviewPage.xaml.cs`.
+
+Kiểm tra đã chạy: Web build thành công, không có cảnh báo hay lỗi. MAUI Windows .NET 8 build framework-dependent thành công, không có cảnh báo hay lỗi (`WindowsAppSDKSelfContained=false`, `SelfContained=false`, `UseAppHost=false`). Cấu hình self-contained mặc định từng dừng tại công cụ tạo app host/manifest của Windows SDK trên máy hiện tại; lỗi môi trường đóng gói này không xuất hiện ở bản build framework-dependent.

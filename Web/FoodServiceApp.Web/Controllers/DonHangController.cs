@@ -44,7 +44,7 @@ namespace FoodServiceApp.Web.Controllers
         //                          ChoXacNhan/DaXacNhan -> DaHuy
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CapNhatTrangThai(int id, string trangThaiMoi)
+        public async Task<IActionResult> CapNhatTrangThai(int id, string trangThaiMoi, string? lyDo)
         {
             var don = await _db.DonHangs.Include(d => d.ThanhToan)
                 .FirstOrDefaultAsync(d => d.MaDonHang == id && d.MaGianHang == CurrentGianHangId);
@@ -58,7 +58,14 @@ namespace FoodServiceApp.Web.Controllers
 
             if (chuyenHopLe.TryGetValue(don.TrangThai, out var choPhep) && choPhep.Contains(trangThaiMoi))
             {
+                if (trangThaiMoi == "DaHuy" && string.IsNullOrWhiteSpace(lyDo))
+                {
+                    TempData["LoiThongBao"] = "Vui lòng nhập lý do hủy đơn để khách hàng được thông báo rõ ràng.";
+                    return RedirectToAction("Index");
+                }
+
                 don.TrangThai = trangThaiMoi;
+                don.LyDoTuChoi = trangThaiMoi == "DaHuy" ? lyDo!.Trim()[..Math.Min(lyDo.Trim().Length, 500)] : null;
 
                 // Huỷ đơn đã thanh toán online -> đánh dấu hoàn tiền để Quản trị đối soát
                 if (trangThaiMoi == "DaHuy" && don.ThanhToan != null && don.ThanhToan.TrangThai == "DaThanhToan")

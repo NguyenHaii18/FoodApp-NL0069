@@ -15,6 +15,13 @@
 </div>
 
 <div class="form-group">
+    <label asp-for="GiaVon">Giá vốn/phần (đ)</label>
+    <input asp-for="GiaVon" type="number" min="0" step="1000" class="form-control" />
+    <span asp-validation-for="GiaVon" class="field-validation-error"></span>
+    <span class="text-muted" style="font-size:12px;">Dùng để ước tính lợi nhuận trong báo cáo.</span>
+</div>
+
+<div class="form-group">
     <label asp-for="MaDanhMuc">Danh mục</label>
     <select asp-for="MaDanhMuc" class="form-control">
         <option value="0">-- Chọn danh mục có sẵn --</option>
@@ -28,6 +35,7 @@
 <div class="form-group">
     <label asp-for="TenDanhMucMoi">Hoặc tạo danh mục mới (bỏ trống nếu đã chọn ở trên)</label>
     <input asp-for="TenDanhMucMoi" class="form-control" placeholder="vd: Món thêm" />
+    <span asp-validation-for="TenDanhMucMoi" class="field-validation-error"></span>
 </div>
 
 <div class="form-group">
@@ -48,8 +56,18 @@
 </div>
 
 <div class="form-group">
+    <label asp-for="TinhTrang">Tình trạng bán</label>
+    <select asp-for="TinhTrang" class="form-control">
+        <option value="ConHang">Còn hàng</option>
+        <option value="HetHang">Hết hàng</option>
+        <option value="TamNgung">Tạm ngừng bán</option>
+    </select>
+    <span asp-validation-for="TinhTrang" class="field-validation-error"></span>
+</div>
+
+<div class="form-group">
     <label style="display:flex; align-items:center; gap:8px;">
-        <input asp-for="ConHang" type="checkbox" style="width:auto;" />
-        Còn hàng (đang bán)
+        <input asp-for="ChoGhiChu" type="checkbox" style="width:auto;" />
+        Cho phép khách ghi chú cho món
     </label>
 </div>

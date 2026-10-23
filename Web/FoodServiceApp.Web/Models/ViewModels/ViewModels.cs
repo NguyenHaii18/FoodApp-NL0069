@@ -111,8 +111,11 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string TenMon { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập giá")]
-        [Range(0, 100000000, ErrorMessage = "Giá không hợp lệ")]
+        [Range(1, 100000000, ErrorMessage = "Giá bán phải lớn hơn 0")]
         public decimal Gia { get; set; }
+
+        [Range(0, 100000000, ErrorMessage = "Giá vốn không hợp lệ")]
+        public decimal GiaVon { get; set; }
 
         public string? MoTa { get; set; }
         public string? HinhAnhHienTai { get; set; }
@@ -128,7 +131,9 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string? GiayAttpHienTai { get; set; }
         public IFormFile? GiayPhepMoi { get; set; }
         public IFormFile? GiayAttpMoi { get; set; }
-        public bool ConHang { get; set; } = true;
+        [RegularExpression("^(ConHang|HetHang|TamNgung)$", ErrorMessage = "Tình trạng món không hợp lệ")]
+        public string TinhTrang { get; set; } = "ConHang";
+        public bool ChoGhiChu { get; set; } = true;
 
         public string TenDanhMucMoi { get; set; } = "";
         public List<DanhMuc> DanhSachDanhMuc { get; set; } = new();
@@ -215,10 +220,20 @@ namespace FoodServiceApp.Web.Models.ViewModels
 
     public class DoanhThuViewModel
     {
-        public decimal TongDoanhThu30Ngay { get; set; }
-        public int TongDonHoanThanh30Ngay { get; set; }
+        public DateTime TuNgay { get; set; }
+        public DateTime DenNgay { get; set; }
+        public decimal TongDoanhThu { get; set; }
+        public decimal PhiNenTang { get; set; }
+        public decimal ThucNhan { get; set; }
+        public decimal GiaVon { get; set; }
+        public decimal LoiNhuanUocTinh { get; set; }
+        public decimal GiaTriDonTrungBinh { get; set; }
+        public int TongDonHoanThanh { get; set; }
+        public int TongDonHuy { get; set; }
+        public decimal TyLeHuy { get; set; }
         public List<(DateTime Ngay, decimal DoanhThu)> DoanhThuTheoNgay { get; set; } = new();
-        public List<(string TenMon, int SoLuongBan)> MonBanChay { get; set; } = new();
+        public List<(string TenMon, int SoLuongBan, decimal DoanhThu)> MonBanChay { get; set; } = new();
+        public List<(string TrangThai, int SoLuong)> DonTheoTrangThai { get; set; } = new();
     }
 
     public class DriverThuNhapViewModel

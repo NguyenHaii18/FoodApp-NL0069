@@ -187,6 +187,25 @@ public partial class VendorMenuItemEditPage : ContentPage
                 GianHangId = MockData.GianHangHienTai.Id,
             };
 
+            var tinhTrangApi = tinhTrang == 2 ? "TamNgung" : tinhTrang == 1 ? "HetHang" : "ConHang";
+            var payload = new
+            {
+                tenMon = EntryTenMon.Text.Trim(), danhMuc, gia, giaVon,
+                moTa = EditorMoTa.Text?.Trim() ?? "", hinhAnh,
+                tinhTrang = tinhTrangApi, choGhiChu = SwitchChoGhiChu.IsToggled,
+                tuyChon = tuyChon.Select(x => new { loai = x.Loai, ten = x.Ten, giaThem = x.GiaThem }).ToList()
+            };
+            if (DuLieuService.CoPhienMayChu)
+            {
+                if (_monDangSua is null)
+                {
+                    var result = await ApiClient.PostAsync<MenuItemSavedDto>($"api/mobile/gian-hang/{MockData.GianHangHienTai.Id}/thuc-don", payload);
+                    if (!result.ThanhCong || result.DuLieu is null) { HienLoi(result.ThongDiep); return; }
+                    mon.Id = result.DuLieu.Id.ToString();
+                }
+                else if (!await DuLieuService.GhiAsync("PUT", $"api/mobile/gian-hang/{MockData.GianHangHienTai.Id}/thuc-don/{mon.Id}", payload)) return;
+            }
+
             if (!string.IsNullOrEmpty(mon.AnhPath) && mon.AnhPath != _anhPath)
             {
                 try { File.Delete(mon.AnhPath); } catch { }   // dọn ảnh cũ đã bị thay/bỏ
@@ -224,12 +243,16 @@ public partial class VendorMenuItemEditPage : ContentPage
         bool xacNhan = await DisplayAlert("Xóa món ăn", $"Xóa \"{_monDangSua.TenMon}\" khỏi thực đơn?", "Xóa", "Hủy");
         if (!xacNhan) return;
 
+        if (!await DuLieuService.GhiAsync("DELETE", $"api/mobile/gian-hang/{MockData.GianHangHienTai.Id}/thuc-don/{_monDangSua.Id}")) return;
+
         if (_monDangSua.CoAnh) { try { File.Delete(_monDangSua.AnhPath); } catch { } }
         MockData.DanhSachMonAn.Remove(_monDangSua);
         VendorLocalStore.Luu();
 
         await Shell.Current.GoToAsync("..");
     }
+
+    private sealed class MenuItemSavedDto { public int Id { get; set; } }
 
     private void HienLoi(string thongDiep)
     {

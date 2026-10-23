@@ -106,6 +106,15 @@ public partial class VendorProfilePage : ContentPage
         try
         {
             var gh = Models.MockData.GianHangHienTai;
+            if (!await DuLieuService.GhiAsync("PUT", $"api/mobile/gian-hang/{gh.Id}/ho-so", new
+            {
+                tenGianHang = EntryTenGianHang.Text.Trim(),
+                diaChi = EntryDiaChi.Text.Trim(),
+                soDienThoai = EntrySdt.Text.Trim(),
+                email = EntryEmail.Text?.Trim(),
+                moTa = EditorMoTa.Text?.Trim(),
+                hinhAnh = EntryHinhAnh.Text?.Trim()
+            })) return;
             gh.HinhAnh = string.IsNullOrWhiteSpace(EntryHinhAnh.Text) ? gh.HinhAnh : EntryHinhAnh.Text.Trim();
             gh.TenGianHang = EntryTenGianHang.Text.Trim();
             gh.DiaChi = EntryDiaChi.Text.Trim();

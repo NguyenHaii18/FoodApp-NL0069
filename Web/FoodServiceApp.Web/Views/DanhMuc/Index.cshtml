@@ -1,0 +1,53 @@
+@model List<DanhMuc>
+@{
+    ViewData["Title"] = "Danh mục thực đơn";
+}
+
+<div class="topbar"><h2>Danh mục món ăn, đồ uống</h2></div>
+
+<div class="card mb-3">
+    <form asp-action="Create" method="post" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+        @Html.AntiForgeryToken()
+        <div class="form-group" style="flex:1;min-width:240px;margin:0;">
+            <label for="tenDanhMuc">Tên danh mục mới</label>
+            <input id="tenDanhMuc" name="tenDanhMuc" maxlength="100" required class="form-control" placeholder="Ví dụ: Món chính, Đồ uống" />
+        </div>
+        <button class="btn btn-primary" type="submit">Thêm danh mục</button>
+    </form>
+</div>
+
+<div class="card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">Chưa có danh mục. Hãy tạo danh mục đầu tiên.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead><tr><th>Tên danh mục</th><th>Số món</th><th>Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <form asp-action="Rename" method="post" style="display:flex;gap:8px;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.MaDanhMuc" />
+                            <input name="tenDanhMuc" value="@item.TenDanhMuc" maxlength="100" required class="form-control" />
+                            <button class="btn btn-outline btn-sm" type="submit">Lưu</button>
+                        </form>
+                    </td>
+                    <td>@item.MonAns.Count</td>
+                    <td>
+                        <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa danh mục này?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.MaDanhMuc" />
+                            <button class="btn btn-danger btn-sm" type="submit" @(item.MonAns.Any() ? "disabled" : null)>Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
