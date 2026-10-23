@@ -1,0 +1,18 @@
+# .NET / MAUI build outputs
+**/bin/
+**/obj/
+
+# Build artifacts
+.artifacts/
+
+# Database backups
+*.bak
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+
+# User-specific files
+*.user
+*.suo
