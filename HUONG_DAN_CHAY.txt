@@ -16,12 +16,17 @@ BƯỚC 1 - CSDL: mở SSMS, chạy Database/01_TaoMoi_Full.sql.
 BƯỚC 2 - WEB : cd Web/FoodServiceApp.Web ; dotnet run  -> https://localhost:5001 (Swagger: /swagger)
 BƯỚC 3 - APP : dotnet workload install maui ; mở Mobile_FoodApp.Maui.csproj -> Windows Machine -> F5.
               (app tự gọi https://localhost:5001; không có Web thì chạy chế độ offline)
+              App Windows tự đóng gói Windows App Runtime. Nếu chạy bằng terminal:
+              dotnet run --project Mobile_FoodApp.Maui/FoodApp.Maui.csproj -f net8.0-windows10.0.19041.0
+              Chỉ chạy 1 phiên Web. Lỗi "address already in use" ở cổng 5001 nghĩa là Web đã chạy ở terminal khác;
+              dùng phiên đó hoặc Ctrl+C tại terminal cũ rồi mới chạy lại.
 
 INTRO KHI KHỞI ĐỘNG
 - Web: video phát toàn màn hình ở lần đầu mở mỗi tab (có nút "Bỏ qua", phím Esc). Đổi video/tắt trong
   Web/appsettings.json -> "Intro": { "Bat": true, "Tep": "intro_3d.mp4" }  (intro.mp4 | logo_but_toc.mp4)
-- App: Views/KhoiDongVideoPage là trang đầu tiên; xong video -> trang đăng nhập. Cần NuGet CommunityToolkit.Maui
-  + MediaElement (đã khai trong csproj, máy cần có mạng để restore). Đổi video: thay Resources/Raw/intro.mp4.
+- App: Views/KhoiDongVideoPage là trang đầu tiên; xong intro -> trang đăng nhập. Android/iOS dùng video MediaElement.
+  Windows dùng splash FoodApp 2 giây để tương thích máy không có Windows.System.Display.DisplayRequest.
+  Đổi video Android/iOS: thay Resources/Raw/intro.mp4.
 
 TÀI KHOẢN: Web quản trị quantri01 / admin123 ; khách/gian hàng/tài xế mẫu: mật khẩu 123456
            App quản trị: admin@fooddelivery.vn / admin123

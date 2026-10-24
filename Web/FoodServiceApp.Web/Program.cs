@@ -12,6 +12,12 @@ using FoodServiceApp.Web.Services.Payment;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Cho phép chạy bằng tài khoản Windows thường. EventLog provider có thể yêu cầu
+// quyền tạo/ghi nguồn Windows Event Log và làm ứng dụng dừng ngay lúc khởi động.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // MVC (Website: Gian hàng/Quản trị/Tài xế) + API Controllers (Controllers/Api/*, cho FoodApp mobile)
 builder.Services.AddControllersWithViews(o => o.Filters.AddService<FoodServiceApp.Web.Filters.NhatKyThaoTacFilter>());
 builder.Services.AddScoped<FoodServiceApp.Web.Filters.NhatKyThaoTacFilter>();

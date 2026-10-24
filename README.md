@@ -246,4 +246,17 @@ Luồng trạng thái hồ sơ: `ChuaGuiHoSo` → `ChoDuyet` → `DaDuyet`; qu�
 - Web sửa `AuthController`, `DashboardController`, controller và view của `MonAn`, `DonHang`, `DoanhThu`, view đăng ký/đăng nhập, view model gian hàng và menu điều hướng chung.
 - MAUI sửa model trạng thái hồ sơ, màn hình đăng ký/đăng nhập/hồ sơ, `Services/DuLieuService.cs`, `Views/VendorMenuPage.xaml.cs`, `Views/VendorMenuItemEditPage.xaml.cs` để ghi/đọc dữ liệu máy chủ; bổ sung chặn null an toàn tại `Views/ReviewPage.xaml.cs`.
 
-Kiểm tra đã chạy: Web build thành công, không có cảnh báo hay lỗi. MAUI Windows .NET 8 build framework-dependent thành công, không có cảnh báo hay lỗi (`WindowsAppSDKSelfContained=false`, `SelfContained=false`, `UseAppHost=false`). Cấu hình self-contained mặc định từng dừng tại công cụ tạo app host/manifest của Windows SDK trên máy hiện tại; lỗi môi trường đóng gói này không xuất hiện ở bản build framework-dependent.
+### Khởi động Web và MAUI trên Windows
+
+Chạy Web trước, sau đó chạy MAUI từ thư mục gốc dự án:
+
+```powershell
+dotnet run --project Web/FoodServiceApp.Web/FoodServiceApp.Web.csproj
+dotnet run --project Mobile_FoodApp.Maui/FoodApp.Maui.csproj -f net8.0-windows10.0.19041.0
+```
+
+Chỉ mở một phiên Web. Thông báo `Failed to bind ... https://127.0.0.1:5001: address already in use` có nghĩa là API đã chạy trong terminal khác; dùng phiên đang chạy hoặc nhấn `Ctrl+C` tại terminal đó rồi khởi động lại. Web chỉ dùng console/debug logger để tài khoản Windows thường không bị lỗi quyền ghi Windows Event Log.
+
+MAUI Windows được build `win-x64`, self-contained và có app host `.exe` (`WindowsAppSDKSelfContained=true`, `SelfContained=true`, `UseAppHost=true`). Vì vậy máy chạy không cần cài riêng Microsoft Windows App Runtime. Trên Windows không hỗ trợ `Windows.System.Display.DisplayRequest`, trang khởi động dùng splash FoodApp trong 2 giây rồi chuyển tới đăng nhập; Android/iOS vẫn dùng video intro. Lỗi WinUI chưa xử lý sẽ được ghi vào `maui-startup-error.log` cạnh file thực thi khi thư mục cho phép ghi.
+
+Kiểm tra đã chạy: Web build thành công với 0 cảnh báo/0 lỗi, kết nối SQL và lắng nghe tại cổng 5000/5001. MAUI Windows .NET 8 build thành công; lệnh `dotnet run` tạo `FoodApp.Maui.exe`, mở cửa sổ và tiến trình phản hồi bình thường.

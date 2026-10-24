@@ -27,9 +27,12 @@
 		<ApplicationVersion>1</ApplicationVersion>
 
 		<WindowsPackageType>None</WindowsPackageType>
-		<!-- THÊM: mang sẵn Windows App Runtime theo app, không cần cài runtime riêng -->
+		<!-- Đóng gói Windows App Runtime cùng ứng dụng để chạy được cả trên máy chưa cài runtime.
+		     WinUI cần app host .exe để khởi tạo Windows App SDK đúng cách. -->
+		<RuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('windows'))">win-x64</RuntimeIdentifier>
 		<WindowsAppSDKSelfContained Condition="$([MSBuild]::IsOSPlatform('windows'))">true</WindowsAppSDKSelfContained>
 		<SelfContained Condition="$([MSBuild]::IsOSPlatform('windows'))">true</SelfContained>
+		<UseAppHost Condition="$([MSBuild]::IsOSPlatform('windows'))">true</UseAppHost>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>

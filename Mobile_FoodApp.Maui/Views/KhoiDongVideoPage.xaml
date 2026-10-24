@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="FoodApp.Maui.Views.KhoiDongVideoPage"
              BackgroundColor="#3C0293"
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False">
 
-    <Grid>
-        <!-- Video intro (Resources/Raw/intro.mp4), phát tự động, không tiếng, không hiện nút điều khiển -->
-        <toolkit:MediaElement x:Name="Video"
-                              ShouldAutoPlay="True"
-                              ShouldShowPlaybackControls="False"
-                              ShouldMute="True"
-                              Aspect="AspectFit"
-                              HorizontalOptions="Fill"
-                              VerticalOptions="Fill"
-                              MediaEnded="Video_MediaEnded"
-                              MediaFailed="Video_MediaFailed" />
+    <Grid x:Name="IntroGrid">
+        <!-- Windows thêm màn hình dự phòng này vì MediaElement có thể không có
+             Windows.System.Display.DisplayRequest trên một số máy. -->
+        <VerticalStackLayout HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Spacing="18">
+            <Label Text="FoodApp"
+                   FontSize="44"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center" />
+            <ActivityIndicator IsRunning="True" Color="White" />
+        </VerticalStackLayout>
 
         <Button x:Name="BtnBoQua"
                 Text="Bỏ qua ▶"
