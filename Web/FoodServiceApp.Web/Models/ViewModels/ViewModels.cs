@@ -5,7 +5,7 @@ namespace FoodServiceApp.Web.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập hoặc email")]
         public string TenDangNhap { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
@@ -19,6 +19,7 @@ namespace FoodServiceApp.Web.Models.ViewModels
     public class VendorRegisterViewModel
     {
         [Required(ErrorMessage = "Vui lòng nhập tên gian hàng")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "Tên gian hàng phải có từ 2 đến 150 ký tự")]
         public string TenCuaHang { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập email")]
@@ -26,10 +27,11 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string Email { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
-        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+        [RegularExpression(@"^[0-9+ .()-]{9,20}$", ErrorMessage = "Số điện thoại không hợp lệ")]
         public string SDT { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [RegularExpression(@"^[a-zA-Z0-9._-]{4,50}$", ErrorMessage = "Tên đăng nhập gồm 4-50 ký tự chữ, số, dấu chấm, gạch dưới hoặc gạch ngang")]
         public string TenDangNhap { get; set; } = "";
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]

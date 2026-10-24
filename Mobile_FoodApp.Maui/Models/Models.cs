@@ -92,7 +92,9 @@ public class GianHang
 /// <summary>Trạng thái duyệt hồ sơ khi gian hàng đăng ký tham gia nền tảng.</summary>
 public enum TrangThaiDangKyGianHang
 {
+    ChuaGuiHoSo,
     ChoDuyet,
+    CanBoSung,
     DaDuyet,
     TuChoi
 }
@@ -101,7 +103,9 @@ public static class TrangThaiDangKyGianHangExtensions
 {
     public static string Nhan(this TrangThaiDangKyGianHang t) => t switch
     {
+        TrangThaiDangKyGianHang.ChuaGuiHoSo => "Chưa gửi hồ sơ",
         TrangThaiDangKyGianHang.ChoDuyet => "Chờ duyệt",
+        TrangThaiDangKyGianHang.CanBoSung => "Cần bổ sung",
         TrangThaiDangKyGianHang.DaDuyet => "Đã duyệt",
         TrangThaiDangKyGianHang.TuChoi => "Bị từ chối",
         _ => ""

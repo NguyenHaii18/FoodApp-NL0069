@@ -214,11 +214,23 @@ flowchart LR
 
 Web dùng cookie và luôn lấy `MaGianHang` từ claim đăng nhập. API MAUI dùng JWT vai trò `GianHang`, đối chiếu `MaTK` trong token với chủ sở hữu gian hàng trước mọi thao tác. Client chỉ gửi dữ liệu nghiệp vụ; máy chủ tự xác định quyền sở hữu danh mục và món.
 
+### Đăng ký và đăng nhập đối tác
+
+- Web đăng ký theo hai bước: tạo tài khoản bằng tên đăng nhập, email, số điện thoại và mật khẩu; sau đó chuyển thẳng tới hồ sơ để bổ sung địa chỉ và giấy tờ trước khi gửi xét duyệt. Việc tạo `TaiKhoan` và `GianHang` nằm trong cùng transaction.
+- Web cho phép đăng nhập bằng tên đăng nhập hoặc email. Tài khoản đang chờ duyệt, cần bổ sung hoặc từng bị từ chối vẫn đăng nhập được để xem lý do, sửa hồ sơ và gửi xét duyệt lại. Tài khoản bị quản trị viên khóa vẫn bị từ chối đăng nhập.
+- MAUI yêu cầu xác nhận mật khẩu, giấy phép kinh doanh và chứng nhận an toàn thực phẩm. API chuẩn hóa email/số điện thoại, kiểm tra trùng và tạo tài khoản cùng hồ sơ trong một transaction; kết quả trả JWT và thông tin gian hàng để đăng nhập ngay sau đăng ký.
+- Sau đăng nhập MAUI, hồ sơ chưa được duyệt được điều hướng tới trang hồ sơ. Khi lưu hồ sơ bị từ chối/cần bổ sung, ứng dụng gọi `POST /api/mobile/gian-hang/{id}/gui-ho-so` để gửi lại. Các API vận hành vẫn yêu cầu hồ sơ `DaDuyet`.
+
+Luồng trạng thái hồ sơ: `ChuaGuiHoSo` → `ChoDuyet` → `DaDuyet`; quản trị viên có thể chuyển sang `CanBoSung` hoặc `TuChoi`, sau đó đối tác sửa và gửi lại về `ChoDuyet`.
+
 ### API đồng bộ ứng dụng đối tác
 
 | Endpoint | Chức năng |
 |---|---|
+| `POST /api/mobile/gian-hang/dang-ky` | Tạo tài khoản, hồ sơ pháp lý và trả JWT |
+| `POST /api/mobile/gian-hang/dang-nhap` | Đăng nhập cả hồ sơ đã duyệt và hồ sơ cần theo dõi/bổ sung |
 | `GET/PUT /api/mobile/gian-hang/{id}/ho-so` | Đọc/cập nhật thông tin cốt lõi của cửa hàng |
+| `POST /api/mobile/gian-hang/{id}/gui-ho-so` | Gửi mới/gửi lại hồ sơ xét duyệt |
 | `GET/POST /api/mobile/gian-hang/{id}/danh-muc` | Danh sách/tạo danh mục |
 | `PUT/DELETE /api/mobile/gian-hang/{id}/danh-muc/{categoryId}` | Đổi tên/xóa danh mục trống |
 | `GET/POST /api/mobile/gian-hang/{id}/thuc-don` | Danh sách/tạo món |
@@ -231,7 +243,7 @@ Web dùng cookie và luôn lấy `MaGianHang` từ claim đăng nhập. API MAUI
 ### Tệp đã thêm hoặc sửa cho phân hệ gian hàng
 
 - Web thêm `Controllers/DanhMucController.cs`, `Controllers/Api/VendorManagementApiController.cs`, `Views/DanhMuc/Index.cshtml`.
-- Web sửa controller và view của `MonAn`, `DonHang`, `DoanhThu`, view model gian hàng và menu điều hướng chung.
-- MAUI sửa `Services/DuLieuService.cs`, `Views/VendorMenuPage.xaml.cs`, `Views/VendorMenuItemEditPage.xaml.cs`, `Views/VendorProfilePage.xaml.cs` để ghi/đọc dữ liệu máy chủ; bổ sung chặn null an toàn tại `Views/ReviewPage.xaml.cs`.
+- Web sửa `AuthController`, `DashboardController`, controller và view của `MonAn`, `DonHang`, `DoanhThu`, view đăng ký/đăng nhập, view model gian hàng và menu điều hướng chung.
+- MAUI sửa model trạng thái hồ sơ, màn hình đăng ký/đăng nhập/hồ sơ, `Services/DuLieuService.cs`, `Views/VendorMenuPage.xaml.cs`, `Views/VendorMenuItemEditPage.xaml.cs` để ghi/đọc dữ liệu máy chủ; bổ sung chặn null an toàn tại `Views/ReviewPage.xaml.cs`.
 
 Kiểm tra đã chạy: Web build thành công, không có cảnh báo hay lỗi. MAUI Windows .NET 8 build framework-dependent thành công, không có cảnh báo hay lỗi (`WindowsAppSDKSelfContained=false`, `SelfContained=false`, `UseAppHost=false`). Cấu hình self-contained mặc định từng dừng tại công cụ tạo app host/manifest của Windows SDK trên máy hiện tại; lỗi môi trường đóng gói này không xuất hiện ở bản build framework-dependent.

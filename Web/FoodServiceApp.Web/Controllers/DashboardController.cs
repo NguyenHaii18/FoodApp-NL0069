@@ -76,7 +76,8 @@ namespace FoodServiceApp.Web.Controllers
                 return NotFound();
 
             if (gianHang.TrangThaiDuyet != "ChuaGuiHoSo" &&
-                gianHang.TrangThaiDuyet != "CanBoSung")
+                gianHang.TrangThaiDuyet != "CanBoSung" &&
+                gianHang.TrangThaiDuyet != "TuChoi")
             {
                 TempData["LoiThongBao"] =
                     "Hồ sơ hiện không thể gửi xét duyệt.";

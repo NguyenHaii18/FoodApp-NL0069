@@ -275,20 +275,18 @@ namespace FoodServiceApp.Web.Controllers.Api
         [AllowAnonymous]
         public async Task<IActionResult> VendorLogin(VendorLoginRequest request)
         {
-            var email = request.Email?.Trim() ?? "";
+            var email = request.Email?.Trim().ToLowerInvariant() ?? "";
             var loginName = email.EndsWith("@gianhang.vn", StringComparison.OrdinalIgnoreCase)
                 ? email[..email.IndexOf('@')]
                 : email;
             var tk = await _db.TaiKhoans.FirstOrDefaultAsync(t =>
-                (t.TenDangNhap == email || t.TenDangNhap == loginName) && t.VaiTro == "GianHang");
+                t.VaiTro == "GianHang" && (t.TenDangNhap.ToLower() == email || t.TenDangNhap.ToLower() == loginName ||
+                _db.GianHangs.Any(g => g.MaTK == t.MaTK && g.Email != null && g.Email.ToLower() == email)));
             if (tk == null) return Loi("Email hoặc mật khẩu không đúng.", 401);
             var store = await _db.GianHangs.FirstOrDefaultAsync(g => g.MaTK == tk.MaTK);
             if (store == null) return Loi("Email hoặc mật khẩu không đúng.", 401);
             if (tk == null || !await BaoMat.KhopAsync(_db, HttpContext, request.MatKhau, tk)) return Loi("Email hoặc mật khẩu không đúng.", 401);
             if (!tk.TrangThai) return Loi("Tài khoản gian hàng đang bị khoá.", 401);
-            if (store.TrangThaiDuyet == "ChoDuyet") return Loi("Hồ sơ gian hàng đang chờ quản trị viên duyệt.", 403);
-            if (store.TrangThaiDuyet == "TuChoi") return Loi("Hồ sơ gian hàng đã bị từ chối.", 403);
-
             return Ok(new
             {
                 token = CreateToken(tk.MaTK, tk.TenDangNhap, "GianHang"),
@@ -300,15 +298,26 @@ namespace FoodServiceApp.Web.Controllers.Api
         [AllowAnonymous]
         public async Task<IActionResult> VendorRegister(MobileVendorRegisterRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.TenGianHang) || string.IsNullOrWhiteSpace(request.DiaChi)) return Loi("Tên và địa chỉ gian hàng không được để trống.");
-            if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@')) return Loi("Email không hợp lệ.");
-            if (request.MatKhau?.Length < 6) return Loi("Mật khẩu tối thiểu 6 ký tự.");
-            if (await _db.TaiKhoans.AnyAsync(t => t.TenDangNhap == request.Email.Trim())) return Loi("Email này đã được đăng ký.", 409);
-            if (string.IsNullOrWhiteSpace(request.MatKhau)) return Loi("Vui lòng nhập mật khẩu.");
+            var name = request.TenGianHang?.Trim() ?? "";
+            var address = request.DiaChi?.Trim() ?? "";
+            var email = request.Email?.Trim().ToLowerInvariant() ?? "";
+            var phone = NormalizePhone(request.Sdt);
+            if (name.Length is < 2 or > 150) return Loi("Tên gian hàng phải có từ 2 đến 150 ký tự.");
+            if (address.Length is < 5 or > 300) return Loi("Địa chỉ gian hàng phải có từ 5 đến 300 ký tự.");
+            if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email)) return Loi("Email không hợp lệ.");
+            if (phone.Length is < 9 or > 11) return Loi("Số điện thoại không hợp lệ.");
+            if (string.IsNullOrWhiteSpace(request.MatKhau) || request.MatKhau.Length < 6) return Loi("Mật khẩu tối thiểu 6 ký tự.");
+            if (string.IsNullOrWhiteSpace(request.SoGiayPhepKinhDoanh) || string.IsNullOrWhiteSpace(request.SoGiayChungNhanAttp))
+                return Loi("Vui lòng nhập giấy phép kinh doanh và chứng nhận an toàn thực phẩm.");
+            if (await _db.TaiKhoans.AnyAsync(t => t.TenDangNhap.ToLower() == email) ||
+                await _db.GianHangs.AnyAsync(g => (g.Email != null && g.Email.ToLower() == email) || g.SDT == phone))
+                return Loi("Email hoặc số điện thoại đã được đăng ký.", 409);
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
 
             var tk = new TaiKhoan
             {
-                TenDangNhap = request.Email.Trim(),
+                TenDangNhap = email,
                 MatKhau = MatKhauHelper.Hash(request.MatKhau),
                 VaiTro = "GianHang",
                 TrangThai = true,
@@ -319,20 +328,29 @@ namespace FoodServiceApp.Web.Controllers.Api
             var gh = new GianHang
             {
                 MaTK = tk.MaTK,
-                TenCuaHang = request.TenGianHang.Trim(),
-                DiaChi = request.DiaChi.Trim(),
-                SDT = request.Sdt?.Trim() ?? "",
+                TenCuaHang = name,
+                DiaChi = address,
+                SDT = phone,
+                Email = email,
                 MoTa = request.MoTa?.Trim(),
                 HinhAnh = request.HinhAnh,
+                GiayPhepKinhDoanh = request.SoGiayPhepKinhDoanh.Trim(),
+                GiayChungNhanATTP = request.SoGiayChungNhanAttp.Trim(),
                 TrangThaiKinhDoanh = "DongCua",
                 TrangThaiDuyet = "ChoDuyet",
+                DangNhanDon = false,
                 NgayDangKy = DateTime.Now,
                 TyLeChietKhau = await FoodServiceApp.Web.Services.CauHinhService.HoaHongMacDinhAsync(_db),
             };
             _db.GianHangs.Add(gh);
             await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-            return Ok(new { id = gh.MaGianHang, trangThaiDangKy = gh.TrangThaiDuyet });
+            return Ok(new
+            {
+                token = CreateToken(tk.MaTK, tk.TenDangNhap, "GianHang"),
+                gianHang = MapGianHang(gh, tk)
+            });
         }
 
         public record MobileDriverRegisterRequest(string HoTen, string SoDienThoai, string? SoCccd, string? LoaiXe, string? BienSoXe, string? SoGplx, string MatKhau);
@@ -1079,7 +1097,8 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         // ============================== Local helpers ==============================
 
-        public record MobileVendorRegisterRequest(string TenGianHang, string DiaChi, string Sdt, string Email, string MatKhau, string? MoTa, string? HinhAnh);
+        public record MobileVendorRegisterRequest(string TenGianHang, string DiaChi, string Sdt, string Email, string MatKhau,
+            string? MoTa, string? HinhAnh, string SoGiayPhepKinhDoanh, string SoGiayChungNhanAttp);
         public record MobilePlaceOrderItem(int MonAnId, int SoLuong);
         public record MobilePlaceOrderRequest(int GianHangId, string DiaChiGiao, string? GhiChu, string HinhThucThanhToan, string? MaKhuyenMai, List<MobilePlaceOrderItem> ChiTiet, string? MaYeuCauDat = null);
         public record MobileCustomerProfileRequest(string HoTen, string? Sdt, string? DiaChi);
@@ -1126,7 +1145,7 @@ namespace FoodServiceApp.Web.Controllers.Api
             danhGia = 0d,
             thoiGianGiaoPhut = 30,
             soDienThoai = gh.SDT,
-            email = tk.TenDangNhap.Contains("@") ? tk.TenDangNhap : $"{tk.TenDangNhap}@gianhang.vn",
+            email = gh.Email ?? (tk.TenDangNhap.Contains("@") ? tk.TenDangNhap : $"{tk.TenDangNhap}@gianhang.vn"),
             matKhau = "",
             moTa = gh.MoTa ?? "",
             dangMoCua = gh.TrangThaiKinhDoanh == "DangMo",
@@ -1136,7 +1155,10 @@ namespace FoodServiceApp.Web.Controllers.Api
             tyLeChietKhau = gh.TyLeChietKhau,
             taiKhoanBiKhoa = !tk.TrangThai,
             ngayDangKy = gh.NgayDangKy,
-            trangThaiDangKy = gh.TrangThaiDuyet
+            trangThaiDangKy = gh.TrangThaiDuyet,
+            lyDoTuChoi = gh.LyDoTuChoi ?? "",
+            soGiayPhepKinhDoanh = gh.GiayPhepKinhDoanh ?? "",
+            soGiayChungNhanAttp = gh.GiayChungNhanATTP ?? ""
         };
 
         private object MapIssue(PhanHoi p)

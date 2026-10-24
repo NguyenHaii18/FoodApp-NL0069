@@ -54,6 +54,26 @@ public class VendorManagementApiController : VendorApiBaseController
         return Ok(new { message = "Đã cập nhật hồ sơ gian hàng." });
     }
 
+    [HttpPost("gui-ho-so")]
+    public async Task<IActionResult> SubmitProfile(int id)
+    {
+        var g = await OwnStore(id);
+        if (g == null) return Error("Không tìm thấy gian hàng.", 404);
+        if (g.TrangThaiDuyet == "DaDuyet") return Ok(new { trangThaiDangKy = g.TrangThaiDuyet });
+        if (g.TrangThaiDuyet == "ChoDuyet") return Ok(new { trangThaiDangKy = g.TrangThaiDuyet });
+        if (string.IsNullOrWhiteSpace(g.TenCuaHang) || string.IsNullOrWhiteSpace(g.DiaChi) ||
+            string.IsNullOrWhiteSpace(g.SDT) || string.IsNullOrWhiteSpace(g.Email) ||
+            string.IsNullOrWhiteSpace(g.GiayPhepKinhDoanh) || string.IsNullOrWhiteSpace(g.GiayChungNhanATTP))
+            return Error("Vui lòng hoàn thiện thông tin cửa hàng và giấy tờ trước khi gửi xét duyệt.");
+        g.TrangThaiDuyet = "ChoDuyet";
+        g.TrangThaiKinhDoanh = "DongCua";
+        g.DangNhanDon = false;
+        g.LyDoTuChoi = null;
+        g.YeuCauBoSung = null;
+        await _db.SaveChangesAsync();
+        return Ok(new { trangThaiDangKy = g.TrangThaiDuyet });
+    }
+
     [HttpGet("danh-muc")]
     public async Task<IActionResult> Categories(int id)
     {

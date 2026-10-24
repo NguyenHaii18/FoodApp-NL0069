@@ -59,16 +59,6 @@ public partial class VendorLoginPage : ContentPage
                 return;
             }
 
-            if (gianHang.TrangThaiDangKy == TrangThaiDangKyGianHang.ChoDuyet)
-            {
-                HienLoi("Hồ sơ gian hàng của bạn đang chờ quản trị viên duyệt");
-                return;
-            }
-            if (gianHang.TrangThaiDangKy == TrangThaiDangKyGianHang.TuChoi)
-            {
-                HienLoi("Hồ sơ gian hàng đã bị từ chối" + (string.IsNullOrWhiteSpace(gianHang.LyDoTuChoi) ? "" : $": {gianHang.LyDoTuChoi}") + ". Vui lòng liên hệ quản trị viên");
-                return;
-            }
             if (gianHang.TaiKhoanBiKhoa)
             {
                 NhatKyService.Ghi("GianHang", gianHang.Email, "Đăng nhập thất bại", chiTiet: "Tài khoản bị khóa · " + NhatKyService.ThietBi(), thanhCong: false);
@@ -78,6 +68,19 @@ public partial class VendorLoginPage : ContentPage
 
             NhatKyService.Ghi("GianHang", gianHang.Email, "Đăng nhập", gianHang.TenGianHang, NhatKyService.ThietBi());
             MockData.GianHangHienTai = gianHang;
+            if (gianHang.TrangThaiDangKy != TrangThaiDangKyGianHang.DaDuyet)
+            {
+                var message = gianHang.TrangThaiDangKy switch
+                {
+                    TrangThaiDangKyGianHang.TuChoi => "Hồ sơ bị từ chối" + (string.IsNullOrWhiteSpace(gianHang.LyDoTuChoi) ? "." : $": {gianHang.LyDoTuChoi}."),
+                    TrangThaiDangKyGianHang.CanBoSung => "Hồ sơ cần bổ sung thông tin.",
+                    TrangThaiDangKyGianHang.ChuaGuiHoSo => "Hồ sơ chưa được gửi xét duyệt.",
+                    _ => "Hồ sơ đang chờ quản trị viên duyệt."
+                };
+                await DisplayAlert("Trạng thái hồ sơ", message + " Bạn có thể xem và cập nhật hồ sơ.", "Xem hồ sơ");
+                await Shell.Current.GoToAsync(nameof(VendorProfilePage));
+                return;
+            }
             await Shell.Current.GoToAsync(nameof(VendorHomePage));
         }
         finally

@@ -18,13 +18,13 @@
         <form asp-controller="Auth" asp-action="Login" method="post">
             @Html.AntiForgeryToken()
             <div class="form-group">
-                <label asp-for="TenDangNhap">Tên đăng nhập</label>
-                <input asp-for="TenDangNhap" class="form-control" placeholder="vd: gianhang01" autofocus />
+                <label asp-for="TenDangNhap">Tên đăng nhập hoặc email</label>
+                <input asp-for="TenDangNhap" class="form-control" placeholder="gianhang01 hoặc email@domain.com" autocomplete="username" autofocus />
                 <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
             </div>
             <div class="form-group">
                 <label asp-for="MatKhau">Mật khẩu</label>
-                <input asp-for="MatKhau" type="password" class="form-control" placeholder="••••••••" />
+                <input asp-for="MatKhau" type="password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
                 <span asp-validation-for="MatKhau" class="field-validation-error"></span>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">

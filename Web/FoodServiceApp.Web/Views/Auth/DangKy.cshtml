@@ -19,19 +19,19 @@
 
             <div class="form-group">
                 <label asp-for="TenCuaHang">Tên cửa hàng</label>
-                <input asp-for="TenCuaHang" class="form-control" />
+                <input asp-for="TenCuaHang" class="form-control" maxlength="150" autocomplete="organization" />
                 <span asp-validation-for="TenCuaHang" class="field-validation-error"></span>
             </div>
             
             <div class="form-group">
                 <label asp-for="Email">Email liên hệ</label>
-                <input asp-for="Email" type="email" class="form-control" />
+                <input asp-for="Email" type="email" class="form-control" autocomplete="email" />
                 <span asp-validation-for="Email" class="field-validation-error"></span>
             </div>
 
             <div class="form-group">
                 <label asp-for="SDT">Số điện thoại</label>
-                <input asp-for="SDT" class="form-control" />
+                <input asp-for="SDT" class="form-control" autocomplete="tel" />
                 <span asp-validation-for="SDT" class="field-validation-error"></span>
             </div>
 
@@ -39,17 +39,17 @@
 
             <div class="form-group">
                 <label asp-for="TenDangNhap">Tên đăng nhập</label>
-                <input asp-for="TenDangNhap" class="form-control" />
+                <input asp-for="TenDangNhap" class="form-control" maxlength="50" autocomplete="username" />
                 <span asp-validation-for="TenDangNhap" class="field-validation-error"></span>
             </div>
             <div class="form-group">
                 <label asp-for="MatKhau">Mật khẩu</label>
-                <input asp-for="MatKhau" type="password" class="form-control" />
+                <input asp-for="MatKhau" type="password" class="form-control" autocomplete="new-password" />
                 <span asp-validation-for="MatKhau" class="field-validation-error"></span>
             </div>
             <div class="form-group">
                 <label asp-for="XacNhanMatKhau">Xác nhận mật khẩu</label>
-                <input asp-for="XacNhanMatKhau" type="password" class="form-control" />
+                <input asp-for="XacNhanMatKhau" type="password" class="form-control" autocomplete="new-password" />
                 <span asp-validation-for="XacNhanMatKhau" class="field-validation-error"></span>
             </div>
 

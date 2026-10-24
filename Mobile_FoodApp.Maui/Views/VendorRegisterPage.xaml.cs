@@ -54,9 +54,25 @@ public partial class VendorRegisterPage : ContentPage
             HienLoi("Email này đã được đăng ký cho một gian hàng khác");
             return;
         }
+        var phone = new string((EntrySdt.Text ?? "").Where(char.IsDigit).ToArray());
+        if (phone.Length is < 9 or > 11)
+        {
+            HienLoi("Số điện thoại không hợp lệ");
+            return;
+        }
+        if (MockData.DanhSachGianHang.Any(g => new string(g.SoDienThoai.Where(char.IsDigit).ToArray()) == phone))
+        {
+            HienLoi("Số điện thoại này đã được đăng ký cho một gian hàng khác");
+            return;
+        }
         if (string.IsNullOrWhiteSpace(EntryMatKhau.Text) || EntryMatKhau.Text.Length < 6)
         {
             HienLoi("Mật khẩu tối thiểu 6 ký tự");
+            return;
+        }
+        if (EntryMatKhau.Text != EntryXacNhanMatKhau.Text)
+        {
+            HienLoi("Mật khẩu xác nhận không khớp");
             return;
         }
 
@@ -66,6 +82,8 @@ public partial class VendorRegisterPage : ContentPage
         if (gpkd.Length < 6) { HienLoi("Vui lòng nhập số giấy phép kinh doanh (ít nhất 6 ký tự)"); return; }
         if (mst.Length > 0 && mst.Length != 10 && mst.Length != 13) { HienLoi("Mã số thuế phải có 10 hoặc 13 chữ số"); return; }
         if (cccd.Length != 9 && cccd.Length != 12) { HienLoi("CCCD/CMND chủ quán phải có 9 hoặc 12 chữ số"); return; }
+        var attp = EntryAttp.Text?.Trim() ?? "";
+        if (attp.Length < 3) { HienLoi("Vui lòng nhập số giấy chứng nhận an toàn thực phẩm"); return; }
 
         LoadingIndicator.IsVisible = true;
         LoadingIndicator.IsRunning = true;
@@ -73,21 +91,24 @@ public partial class VendorRegisterPage : ContentPage
 
         try
         {
-            // TODO: gọi ASP.NET Core Web API thật:
-            //   POST /api/gian-hang/dang-ky { tenGianHang, diaChi, sdt, email, matKhau, moTa }
-            // Hồ sơ mặc định ở trạng thái ChoDuyet, quản trị viên duyệt trong module Quản lý quản trị.
+            // Khi có kết nối, tài khoản và hồ sơ pháp lý được tạo trong cùng giao dịch trên máy chủ.
             if (DuLieuService.DangOnline)
             {
-                var kq = await ApiClient.PostAsync<object>("api/mobile/gian-hang/dang-ky", new
+                var kq = await ApiClient.PostAsync<DangNhapGianHangDto>("api/mobile/gian-hang/dang-ky", new
                 {
-                    tenGianHang = EntryTenGianHang.Text.Trim(), diaChi = EntryDiaChi.Text.Trim(), sdt = EntrySdt.Text.Trim(),
+                    tenGianHang = EntryTenGianHang.Text.Trim(), diaChi = EntryDiaChi.Text.Trim(), sdt = phone,
                     email = EntryEmail.Text.Trim(), matKhau = EntryMatKhau.Text, moTa = EditorMoTa.Text?.Trim() ?? "", hinhAnh = "🍽️",
+                    soGiayPhepKinhDoanh = gpkd, soGiayChungNhanAttp = attp,
                 });
-                if (!kq.ThanhCong) { HienLoi(kq.ThongDiep); return; }
-                // API đăng ký chưa nhận giấy tờ; chủ quán bổ sung ở Hồ sơ cửa hàng sau khi được duyệt (PUT gian-hang/giay-to).
+                if (!kq.ThanhCong || kq.DuLieu?.GianHang is null) { HienLoi(kq.ThongDiep); return; }
+                ApiClient.Token = kq.DuLieu.Token;
+                MockData.GianHangHienTai = kq.DuLieu.GianHang;
+                var cu = MockData.DanhSachGianHang.FirstOrDefault(g => g.Id == kq.DuLieu.GianHang.Id);
+                if (cu is not null) MockData.DanhSachGianHang.Remove(cu);
+                MockData.DanhSachGianHang.Add(kq.DuLieu.GianHang);
                 NhatKyService.Ghi("GianHang", EntryEmail.Text.Trim(), "Gửi hồ sơ đăng ký gian hàng", EntryTenGianHang.Text.Trim());
-                await DisplayAlert("Đăng ký thành công", "Hồ sơ đã gửi lên hệ thống. Sau khi được duyệt, hãy đăng nhập và bổ sung giấy tờ trong Hồ sơ cửa hàng.", "Đã hiểu");
-                await Shell.Current.GoToAsync("..");
+                await DisplayAlert("Đăng ký thành công", "Tài khoản đã được tạo và hồ sơ đang chờ quản trị viên duyệt. Bạn vẫn có thể đăng nhập để theo dõi hoặc cập nhật hồ sơ.", "Đã hiểu");
+                await Shell.Current.GoToAsync(nameof(VendorProfilePage));
                 return;
             }
 
@@ -98,7 +119,7 @@ public partial class VendorRegisterPage : ContentPage
                 Id = Services.IdHelper.TiepTheo("gh", MockData.DanhSachGianHang.Select(x => x.Id)),
                 TenGianHang = EntryTenGianHang.Text.Trim(),
                 DiaChi = EntryDiaChi.Text.Trim(),
-                SoDienThoai = EntrySdt.Text.Trim(),
+                SoDienThoai = phone,
                 Email = EntryEmail.Text.Trim(),
                 MatKhau = EntryMatKhau.Text,
                 MoTa = EditorMoTa.Text?.Trim() ?? "",
@@ -109,7 +130,7 @@ public partial class VendorRegisterPage : ContentPage
                 TrangThaiDangKy = TrangThaiDangKyGianHang.ChoDuyet,
                 NgayDangKy = DateTime.Now,
                 SoGiayPhepKinhDoanh = gpkd, MaSoThue = mst, CccdChuQuan = cccd, AnhGiayPhepPath = _anhGiayPhep,
-                SoGiayChungNhanAttp = EntryAttp.Text?.Trim() ?? "",
+                SoGiayChungNhanAttp = attp,
             };
             NhatKyService.Ghi("GianHang", gianHangMoi.Email, "Gửi hồ sơ đăng ký gian hàng", gianHangMoi.TenGianHang);
             MockData.DanhSachGianHang.Add(gianHangMoi);

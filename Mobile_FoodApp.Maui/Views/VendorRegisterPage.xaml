@@ -26,6 +26,9 @@
             <Label Text="Mật khẩu *" FontSize="13" FontAttributes="Bold" />
             <Entry x:Name="EntryMatKhau" Placeholder="Tối thiểu 6 ký tự" IsPassword="True" />
 
+            <Label Text="Xác nhận mật khẩu *" FontSize="13" FontAttributes="Bold" />
+            <Entry x:Name="EntryXacNhanMatKhau" Placeholder="Nhập lại mật khẩu" IsPassword="True" />
+
             <Label Text="Mô tả ngắn về gian hàng" FontSize="13" FontAttributes="Bold" />
             <Editor x:Name="EditorMoTa" Placeholder="Món chủ lực, giờ mở cửa, đặc điểm nổi bật..."
                     HeightRequest="80" BackgroundColor="White" />
@@ -35,7 +38,7 @@
             <Entry x:Name="EntryGpkd" Placeholder="VD: 0312345678-001" />
             <Label Text="Mã số thuế (nếu có)" FontSize="13" FontAttributes="Bold" />
             <Entry x:Name="EntryMst" Placeholder="10 hoặc 13 chữ số" Keyboard="Numeric" MaxLength="13" />
-            <Label Text="Số giấy chứng nhận ATTP (nếu có)" FontSize="13" FontAttributes="Bold" />
+            <Label Text="Số giấy chứng nhận ATTP *" FontSize="13" FontAttributes="Bold" />
             <Entry x:Name="EntryAttp" Placeholder="Giấy chứng nhận An toàn thực phẩm" />
             <Label Text="Số CCCD / CMND của chủ quán *" FontSize="13" FontAttributes="Bold" />
             <Entry x:Name="EntryCccd" Placeholder="9 hoặc 12 chữ số" Keyboard="Numeric" MaxLength="12" />

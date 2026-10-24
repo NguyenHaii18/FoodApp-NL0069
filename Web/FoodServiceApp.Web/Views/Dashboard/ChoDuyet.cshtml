@@ -49,7 +49,8 @@
     }
 
     @if (Model.TrangThaiDuyet == "ChuaGuiHoSo" ||
-         Model.TrangThaiDuyet == "CanBoSung")
+         Model.TrangThaiDuyet == "CanBoSung" ||
+         Model.TrangThaiDuyet == "TuChoi")
     {
         <a asp-controller="HoSo"
            asp-action="Index"

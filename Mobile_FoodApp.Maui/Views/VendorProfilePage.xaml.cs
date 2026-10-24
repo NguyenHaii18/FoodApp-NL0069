@@ -1,3 +1,4 @@
+using FoodApp.Maui.Models;
 using FoodApp.Maui.Services;
 
 namespace FoodApp.Maui.Views;
@@ -137,6 +138,14 @@ public partial class VendorProfilePage : ContentPage
             VendorLocalStore.Luu();
             await DuLieuService.GhiAsync("PUT", $"api/mobile/gian-hang/{gh.Id}/gio-hoat-dong",
                 new { gioMoCua = gh.GioMoCua, gioDongCua = gh.GioDongCua, dangNhanDon = gh.DangNhanDon, dangMoCua = gh.DangMoCua });
+
+            if (gh.TrangThaiDangKy is TrangThaiDangKyGianHang.ChuaGuiHoSo or TrangThaiDangKyGianHang.CanBoSung or TrangThaiDangKyGianHang.TuChoi)
+            {
+                if (!await DuLieuService.GhiAsync("POST", $"api/mobile/gian-hang/{gh.Id}/gui-ho-so")) return;
+                gh.TrangThaiDangKy = TrangThaiDangKyGianHang.ChoDuyet;
+                gh.LyDoTuChoi = "";
+                VendorLocalStore.Luu();
+            }
 
             LblAnhHienTai.Text = gh.HinhAnh;
             LblThanhCong.IsVisible = true;

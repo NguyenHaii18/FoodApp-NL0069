@@ -32,13 +32,15 @@ namespace FoodServiceApp.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            model.TenDangNhap = model.TenDangNhap?.Trim() ?? "";
             if (!ModelState.IsValid)
                 return View("Login", model);
 
             // Mật khẩu được hash bằng BCrypt (xem MatKhauHelper); vẫn tương thích ngược với
             // dữ liệu mẫu cũ chưa hash để không phá vỡ tài khoản demo có sẵn.
-            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t =>
-                t.TenDangNhap == model.TenDangNhap && t.VaiTro == "GianHang");
+            var dinhDanh = model.TenDangNhap.ToLower();
+            var taiKhoan = await _db.TaiKhoans.FirstOrDefaultAsync(t => t.VaiTro == "GianHang" &&
+                (t.TenDangNhap.ToLower() == dinhDanh || _db.GianHangs.Any(g => g.MaTK == t.MaTK && g.Email != null && g.Email.ToLower() == dinhDanh)));
 
             if (taiKhoan == null || !await BaoMat.KhopAsync(_db, HttpContext, model.MatKhau, taiKhoan))
             {
@@ -56,12 +58,6 @@ namespace FoodServiceApp.Web.Controllers
             if (gianHang == null)
             {
                 model.LoiThongBao = "Không tìm thấy thông tin gian hàng ứng với tài khoản này.";
-                return View("Login", model);
-            }
-
-            if (gianHang.TrangThaiDuyet == "TuChoi")
-            {
-                model.LoiThongBao = "Đơn đăng ký gian hàng của bạn đã bị từ chối. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.";
                 return View("Login", model);
             }
 
@@ -83,12 +79,12 @@ namespace FoodServiceApp.Web.Controllers
             VendorRegisterViewModel model)
         {
             model.TenCuaHang = model.TenCuaHang?.Trim() ?? "";
-            model.Email = model.Email?.Trim() ?? "";
+            model.Email = model.Email?.Trim().ToLowerInvariant() ?? "";
             model.SDT = model.SDT?.Trim() ?? "";
-            model.TenDangNhap = model.TenDangNhap?.Trim() ?? "";
+            model.TenDangNhap = model.TenDangNhap?.Trim().ToLowerInvariant() ?? "";
 
             if (await _db.TaiKhoans.AnyAsync(
-                t => t.TenDangNhap == model.TenDangNhap))
+                t => t.TenDangNhap.ToLower() == model.TenDangNhap))
             {
                 ModelState.AddModelError(
                     nameof(model.TenDangNhap),
@@ -96,7 +92,7 @@ namespace FoodServiceApp.Web.Controllers
             }
 
             if (await _db.GianHangs.AnyAsync(
-                g => g.Email == model.Email))
+                g => g.Email != null && g.Email.ToLower() == model.Email))
             {
                 ModelState.AddModelError(
                     nameof(model.Email),
