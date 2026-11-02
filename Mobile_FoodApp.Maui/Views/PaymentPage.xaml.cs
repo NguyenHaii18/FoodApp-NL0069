@@ -43,12 +43,23 @@ public partial class PaymentPage : ContentPage
         var version = ++_quoteVersion;
         var result = await ApiClient.PostAsync<Quote>("api/mobile/khuyen-mai/kiem-tra", new {
             gianHangId = GianHangId, diaChiGiao = EntryDiaChi.Text ?? "", hinhThucThanhToan = "TienMat",
-            maKhuyenMai = EntryMaKhuyenMai.Text, chiTiet = GioHang.Select(x => new { monAnId = x.MonAn.Id, soLuong = x.SoLuong })
+            maKhuyenMai = EntryMaKhuyenMai.Text, chiTiet = GioHang.Select(x => new
+            {
+                monAnId = x.MonAn.Id,
+                soLuong = x.SoLuong,
+                tuyChonIds = x.TuyChon.Where(t => t.Id > 0).Select(t => t.Id).ToList(),
+                ghiChu = x.GhiChu,
+            })
         });
         if (version != _quoteVersion) return false;
         _giamGia = _giamShip = 0;
         if (!result.ThanhCong || result.DuLieu == null)
-        { HienKetQuaVoucher(false, result.ThongDiep); CapNhatTongTien(); return false; }
+        {
+            _serverSubtotal = _serverShipping = null;
+            HienKetQuaVoucher(false, result.ThongDiep);
+            CapNhatTongTien();
+            return false;
+        }
         var quote = result.DuLieu;
         _serverShipping = quote.PhiGiaoHang; _serverSubtotal = quote.TongTienMon;
         if (quote.HopLe)
@@ -157,6 +168,46 @@ public partial class PaymentPage : ContentPage
         var chiTietTuyen = _tuyen.DaXacDinh ? $" · ≈{_tuyen.Km:0.#} km · ~{_tuyen.Phut} phút" : " (chưa rõ khu vực)";
         LblPhiGiao.Text = _giamShip > 0 ? $"{PhiGiaoHang - _giamShip:N0}đ (đã giảm {_giamShip:N0}đ){chiTietTuyen}" : $"{PhiGiaoHang:N0}đ{chiTietTuyen}";
         BtnXacNhanDatHang.Text = $"Xác nhận đặt hàng • {TongCong:N0}đ";
+    }
+
+    private async Task CapNhatSauKhiSuaGioAsync()
+    {
+        _serverSubtotal = null;
+        DsChiTiet.ItemsSource = null;
+        DsChiTiet.ItemsSource = GioHang;
+        if (Online && GioHang.Count > 0) await QuoteAsync();
+        else
+        {
+            _giamGia = _giamShip = 0;
+            CapNhatTongTien();
+        }
+    }
+
+    private async void OnTangDong(object sender, EventArgs e)
+    {
+        if (sender is Button { CommandParameter: MucGioHang line })
+        {
+            line.SoLuong = Math.Min(50, line.SoLuong + 1);
+            await CapNhatSauKhiSuaGioAsync();
+        }
+    }
+
+    private async void OnGiamDong(object sender, EventArgs e)
+    {
+        if (sender is Button { CommandParameter: MucGioHang line })
+        {
+            if (line.SoLuong > 1) line.SoLuong--; else GioHang.Remove(line);
+            await CapNhatSauKhiSuaGioAsync();
+        }
+    }
+
+    private async void OnXoaDong(object sender, EventArgs e)
+    {
+        if (sender is Button { CommandParameter: MucGioHang line })
+        {
+            GioHang.Remove(line);
+            await CapNhatSauKhiSuaGioAsync();
+        }
     }
 
     private async void OnApDungKhuyenMaiClicked(object sender, EventArgs e)
@@ -309,10 +360,17 @@ public partial class PaymentPage : ContentPage
                 {
                     gianHangId = GianHangId,
                     diaChiGiao = don.DiaChiGiao,
+                    ghiChu = EditorGhiChu.Text?.Trim(),
                     hinhThucThanhToan = _hinhThucChon.ToString(),
                     maKhuyenMai = EntryMaKhuyenMai.Text,
                     maYeuCauDat = _requestId,
-                    chiTiet = GioHang.Select(x => new { monAnId = x.MonAn.Id, soLuong = x.SoLuong })
+                    chiTiet = GioHang.Select(x => new
+                    {
+                        monAnId = x.MonAn.Id,
+                        soLuong = x.SoLuong,
+                        tuyChonIds = x.TuyChon.Where(t => t.Id > 0).Select(t => t.Id).ToList(),
+                        ghiChu = x.GhiChu,
+                    })
                 });
                 if (!kq.ThanhCong) { await DisplayAlert("Đặt hàng thất bại", kq.ThongDiep, "OK"); return; }
                 if (!string.IsNullOrEmpty(kq.DuLieu?.Id)) don.Id = kq.DuLieu!.Id!;

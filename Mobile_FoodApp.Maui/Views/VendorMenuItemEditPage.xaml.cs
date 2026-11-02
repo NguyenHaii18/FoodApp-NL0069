@@ -170,6 +170,15 @@ public partial class VendorMenuItemEditPage : ContentPage
             if (ds is null) { HienLoi(loi); return; }
             tuyChon.AddRange(ds);
         }
+        if (_monDangSua is not null)
+        {
+            foreach (var loai in new[] { TuyChonMon.Size, TuyChonMon.Topping, TuyChonMon.MucCay })
+            {
+                var moi = tuyChon.Where(x => x.Loai == loai).ToList();
+                var cu = _monDangSua.TuyChon.Where(x => x.Loai == loai).ToList();
+                for (var i = 0; i < Math.Min(moi.Count, cu.Count); i++) moi[i].Id = cu[i].Id;
+            }
+        }
 
         LoadingIndicator.IsVisible = true;
         LoadingIndicator.IsRunning = true;
@@ -193,7 +202,7 @@ public partial class VendorMenuItemEditPage : ContentPage
                 tenMon = EntryTenMon.Text.Trim(), danhMuc, gia, giaVon,
                 moTa = EditorMoTa.Text?.Trim() ?? "", hinhAnh,
                 tinhTrang = tinhTrangApi, choGhiChu = SwitchChoGhiChu.IsToggled,
-                tuyChon = tuyChon.Select(x => new { loai = x.Loai, ten = x.Ten, giaThem = x.GiaThem }).ToList()
+                tuyChon = tuyChon.Select(x => new { id = x.Id == 0 ? (int?)null : x.Id, loai = x.Loai, ten = x.Ten, giaThem = x.GiaThem }).ToList()
             };
             if (DuLieuService.CoPhienMayChu)
             {

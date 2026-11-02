@@ -35,6 +35,9 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:MonAn">
                     <Frame Style="{StaticResource CardFrame}" Margin="0,0,0,8">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnMonTapped" CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
                         <Grid ColumnDefinitions="50,*,Auto" ColumnSpacing="10">
                             <Label Grid.Column="0" Text="{Binding HinhAnh}" FontSize="26"
                                    HorizontalOptions="Center" VerticalOptions="Center" />

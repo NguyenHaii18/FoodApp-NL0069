@@ -334,8 +334,26 @@ public class MucGioHang
 {
     public MonAn MonAn { get; set; } = null!;
     public int SoLuong { get; set; } = 1;
+    public List<TuyChonMon> TuyChon { get; set; } = new();
+    public string? TuyChonLichSu { get; set; }
+    public string? GhiChu { get; set; }
 
-    public decimal ThanhTien => MonAn.Gia * SoLuong;
+    public decimal DonGia => MonAn.Gia + TuyChon.Sum(x => x.GiaThem);
+    public decimal ThanhTien => DonGia * SoLuong;
+    public string TuyChonHienThi => TuyChon.Count > 0
+        ? string.Join(" • ", TuyChon.OrderBy(x => x.Loai).ThenBy(x => x.Ten).Select(x => x.HienThi))
+        : TuyChonLichSu ?? "";
+    public bool CoTuyChon => TuyChon.Count > 0 || !string.IsNullOrWhiteSpace(TuyChonLichSu);
+    public bool CoGhiChu => !string.IsNullOrWhiteSpace(GhiChu);
+    public string KhoaCauHinh => TaoKhoa(MonAn.Id, TuyChon, GhiChu);
+
+    public static string TaoKhoa(string monAnId, IEnumerable<TuyChonMon>? tuyChon, string? ghiChu)
+    {
+        var ids = (tuyChon ?? []).Select(x => x.Id > 0
+                ? x.Id.ToString()
+                : $"{x.Loai}:{x.Ten.Trim().ToUpperInvariant()}");
+        return KhoaGioHang.Tao(monAnId, ids, ghiChu);
+    }
 }
 
 /// <summary>Tài xế giao hàng.</summary>

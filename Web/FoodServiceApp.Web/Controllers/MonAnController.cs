@@ -9,6 +9,7 @@ namespace FoodServiceApp.Web.Controllers
 {
     public class MonAnController : GianHangBaseController
     {
+        private const decimal PhuPhiToiDa = 10_000_000m;
         private readonly AppDbContext _db;
         private readonly IFileStorageService _storage;
 
@@ -43,11 +44,13 @@ namespace FoodServiceApp.Web.Controllers
         public async Task<IActionResult> Create(MonAnFormViewModel vm)
         {
             vm.TenMon = vm.TenMon?.Trim() ?? "";
+            var tuyChon = ChuanHoaTuyChon(vm);
             if (!ModelState.IsValid)
             {
                 vm.DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync();
                 return View(vm);
             }
+            await using var transaction = await _db.Database.BeginTransactionAsync();
             if (vm.MaDanhMuc == 0 && !string.IsNullOrWhiteSpace(vm.TenDanhMucMoi))
             {
                 var tenDanhMuc = vm.TenDanhMucMoi.Trim();
@@ -102,6 +105,17 @@ namespace FoodServiceApp.Web.Controllers
             _db.MonAns.Add(monAn);
             await _db.SaveChangesAsync();
 
+            foreach (var option in tuyChon)
+                _db.TuyChonMons.Add(new TuyChonMon
+                {
+                    MaMonAn = monAn.MaMonAn,
+                    Loai = option.Loai,
+                    TenTuyChon = option.Ten,
+                    GiaThem = option.GiaThem,
+                });
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
+
             TempData["ThongBao"] = $"Đã thêm món \"{monAn.TenMon}\".";
             return RedirectToAction("Index");
         }
@@ -123,6 +137,15 @@ namespace FoodServiceApp.Web.Controllers
                 GiaVon = monAn.GiaVon,
                 TinhTrang = monAn.TinhTrang,
                 ChoGhiChu = monAn.ChoGhiChu,
+                TuyChon = await _db.TuyChonMons.Where(t => t.MaMonAn == id)
+                    .OrderBy(t => t.Loai).ThenBy(t => t.MaTuyChon)
+                    .Select(t => new MonAnTuyChonFormViewModel
+                    {
+                        MaTuyChon = t.MaTuyChon,
+                        Loai = t.Loai,
+                        Ten = t.TenTuyChon,
+                        GiaThem = t.GiaThem,
+                    }).ToListAsync(),
                 DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync()
             };
             return View(vm);
@@ -137,6 +160,7 @@ namespace FoodServiceApp.Web.Controllers
             if (monAn == null) return NotFound();
 
             vm.TenMon = vm.TenMon?.Trim() ?? "";
+            var tuyChon = ChuanHoaTuyChon(vm);
             var danhMucHopLe = await _db.DanhMucs.AnyAsync(d =>
                 d.MaDanhMuc == vm.MaDanhMuc && d.MaGianHang == CurrentGianHangId);
             if (!danhMucHopLe)
@@ -144,12 +168,17 @@ namespace FoodServiceApp.Web.Controllers
             if (danhMucHopLe && await _db.MonAns.AnyAsync(m => m.MaMonAn != id && m.MaDanhMuc == vm.MaDanhMuc && m.TenMon.ToLower() == vm.TenMon.ToLower()))
                 ModelState.AddModelError(nameof(vm.TenMon), "Tên món đã tồn tại trong danh mục này.");
 
+            var tuyChonHienTai = await _db.TuyChonMons.Where(t => t.MaMonAn == id).ToListAsync();
+            if (tuyChon.Any(t => t.MaTuyChon != 0 && tuyChonHienTai.All(c => c.MaTuyChon != t.MaTuyChon)))
+                ModelState.AddModelError(nameof(vm.TuyChon), "Có tùy chọn không thuộc món này.");
+
             if (!ModelState.IsValid)
             {
                 vm.DanhSachDanhMuc = await _db.DanhMucs.Where(d => d.MaGianHang == CurrentGianHangId).ToListAsync();
                 return View(vm);
             }
 
+            await using var transaction = await _db.Database.BeginTransactionAsync();
             monAn.TenMon = vm.TenMon;
             monAn.Gia = vm.Gia;
             monAn.GiaVon = vm.GiaVon;
@@ -164,7 +193,21 @@ namespace FoodServiceApp.Web.Controllers
                 monAn.HinhAnh = await _storage.SaveFileAsync(vm.AnhMoi, "monan");
             }
 
+            var maGuiLen = tuyChon.Where(t => t.MaTuyChon != 0).Select(t => t.MaTuyChon).ToHashSet();
+            _db.TuyChonMons.RemoveRange(tuyChonHienTai.Where(t => !maGuiLen.Contains(t.MaTuyChon)));
+            foreach (var option in tuyChon)
+            {
+                var entity = option.MaTuyChon == 0
+                    ? new TuyChonMon { MaMonAn = id }
+                    : tuyChonHienTai.First(t => t.MaTuyChon == option.MaTuyChon);
+                entity.Loai = option.Loai;
+                entity.TenTuyChon = option.Ten;
+                entity.GiaThem = option.GiaThem;
+                if (option.MaTuyChon == 0) _db.TuyChonMons.Add(entity);
+            }
+
             await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
             TempData["ThongBao"] = $"Đã cập nhật món \"{monAn.TenMon}\".";
             return RedirectToAction("Index");
         }
@@ -196,5 +239,51 @@ namespace FoodServiceApp.Web.Controllers
 
             return RedirectToAction("Index");
         }
+
+        private List<MonAnTuyChonFormViewModel> ChuanHoaTuyChon(MonAnFormViewModel vm)
+        {
+            vm.TuyChon ??= new();
+            var result = new List<MonAnTuyChonFormViewModel>();
+            if (vm.TuyChon.Count > 50)
+                ModelState.AddModelError(nameof(vm.TuyChon), "Mỗi món được có tối đa 50 tùy chọn.");
+
+            foreach (var item in vm.TuyChon.Take(50))
+            {
+                var loai = item.Loai is "Size" or "Topping" or "MucCay" ? item.Loai : "";
+                var ten = ChuanHoaTen(item.Ten);
+                if (loai.Length == 0)
+                {
+                    ModelState.AddModelError(nameof(vm.TuyChon), "Loại tùy chọn không hợp lệ.");
+                    continue;
+                }
+                if (ten.Length is < 1 or > 100)
+                {
+                    ModelState.AddModelError(nameof(vm.TuyChon), "Tên tùy chọn phải có từ 1 đến 100 ký tự.");
+                    continue;
+                }
+                if (item.GiaThem < 0 || item.GiaThem > PhuPhiToiDa)
+                {
+                    ModelState.AddModelError(nameof(vm.TuyChon), $"Phụ phí phải từ 0 đến {PhuPhiToiDa:N0}đ.");
+                    continue;
+                }
+                if (result.Any(x => x.Loai == loai && string.Equals(x.Ten, ten, StringComparison.OrdinalIgnoreCase)))
+                {
+                    ModelState.AddModelError(nameof(vm.TuyChon), $"Tùy chọn \"{ten}\" bị trùng trong nhóm {loai}.");
+                    continue;
+                }
+                result.Add(new MonAnTuyChonFormViewModel
+                {
+                    MaTuyChon = item.MaTuyChon,
+                    Loai = loai,
+                    Ten = ten,
+                    GiaThem = item.GiaThem,
+                });
+            }
+            vm.TuyChon = result;
+            return result;
+        }
+
+        private static string ChuanHoaTen(string? value) =>
+            string.Join(' ', (value ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 }

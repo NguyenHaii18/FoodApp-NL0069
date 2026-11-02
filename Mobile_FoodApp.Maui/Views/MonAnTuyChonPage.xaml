@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FoodApp.Maui.Views.MonAnTuyChonPage"
+             Title="Chọn món">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="18" Spacing="14">
+                <Grid HeightRequest="150" BackgroundColor="#F3F4F6">
+                    <Image x:Name="ImgMon" Aspect="AspectFill" IsVisible="False" />
+                    <Label x:Name="LblAnhMon" FontSize="56" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+                <Label x:Name="LblTenMon" FontSize="22" FontAttributes="Bold" />
+                <Label x:Name="LblMoTa" FontSize="13" TextColor="{StaticResource TextGrey}" />
+                <Label x:Name="LblGiaGoc" FontSize="17" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+
+                <VerticalStackLayout x:Name="NhomSize" Spacing="6" IsVisible="False">
+                    <Label Text="Chọn size (không bắt buộc)" FontAttributes="Bold" />
+                    <VerticalStackLayout x:Name="DanhSachSize" Spacing="2" />
+                </VerticalStackLayout>
+                <VerticalStackLayout x:Name="NhomTopping" Spacing="6" IsVisible="False">
+                    <Label Text="Chọn topping" FontAttributes="Bold" />
+                    <VerticalStackLayout x:Name="DanhSachTopping" Spacing="2" />
+                </VerticalStackLayout>
+                <VerticalStackLayout x:Name="NhomMucCay" Spacing="6" IsVisible="False">
+                    <Label Text="Chọn mức cay (không bắt buộc)" FontAttributes="Bold" />
+                    <VerticalStackLayout x:Name="DanhSachMucCay" Spacing="2" />
+                </VerticalStackLayout>
+                <VerticalStackLayout x:Name="NhomGhiChu" Spacing="6" IsVisible="False">
+                    <Label Text="Ghi chú cho món" FontAttributes="Bold" />
+                    <Editor x:Name="EditorGhiChu" MaxLength="200" HeightRequest="80"
+                            Placeholder="Ví dụ: ít đá, không hành..." TextChanged="OnLuaChonThayDoi" />
+                    <Label Text="Tối đa 200 ký tự" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                </VerticalStackLayout>
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="Số lượng" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Button Grid.Column="1" Text="−" WidthRequest="42" Clicked="OnGiamSoLuong" />
+                    <Label Grid.Column="2" x:Name="LblSoLuong" Text="1" WidthRequest="30"
+                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontAttributes="Bold" />
+                    <Button Grid.Column="3" Text="+" WidthRequest="42" Clicked="OnTangSoLuong" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+        <Button Grid.Row="1" x:Name="BtnThemVaoGio" Margin="16" Style="{StaticResource PrimaryButton}"
+                Clicked="OnThemVaoGio" />
+    </Grid>
+</ContentPage>

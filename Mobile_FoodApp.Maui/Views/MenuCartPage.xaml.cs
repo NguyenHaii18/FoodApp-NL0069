@@ -15,10 +15,13 @@ public partial class MenuCartPage : ContentPage
         InitializeComponent();
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         if (GianHang is null) return;
+
+        if (Services.DuLieuService.CoPhienMayChu && !await Services.DuLieuService.TaiDanhMucAsync())
+            await DisplayAlert("Không tải được thực đơn", "Không thể lấy món và tùy chọn mới nhất từ máy chủ. Vui lòng kiểm tra kết nối rồi thử lại.", "OK");
 
         LblIconGianHang.Text = GianHang.HinhAnh;
         ImgAnhGianHang.Source = GianHang.CoAnh ? ImageSource.FromFile(GianHang.AnhPath) : null;
@@ -31,6 +34,7 @@ public partial class MenuCartPage : ContentPage
         DsMonAn.ItemsSource = MockData.DanhSachMonAn
             .Where(m => m.GianHangId == GianHang.Id && m.ConHang)   // ẩn món tạm hết
             .ToList();
+        CapNhatThanhGioHang();
     }
 
     private async void OnYeuThichTapped(object? sender, TappedEventArgs e)
@@ -40,16 +44,33 @@ public partial class MenuCartPage : ContentPage
         await DisplayAlert(gio ? "Đã lưu" : "Đã bỏ", gio ? $"Đã thêm {GianHang.TenGianHang} vào quán yêu thích." : $"Đã bỏ {GianHang.TenGianHang} khỏi quán yêu thích.", "OK");
     }
 
-    private void OnThemMonClicked(object sender, EventArgs e)
+    private async void OnThemMonClicked(object sender, EventArgs e)
     {
         if (sender is not Button { CommandParameter: MonAn mon }) return;
+        await ThemHoacMoTuyChonAsync(mon);
+    }
 
-        var dong = _gioHang.FirstOrDefault(x => x.MonAn.Id == mon.Id);
-        if (dong is null)
-            _gioHang.Add(new MucGioHang { MonAn = mon, SoLuong = 1 });
-        else
-            dong.SoLuong++;
+    private async void OnMonTapped(object? sender, TappedEventArgs e)
+    {
+        if (e.Parameter is MonAn mon) await ThemHoacMoTuyChonAsync(mon);
+    }
 
+    private async Task ThemHoacMoTuyChonAsync(MonAn mon)
+    {
+        if (mon.CoTuyChon)
+        {
+            await Shell.Current.GoToAsync(nameof(MonAnTuyChonPage), new Dictionary<string, object>
+            {
+                ["Mon"] = mon,
+                ["GioHang"] = _gioHang,
+            });
+            return;
+        }
+
+        var key = MucGioHang.TaoKhoa(mon.Id, [], null);
+        var line = _gioHang.FirstOrDefault(x => x.KhoaCauHinh == key);
+        if (line is null) _gioHang.Add(new MucGioHang { MonAn = mon, SoLuong = 1 });
+        else line.SoLuong = Math.Min(50, line.SoLuong + 1);
         CapNhatThanhGioHang();
     }
 

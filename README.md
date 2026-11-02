@@ -260,3 +260,39 @@ Chỉ mở một phiên Web. Thông báo `Failed to bind ... https://127.0.0.1:5
 MAUI Windows được build `win-x64`, self-contained và có app host `.exe` (`WindowsAppSDKSelfContained=true`, `SelfContained=true`, `UseAppHost=true`). Vì vậy máy chạy không cần cài riêng Microsoft Windows App Runtime. Trên Windows không hỗ trợ `Windows.System.Display.DisplayRequest`, trang khởi động dùng splash FoodApp trong 2 giây rồi chuyển tới đăng nhập; Android/iOS vẫn dùng video intro. Lỗi WinUI chưa xử lý sẽ được ghi vào `maui-startup-error.log` cạnh file thực thi khi thư mục cho phép ghi.
 
 Kiểm tra đã chạy: Web build thành công với 0 cảnh báo/0 lỗi, kết nối SQL và lắng nghe tại cổng 5000/5001. MAUI Windows .NET 8 build thành công; lệnh `dotnet run` tạo `FoodApp.Maui.exe`, mở cửa sổ và tiến trình phản hồi bình thường.
+
+## Tùy chọn món ăn dùng chung Web và MAUI
+
+### Chức năng đã thêm và sửa
+
+- Form thêm/sửa món của gian hàng Web có ba bảng nhập trực quan cho `Size`, `Topping`, `MucCay`. Mỗi dòng gồm tên, phụ phí và nút xóa; có nút thêm riêng cho từng nhóm. Người bán vẫn quản lý đầy đủ tên món, danh mục, giá bán, giá vốn, mô tả, ảnh, tình trạng và quyền ghi chú.
+- Web chuẩn hóa khoảng trắng, chặn tên rỗng hoặc trùng không phân biệt hoa thường trong cùng nhóm, chặn phụ phí âm/lớn hơn 10.000.000đ và giới hạn 50 tùy chọn mỗi món. Tạo món, danh mục mới và tùy chọn chạy trong cùng transaction. Khi sửa, các tùy chọn còn tồn tại được cập nhật theo ID, dòng bị bỏ được xóa và dòng mới được thêm.
+- API thực đơn khách `GET /api/mobile/mon-an` trả `id`, `loai`, `ten`, `giaThem` của từng tùy chọn. API thực đơn gian hàng cũng trả ID để Web/MAUI cùng dùng một bản ghi SQL và giữ ID khi sửa.
+- MAUI khách mở trang `MonAnTuyChonPage` khi món có tùy chọn hoặc cho ghi chú. Size và mức cay là lựa chọn đơn có mục “Không chọn”; topping cho chọn nhiều; tổng tiền thay đổi theo lựa chọn và số lượng. Đóng trang không thêm món.
+- Dòng giỏ MAUI được nhận diện bằng ID món + tập ID tùy chọn đã sắp xếp + ghi chú đã chuẩn hóa. Thêm lại đúng cấu hình sẽ tăng số lượng; khác size, topping, mức cay hoặc ghi chú sẽ tạo dòng riêng. Trang thanh toán hiển thị tùy chọn, ghi chú, đơn giá, thành tiền và cho tăng, giảm hoặc xóa dòng.
+- Request báo giá/đặt hàng Mobile gửi `tuyChonIds` và ghi chú theo từng dòng. Backend không nhận giá từ client: `PromotionService` đọc lại giá món và phụ phí trong SQL, chặn ID trùng/sai món, nhiều hơn một size hoặc mức cay, số lượng ngoài 1–50 và ghi chú không được phép/quá 200 ký tự.
+- Chi tiết đơn lưu `DonGia`, `TuyChon` và `GhiChu` tại thời điểm đặt. Vì vậy đổi giá, đổi tên hoặc xóa tùy chọn sau đó không làm thay đổi đơn cũ. Danh sách đơn của gian hàng và tài xế hiển thị lại cấu hình đã lưu.
+- Luồng voucher không bị tách riêng: báo giá và đặt hàng tiếp tục qua `PromotionService`; `PromotionLine.Price` là giá món cộng phụ phí nên tiền tạm tính, phạm vi món/danh mục, tiền giảm, phí giao và VNPay dùng cùng một kết quả máy chủ.
+
+### Luồng hoạt động
+
+1. Gian hàng đã duyệt tạo/sửa món trên Web hoặc MAUI và gửi danh sách tùy chọn theo ba loại chuẩn.
+2. Backend xác minh quyền sở hữu gian hàng, validation toàn bộ món/tùy chọn rồi commit transaction. MAUI khách tải lại thực đơn và nhận dữ liệu từ `TuyChonMon` trong SQL Server.
+3. Khách mở món, chọn tối đa một size, nhiều topping, tối đa một mức cay, ghi chú và số lượng. Ứng dụng chỉ thêm vào giỏ sau khi khách bấm **Thêm vào giỏ hàng**.
+4. Trang thanh toán gửi ID cấu hình cho API báo giá. Máy chủ đọc giá hiện tại từ database và trả tổng đã cộng phụ phí; khi áp voucher vẫn dùng cùng kết quả này.
+5. Khi đặt hàng, máy chủ kiểm tra lại toàn bộ cấu hình trong transaction, tạo đơn và lưu ảnh chụp tên tùy chọn/ghi chú/đơn giá vào `ChiTietDonHang`. Tiền mặt và VNPay dùng cùng tổng đã xác minh.
+6. Chế độ offline vẫn dùng dữ liệu mô phỏng và khóa cấu hình theo loại/tên khi chưa có ID. Khi có token hoặc phiên online, lỗi API được báo và không chuyển âm thầm sang đơn demo.
+
+### Database và kiểm tra
+
+Không có thay đổi schema mới. Hệ thống tiếp tục dùng bảng `TuyChonMon` và các cột `ChiTietDonHang.TuyChon`, `ChiTietDonHang.GhiChu`, `ChiTietDonHang.DonGia` đã có trong `Database/04_BoSung_DoiTac.sql` và `Database/01_TaoMoi_Full.sql`; không chạy lại script tạo mới trên database đang dùng.
+
+Đã kiểm tra build Web và MAUI Windows với 0 lỗi/0 cảnh báo. Console runner kiểm tra giá tùy chọn, voucher, ID sai/trùng, giới hạn lựa chọn và khóa cấu hình giỏ. Kiểm thử tích hợp SQL chỉ được phép chạy khi `VOUCHER_TEST_CONNECTION` trỏ đúng database `QuanLyDichVuAnUong_MigrationTest`; nếu không có database test này, runner ghi `SKIP` và không truy cập database chính.
+
+Chạy thử thủ công:
+
+1. Khởi động Web và đăng nhập gian hàng đã duyệt, vào **Món ăn → Thêm món**; tạo Trà sữa 35.000đ với M +0đ, L +7.000đ, Trân châu +5.000đ, Pudding +8.000đ.
+2. Mở lại trang sửa món để kiểm tra các dòng đã lưu. Không cần chạy script database nếu `TuyChonMon` đã tồn tại.
+3. Khởi động MAUI, đăng nhập khách và tải lại thực đơn. Chọn L, Trân châu, Pudding, số lượng 2; nút thêm phải hiển thị 110.000đ.
+4. Thêm cấu hình khác để kiểm tra hai dòng riêng; thêm lại đúng cấu hình và ghi chú để kiểm tra tăng số lượng.
+5. Ở thanh toán, thử voucher rồi đặt tiền mặt/VNPay. Kiểm tra đơn của khách/gian hàng vẫn hiển thị tùy chọn, ghi chú và đơn giá cũ sau khi người bán sửa phụ phí.

@@ -137,8 +137,18 @@ namespace FoodServiceApp.Web.Models.ViewModels
         public string TinhTrang { get; set; } = "ConHang";
         public bool ChoGhiChu { get; set; } = true;
 
+        public List<MonAnTuyChonFormViewModel> TuyChon { get; set; } = new();
+
         public string TenDanhMucMoi { get; set; } = "";
         public List<DanhMuc> DanhSachDanhMuc { get; set; } = new();
+    }
+
+    public class MonAnTuyChonFormViewModel
+    {
+        public int MaTuyChon { get; set; }
+        public string Loai { get; set; } = "Topping";
+        public string Ten { get; set; } = "";
+        public decimal GiaThem { get; set; }
     }
 
     public class KhuyenMaiFormViewModel

@@ -159,15 +159,19 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:MucGioHang">
                                 <Grid ColumnDefinitions="*,Auto" Padding="0,6">
-                                    <Label Grid.Column="0" FontSize="13.5">
-                                        <Label.FormattedText>
-                                            <FormattedString>
-                                                <Span Text="{Binding SoLuong}" FontAttributes="Bold" />
-                                                <Span Text="×  " FontAttributes="Bold" />
-                                                <Span Text="{Binding MonAn.TenMon}" />
-                                            </FormattedString>
-                                        </Label.FormattedText>
-                                    </Label>
+                                    <VerticalStackLayout Grid.Column="0" Spacing="1">
+                                        <Label FontSize="13.5">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="{Binding SoLuong}" FontAttributes="Bold" />
+                                                    <Span Text="×  " FontAttributes="Bold" />
+                                                    <Span Text="{Binding MonAn.TenMon}" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        <Label Text="{Binding TuyChonHienThi}" IsVisible="{Binding CoTuyChon}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                        <Label Text="{Binding GhiChu, StringFormat='📝 {0}'}" IsVisible="{Binding CoGhiChu}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                    </VerticalStackLayout>
                                     <Label Grid.Column="1" Text="{Binding ThanhTien, StringFormat='{0:N0}đ'}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextGrey}, Dark={StaticResource TextGreyDark}}" />
                                 </Grid>
                             </DataTemplate>

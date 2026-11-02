@@ -71,3 +71,85 @@
         Cho phép khách ghi chú cho món
     </label>
 </div>
+
+<section class="option-editor">
+    <h3>Tùy chọn món ăn</h3>
+    <p class="text-muted">Có thể để trống. Khách chọn tối đa một size, nhiều topping và tối đa một mức cay.</p>
+    <span asp-validation-for="TuyChon" class="field-validation-error"></span>
+
+    @foreach (var group in new[]
+    {
+        (Loai: "Size", TieuDe: "Size", Nut: "+ Thêm size", GoiY: "S, M, L"),
+        (Loai: "Topping", TieuDe: "Topping", Nut: "+ Thêm topping", GoiY: "Trân châu, Pudding"),
+        (Loai: "MucCay", TieuDe: "Mức cay", Nut: "+ Thêm mức cay", GoiY: "Không cay, Cay vừa")
+    })
+    {
+        <div class="option-group">
+            <div class="option-group-title">
+                <strong>@group.TieuDe</strong>
+                <button type="button" class="btn btn-outline btn-sm add-option" data-type="@group.Loai">@group.Nut</button>
+            </div>
+            <div class="option-table-head"><span>Tên tùy chọn</span><span>Phụ phí (đ)</span><span>Thao tác</span></div>
+            <div class="option-rows" data-group="@group.Loai" data-placeholder="@group.GoiY">
+                @for (var i = 0; i < Model.TuyChon.Count; i++)
+                {
+                    var option = Model.TuyChon[i];
+                    if (option.Loai != group.Loai) continue;
+                    var token = $"existing-{i}";
+                    <div class="option-row">
+                        <input type="hidden" name="TuyChon.Index" value="@token" />
+                        <input type="hidden" name="TuyChon[@token].MaTuyChon" value="@option.MaTuyChon" />
+                        <input type="hidden" name="TuyChon[@token].Loai" value="@option.Loai" />
+                        <input class="form-control" name="TuyChon[@token].Ten" value="@option.Ten" maxlength="100" placeholder="@group.GoiY" required />
+                        <input class="form-control" name="TuyChon[@token].GiaThem" value="@option.GiaThem.ToString("0")" type="number" min="0" max="10000000" step="1000" required />
+                        <button type="button" class="btn btn-outline btn-sm remove-option">Xóa</button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</section>
+
+<style>
+    .option-editor { margin:24px 0; padding:18px; border:1px solid #e5e7eb; border-radius:12px; background:#fafafa; }
+    .option-editor h3 { margin:0 0 4px; text-transform:uppercase; font-size:16px; }
+    .option-group { margin-top:18px; }
+    .option-group-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .option-table-head, .option-row { display:grid; grid-template-columns:minmax(180px, 1fr) minmax(120px, 180px) 80px; gap:8px; align-items:center; }
+    .option-table-head { padding:0 4px 6px; color:#6b7280; font-size:12px; }
+    .option-row { margin-bottom:8px; }
+    @@media (max-width:640px) {
+        .option-table-head { display:none; }
+        .option-row { grid-template-columns:1fr 120px auto; }
+    }
+</style>
+
+<script>
+    (() => {
+        let sequence = @Model.TuyChon.Count;
+        const escapeAttribute = value => String(value).replace(/[&<>'"]/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        })[ch]);
+
+        document.querySelectorAll('.add-option').forEach(button => button.addEventListener('click', () => {
+            const type = button.dataset.type;
+            const container = document.querySelector(`.option-rows[data-group="${type}"]`);
+            const token = `new-${Date.now()}-${sequence++}`;
+            const placeholder = escapeAttribute(container.dataset.placeholder || 'Tên tùy chọn');
+            container.insertAdjacentHTML('beforeend', `
+                <div class="option-row">
+                    <input type="hidden" name="TuyChon.Index" value="${token}" />
+                    <input type="hidden" name="TuyChon[${token}].MaTuyChon" value="0" />
+                    <input type="hidden" name="TuyChon[${token}].Loai" value="${type}" />
+                    <input class="form-control" name="TuyChon[${token}].Ten" maxlength="100" placeholder="${placeholder}" required />
+                    <input class="form-control" name="TuyChon[${token}].GiaThem" value="0" type="number" min="0" max="10000000" step="1000" required />
+                    <button type="button" class="btn btn-outline btn-sm remove-option">Xóa</button>
+                </div>`);
+        }));
+
+        document.addEventListener('click', event => {
+            const button = event.target.closest('.remove-option');
+            if (button) button.closest('.option-row').remove();
+        });
+    })();
+</script>

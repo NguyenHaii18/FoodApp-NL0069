@@ -140,21 +140,25 @@ namespace FoodServiceApp.Web.Controllers.Api
                             m.DanhMuc.GianHang.TrangThaiDuyet == "DaDuyet" &&
                             m.DanhMuc.GianHang.TrangThaiKinhDoanh == "DangMo")
                 .OrderBy(m => m.MaMonAn)
-                .Select(m => new
-                {
-                    id = m.MaMonAn,
-                    tenMon = m.TenMon,
-                    gia = m.Gia,
-                    hinhAnh = m.HinhAnh ?? "🍲",
-                    danhMuc = m.DanhMuc!.TenDanhMuc,
-                    gianHangId = m.DanhMuc.MaGianHang,
-                    conHang = m.TinhTrang == "ConHang",
-                    tamNgungBan = m.TinhTrang == "TamNgung",
-                    choGhiChu = m.ChoGhiChu,
-                    moTa = m.MoTa ?? ""
-                })
                 .ToListAsync();
-            return Ok(foods);
+            var ids = foods.Select(m => m.MaMonAn).ToList();
+            var options = await _db.TuyChonMons.AsNoTracking().Where(x => ids.Contains(x.MaMonAn))
+                .OrderBy(x => x.Loai).ThenBy(x => x.MaTuyChon).ToListAsync();
+            return Ok(foods.Select(m => new
+            {
+                id = m.MaMonAn,
+                tenMon = m.TenMon,
+                gia = m.Gia,
+                hinhAnh = m.HinhAnh ?? "🍲",
+                danhMuc = m.DanhMuc!.TenDanhMuc,
+                gianHangId = m.DanhMuc.MaGianHang,
+                conHang = m.TinhTrang == "ConHang",
+                tamNgungBan = m.TinhTrang == "TamNgung",
+                choGhiChu = m.ChoGhiChu,
+                moTa = m.MoTa ?? "",
+                tuyChon = options.Where(x => x.MaMonAn == m.MaMonAn)
+                    .Select(x => new { id = x.MaTuyChon, loai = x.Loai, ten = x.TenTuyChon, giaThem = x.GiaThem })
+            }));
         }
 
         [HttpGet("khuyen-mai")]
@@ -450,7 +454,7 @@ namespace FoodServiceApp.Web.Controllers.Api
                 return Loi("Vui lòng chọn gian hàng, món ăn và địa chỉ giao hàng.");
             var route = await CalculateDeliveryAsync(store.DiaChi, request.DiaChiGiao);
             var result = await new PromotionService(_db).CalculateAsync(kh.MaKH, store.MaGianHang,
-                request.ChiTiet.Select(x => new PromotionItem(x.MonAnId, x.SoLuong)), route.Phi, request.MaKhuyenMai);
+                request.ChiTiet.Select(x => new PromotionItem(x.MonAnId, x.SoLuong, x.TuyChonIds)), route.Phi, request.MaKhuyenMai);
             return Ok(new { hopLe = result.Valid, code = result.ErrorCode, thongDiep = result.Message,
                 tongTienMon = result.Subtotal, giaTriHopLe = result.EligibleAmount, phiGiaoHang = result.Shipping,
                 giamGia = result.Discount, tongTien = result.Total, loaiGiam = result.Voucher?.LoaiGiam });
@@ -472,11 +476,26 @@ namespace FoodServiceApp.Web.Controllers.Api
             if (!store.DangNhanDon) return Loi("Gian hàng đang tạm dừng nhận đơn.");
             if (!StoreOpenNow(store)) return Loi($"Gian hàng ngoài giờ hoạt động ({store.GioMoCua:hh\\:mm} – {store.GioDongCua:hh\\:mm}).");
 
-            if (request.ChiTiet.Any(x => x.SoLuong <= 0)) return Loi("Số lượng món phải lớn hơn 0.");
+            if (request.ChiTiet.Any(x => x.SoLuong <= 0 || x.SoLuong > 50)) return Loi("Số lượng mỗi món phải từ 1 đến 50.");
             var ids = request.ChiTiet.Select(x => x.MonAnId).Distinct().ToList();
             var foods = await _db.MonAns.Include(m => m.DanhMuc).Where(m => ids.Contains(m.MaMonAn)).ToListAsync();
             if (foods.Count != ids.Count || foods.Any(m => m.DanhMuc?.MaGianHang != store.MaGianHang)) return Loi("Có món ăn không thuộc gian hàng đã chọn.");
             if (foods.Any(m => m.TinhTrang != "ConHang")) return Loi("Có món ăn hiện đã hết hàng.");
+            var optionIds = request.ChiTiet.SelectMany(x => x.TuyChonIds ?? []).Distinct().ToList();
+            var options = await _db.TuyChonMons.AsNoTracking().Where(x => optionIds.Contains(x.MaTuyChon)).ToListAsync();
+            foreach (var item in request.ChiTiet)
+            {
+                var selectedIds = item.TuyChonIds ?? [];
+                if (selectedIds.Count != selectedIds.Distinct().Count()) return Loi("Không được chọn trùng một tùy chọn.");
+                var selected = options.Where(x => x.MaMonAn == item.MonAnId && selectedIds.Contains(x.MaTuyChon)).ToList();
+                if (selected.Count != selectedIds.Count) return Loi("Có tùy chọn không tồn tại hoặc không thuộc món đã chọn.");
+                if (selected.Count(x => x.Loai == "Size") > 1 || selected.Count(x => x.Loai == "MucCay") > 1)
+                    return Loi("Mỗi phần chỉ được chọn tối đa một size và một mức cay.");
+                var mon = foods.First(x => x.MaMonAn == item.MonAnId);
+                var note = item.GhiChu?.Trim();
+                if (!string.IsNullOrEmpty(note) && (!mon.ChoGhiChu || note.Length > 200))
+                    return Loi(mon.ChoGhiChu ? "Ghi chú món tối đa 200 ký tự." : "Món này không cho phép ghi chú.");
+            }
 
             if (string.IsNullOrWhiteSpace(request.MaYeuCauDat) || request.MaYeuCauDat.Length > 40)
                 return Loi("Thiếu mã yêu cầu đặt hàng chống trùng.");
@@ -484,6 +503,8 @@ namespace FoodServiceApp.Web.Controllers.Api
             await using var transaction = await _db.Database.BeginTransactionAsync();
             var promotions = new PromotionService(_db);
             await promotions.LockAsync($"checkout:customer:{kh.MaKH}");
+            // Đọc lại trong transaction để tên/phụ phí lưu vào đơn khớp với lần định giá cuối cùng.
+            options = await _db.TuyChonMons.AsNoTracking().Where(x => optionIds.Contains(x.MaTuyChon)).ToListAsync();
             var existing = await _db.DonHangs.FirstOrDefaultAsync(x => x.MaKH == kh.MaKH && x.MaYeuCauDat == request.MaYeuCauDat);
             if (existing != null)
             {
@@ -498,7 +519,7 @@ namespace FoodServiceApp.Web.Controllers.Api
                     paymentUrl = retryUrl, duplicate = true });
             }
             var promotion = await promotions.CalculateAsync(kh.MaKH, store.MaGianHang,
-                request.ChiTiet.Select(x => new PromotionItem(x.MonAnId, x.SoLuong)), route.Phi, request.MaKhuyenMai, consume: true);
+                request.ChiTiet.Select(x => new PromotionItem(x.MonAnId, x.SoLuong, x.TuyChonIds)), route.Phi, request.MaKhuyenMai, consume: true);
             if (!promotion.Valid) return BadRequest(new { code = promotion.ErrorCode, thongDiep = promotion.Message });
             var tongTienMon = promotion.Subtotal;
             var giamGia = promotion.Discount;
@@ -525,15 +546,20 @@ namespace FoodServiceApp.Web.Controllers.Api
             _db.DonHangs.Add(don);
             await _db.SaveChangesAsync();
 
-            foreach (var item in request.ChiTiet)
+            for (var index = 0; index < request.ChiTiet.Count; index++)
             {
+                var item = request.ChiTiet[index];
                 var mon = foods.First(f => f.MaMonAn == item.MonAnId);
+                var selected = options.Where(x => x.MaMonAn == item.MonAnId && (item.TuyChonIds ?? []).Contains(x.MaTuyChon))
+                    .OrderBy(x => x.Loai).ThenBy(x => x.MaTuyChon).ToList();
                 _db.ChiTietDonHangs.Add(new ChiTietDonHang
                 {
                     MaDonHang = don.MaDonHang,
                     MaMonAn = mon.MaMonAn,
                     SoLuong = item.SoLuong,
-                    DonGia = promotion.Lines.First(x => x.FoodId == mon.MaMonAn).Price,
+                    DonGia = promotion.Lines[index].Price,
+                    GhiChu = string.IsNullOrWhiteSpace(item.GhiChu) ? null : item.GhiChu.Trim(),
+                    TuyChon = selected.Count == 0 ? null : string.Join("; ", selected.Select(x => x.TenTuyChon)),
                 });
             }
 
@@ -1099,7 +1125,7 @@ namespace FoodServiceApp.Web.Controllers.Api
 
         public record MobileVendorRegisterRequest(string TenGianHang, string DiaChi, string Sdt, string Email, string MatKhau,
             string? MoTa, string? HinhAnh, string SoGiayPhepKinhDoanh, string SoGiayChungNhanAttp);
-        public record MobilePlaceOrderItem(int MonAnId, int SoLuong);
+        public record MobilePlaceOrderItem(int MonAnId, int SoLuong, List<int>? TuyChonIds = null, string? GhiChu = null);
         public record MobilePlaceOrderRequest(int GianHangId, string DiaChiGiao, string? GhiChu, string HinhThucThanhToan, string? MaKhuyenMai, List<MobilePlaceOrderItem> ChiTiet, string? MaYeuCauDat = null);
         public record MobileCustomerProfileRequest(string HoTen, string? Sdt, string? DiaChi);
         public record MobileIssueRequest(int? DonHangId, string TieuDe, string MoTa);
@@ -1218,6 +1244,8 @@ namespace FoodServiceApp.Web.Controllers.Api
                         conHang = c.MonAn.TinhTrang == "ConHang"
                     },
                     soLuong = c.SoLuong,
+                    tuyChonLichSu = c.TuyChon,
+                    ghiChu = c.GhiChu,
                     thanhTien = c.ThanhTien
                 }).ToList(),
                 trangThai = ToMobileOrderStatus(d.TrangThai),

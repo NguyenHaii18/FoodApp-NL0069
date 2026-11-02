@@ -20,7 +20,7 @@ public class VendorManagementApiController : VendorApiBaseController
 
     public record ProfileRequest(string? TenGianHang, string? DiaChi, string? SoDienThoai, string? Email, string? MoTa, string? HinhAnh);
     public record CategoryRequest(string? TenDanhMuc);
-    public record MenuOptionRequest(string? Loai, string? Ten, decimal GiaThem);
+    public record MenuOptionRequest(string? Loai, string? Ten, decimal GiaThem, int? Id = null);
     public record MenuRequest(string? TenMon, string? DanhMuc, decimal Gia, decimal GiaVon, string? MoTa, string? HinhAnh, string? TinhTrang, bool ChoGhiChu, List<MenuOptionRequest>? TuyChon);
     public record StatusRequest(string? TinhTrang);
 
@@ -127,7 +127,7 @@ public class VendorManagementApiController : VendorApiBaseController
         return Ok(foods.Select(m => new { id = m.MaMonAn, tenMon = m.TenMon, gia = m.Gia, giaVon = m.GiaVon, hinhAnh = m.HinhAnh ?? "🍲",
             danhMuc = m.DanhMuc!.TenDanhMuc, gianHangId = id, conHang = m.TinhTrang == "ConHang", tamNgungBan = m.TinhTrang == "TamNgung",
             choGhiChu = m.ChoGhiChu, moTa = m.MoTa ?? "", tuyChon = options.Where(x => x.MaMonAn == m.MaMonAn)
-                .Select(x => new { loai = x.Loai, ten = x.TenTuyChon, giaThem = x.GiaThem }) }));
+                .Select(x => new { id = x.MaTuyChon, loai = x.Loai, ten = x.TenTuyChon, giaThem = x.GiaThem }) }));
     }
 
     [HttpPost("thuc-don")]
@@ -135,10 +135,13 @@ public class VendorManagementApiController : VendorApiBaseController
     {
         if (await OwnApprovedStore(id) == null) return Error("Gian hàng chưa được duyệt hoặc không tồn tại.", 403);
         var validation = await ValidateMenu(id, request); if (validation.Error != null) return validation.Error;
+        if (!TryNormalizeOptions(request.TuyChon, out var options, out var optionError)) return Error(optionError!);
+        await using var transaction = await _db.Database.BeginTransactionAsync();
         var m = new MonAn { MaDanhMuc = validation.Category!.MaDanhMuc, TenMon = request.TenMon!.Trim(), Gia = request.Gia,
             GiaVon = request.GiaVon, MoTa = request.MoTa?.Trim(), HinhAnh = request.HinhAnh?.Trim(), TinhTrang = NormalizeStatus(request.TinhTrang), ChoGhiChu = request.ChoGhiChu };
         _db.MonAns.Add(m); await _db.SaveChangesAsync();
-        SaveOptions(m.MaMonAn, request.TuyChon); await _db.SaveChangesAsync();
+        SaveOptions(m.MaMonAn, options); await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
         return Ok(new { id = m.MaMonAn });
     }
 
@@ -149,11 +152,28 @@ public class VendorManagementApiController : VendorApiBaseController
         var m = await _db.MonAns.Include(x => x.DanhMuc).FirstOrDefaultAsync(x => x.MaMonAn == menuId && x.DanhMuc!.MaGianHang == id);
         if (m == null) return Error("Không tìm thấy món.", 404);
         var validation = await ValidateMenu(id, request, menuId); if (validation.Error != null) return validation.Error;
+        if (!TryNormalizeOptions(request.TuyChon, out var options, out var optionError)) return Error(optionError!);
+        var currentOptions = await _db.TuyChonMons.Where(x => x.MaMonAn == menuId).ToListAsync();
+        if (options.Any(x => x.Id is > 0 && currentOptions.All(c => c.MaTuyChon != x.Id)))
+            return Error("Có tùy chọn không thuộc món này.");
+        await using var transaction = await _db.Database.BeginTransactionAsync();
         m.MaDanhMuc = validation.Category!.MaDanhMuc; m.TenMon = request.TenMon!.Trim(); m.Gia = request.Gia; m.GiaVon = request.GiaVon;
         m.MoTa = request.MoTa?.Trim(); if (!string.IsNullOrWhiteSpace(request.HinhAnh)) m.HinhAnh = request.HinhAnh.Trim();
         m.TinhTrang = NormalizeStatus(request.TinhTrang); m.ChoGhiChu = request.ChoGhiChu;
-        _db.TuyChonMons.RemoveRange(_db.TuyChonMons.Where(x => x.MaMonAn == menuId));
-        SaveOptions(menuId, request.TuyChon); await _db.SaveChangesAsync();
+        var submittedIds = options.Where(x => x.Id is > 0).Select(x => x.Id!.Value).ToHashSet();
+        _db.TuyChonMons.RemoveRange(currentOptions.Where(x => !submittedIds.Contains(x.MaTuyChon)));
+        foreach (var option in options)
+        {
+            var entity = option.Id is > 0
+                ? currentOptions.First(x => x.MaTuyChon == option.Id)
+                : new TuyChonMon { MaMonAn = menuId };
+            entity.Loai = option.Loai!;
+            entity.TenTuyChon = option.Ten!;
+            entity.GiaThem = option.GiaThem;
+            if (option.Id is not > 0) _db.TuyChonMons.Add(entity);
+        }
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
         return Ok(new { message = "Đã cập nhật món." });
     }
 
@@ -189,14 +209,29 @@ public class VendorManagementApiController : VendorApiBaseController
 
     private static string NormalizeStatus(string? status) => status is "HetHang" or "TamNgung" ? status : "ConHang";
 
-    private void SaveOptions(int menuId, IEnumerable<MenuOptionRequest>? options)
+    private void SaveOptions(int menuId, IEnumerable<MenuOptionRequest> options)
     {
-        foreach (var option in (options ?? []).Take(50))
+        foreach (var option in options)
         {
-            var type = option.Loai is "Size" or "Topping" or "MucCay" ? option.Loai : "Topping";
-            var name = option.Ten?.Trim() ?? "";
-            if (name.Length == 0 || name.Length > 100 || option.GiaThem < 0 || option.GiaThem > 100000000) continue;
-            _db.TuyChonMons.Add(new TuyChonMon { MaMonAn = menuId, Loai = type, TenTuyChon = name, GiaThem = option.GiaThem });
+            _db.TuyChonMons.Add(new TuyChonMon { MaMonAn = menuId, Loai = option.Loai!, TenTuyChon = option.Ten!, GiaThem = option.GiaThem });
         }
+    }
+
+    private static bool TryNormalizeOptions(IEnumerable<MenuOptionRequest>? source, out List<MenuOptionRequest> options, out string? error)
+    {
+        options = new(); error = null;
+        var input = (source ?? []).ToList();
+        if (input.Count > 50) { error = "Mỗi món được có tối đa 50 tùy chọn."; return false; }
+        foreach (var item in input)
+        {
+            if (item.Loai is not ("Size" or "Topping" or "MucCay")) { error = "Loại tùy chọn không hợp lệ."; return false; }
+            var name = string.Join(' ', (item.Ten ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+            if (name.Length is < 1 or > 100) { error = "Tên tùy chọn phải có từ 1 đến 100 ký tự."; return false; }
+            if (item.GiaThem < 0 || item.GiaThem > 10_000_000m) { error = "Phụ phí phải từ 0 đến 10.000.000đ."; return false; }
+            if (options.Any(x => x.Loai == item.Loai && string.Equals(x.Ten, name, StringComparison.OrdinalIgnoreCase)))
+            { error = $"Tùy chọn \"{name}\" bị trùng trong cùng nhóm."; return false; }
+            options.Add(item with { Ten = name });
+        }
+        return true;
     }
 }

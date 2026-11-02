@@ -19,6 +19,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(DriverRatingPage), typeof(DriverRatingPage));
         Routing.RegisterRoute(nameof(DriverNotificationsPage), typeof(DriverNotificationsPage));
         Routing.RegisterRoute(nameof(MenuCartPage), typeof(MenuCartPage));
+        Routing.RegisterRoute(nameof(MonAnTuyChonPage), typeof(MonAnTuyChonPage));
         Routing.RegisterRoute(nameof(PaymentPage), typeof(PaymentPage));
         Routing.RegisterRoute(nameof(OrderTrackingPage) + "Detail", typeof(OrderTrackingPage));
         Routing.RegisterRoute(nameof(ReviewPage), typeof(ReviewPage));

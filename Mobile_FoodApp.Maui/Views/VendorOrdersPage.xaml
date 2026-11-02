@@ -41,14 +41,19 @@
                                         <CollectionView ItemsSource="{Binding ChiTiet}">
                                             <CollectionView.ItemTemplate>
                                                 <DataTemplate x:DataType="models:MucGioHang">
-                                                    <Label FontSize="12.5">
-                                                        <Label.FormattedText>
-                                                            <FormattedString>
-                                                                <Span Text="{Binding SoLuong, StringFormat='x{0} '}" FontAttributes="Bold" />
-                                                                <Span Text="{Binding MonAn.TenMon}" />
-                                                            </FormattedString>
-                                                        </Label.FormattedText>
-                                                    </Label>
+                                                    <VerticalStackLayout Spacing="1">
+                                                        <Label FontSize="12.5">
+                                                            <Label.FormattedText>
+                                                                <FormattedString>
+                                                                    <Span Text="{Binding SoLuong, StringFormat='x{0} '}" FontAttributes="Bold" />
+                                                                    <Span Text="{Binding MonAn.TenMon}" />
+                                                                    <Span Text="{Binding ThanhTien, StringFormat=' · {0:N0}đ'}" />
+                                                                </FormattedString>
+                                                            </Label.FormattedText>
+                                                        </Label>
+                                                        <Label Text="{Binding TuyChonHienThi}" IsVisible="{Binding CoTuyChon}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                                        <Label Text="{Binding GhiChu, StringFormat='📝 {0}'}" IsVisible="{Binding CoGhiChu}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                                    </VerticalStackLayout>
                                                 </DataTemplate>
                                             </CollectionView.ItemTemplate>
                                         </CollectionView>

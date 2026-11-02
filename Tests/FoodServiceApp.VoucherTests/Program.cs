@@ -1,5 +1,6 @@
 using FoodServiceApp.Web.Models.Entities;
 using FoodServiceApp.Web.Services;
+using FoodApp.Maui.Models;
 
 var now = new DateTime(2026, 10, 20, 12, 0, 0);
 var lines = new[] { new PromotionLine(1, 10, 2, 50000m), new PromotionLine(2, 20, 1, 100000m) };
@@ -41,5 +42,23 @@ Check("percent maximum", Calculate(capped).Discount == 5000m);
 var boundary = Voucher(); boundary.NgayBatDau = boundary.NgayKetThuc = now;
 Check("inclusive effective boundaries", Calculate(boundary).Valid);
 Check("no code", PromotionService.Evaluate(null, lines, 7, 15000, now, false, [], [], [], false).Total == 215000);
+var optionLines = new[] { new PromotionLine(3, 30, 2, 55000m) }; // 35k + size 7k + hai topping 5k/8k
+var optionNoCode = PromotionService.Evaluate(null, optionLines, 7, 0, now, false, [], [], [], false);
+Check("configured option price times quantity", optionNoCode.Subtotal == 110000m && optionNoCode.Total == 110000m);
+var optionVoucher = PromotionService.Evaluate(Voucher(), optionLines, 7, 15000m, now, false, [], [], []);
+Check("voucher includes configured option price", optionVoucher.Subtotal == 110000m && optionVoucher.Discount == 11000m && optionVoucher.Total == 114000m);
+var sizeM = new TuyChonMon { MaTuyChon = 1, Loai = "Size" };
+var sizeL = new TuyChonMon { MaTuyChon = 2, Loai = "Size" };
+var topping1 = new TuyChonMon { MaTuyChon = 3, Loai = "Topping" };
+var topping2 = new TuyChonMon { MaTuyChon = 4, Loai = "Topping" };
+Check("reject duplicate option id", !PromotionService.IsValidOptionSelection([3, 3], [topping1]));
+Check("reject option belonging to another food", !PromotionService.IsValidOptionSelection([3, 99], [topping1]));
+Check("reject two sizes", !PromotionService.IsValidOptionSelection([1, 2], [sizeM, sizeL]));
+Check("allow multiple different toppings", PromotionService.IsValidOptionSelection([3, 4], [topping1, topping2]));
+var cauHinhL = KhoaGioHang.Tao("10", ["2", "3"], "Ít đá");
+Check("cart key ignores option order", cauHinhL == KhoaGioHang.Tao("10", ["3", "2"], " ít   đá "));
+Check("cart key separates different size", cauHinhL != KhoaGioHang.Tao("10", ["1", "3"], "Ít đá"));
+Check("cart key separates different topping", cauHinhL != KhoaGioHang.Tao("10", ["2", "4"], "Ít đá"));
+Check("cart key separates different note", cauHinhL != KhoaGioHang.Tao("10", ["2", "3"], "Không đá"));
 Console.WriteLine($"{passed} business-rule assertions passed.");
 await IntegrationTests.RunAsync();

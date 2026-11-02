@@ -7,6 +7,7 @@ public class TuyChonMon
     public const string Topping = "Topping";
     public const string MucCay = "MucCay";
 
+    public int Id { get; set; }
     public string Loai { get; set; } = Size;
     public string Ten { get; set; } = "";
     public decimal GiaThem { get; set; }

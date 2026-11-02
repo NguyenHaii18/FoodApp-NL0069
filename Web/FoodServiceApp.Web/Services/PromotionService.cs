@@ -37,9 +37,11 @@ public sealed class PromotionService(AppDbContext db)
         foreach (var item in input)
         {
             var food = foods.FirstOrDefault(x => x.MaMonAn == item.FoodId);
-            var selected = (item.OptionIds ?? Array.Empty<int>()).Distinct().ToList();
+            var rawSelected = (item.OptionIds ?? Array.Empty<int>()).ToList();
+            var selected = rawSelected.Distinct().ToList();
             var validOptions = options.Where(x => x.MaMonAn == item.FoodId && selected.Contains(x.MaTuyChon)).ToList();
-            if (item.Quantity <= 0 || food?.DanhMuc?.MaGianHang != storeId || food.TinhTrang != "ConHang" || selected.Count != validOptions.Count)
+            if (item.Quantity <= 0 || item.Quantity > 50 || food?.DanhMuc?.MaGianHang != storeId || food.TinhTrang != "ConHang" ||
+                !IsValidOptionSelection(rawSelected, validOptions))
                 return new(null, "INVALID_CART", "Món ăn, số lượng hoặc tùy chọn không còn hợp lệ.", 0, 0, Math.Max(0, shipping), 0);
             lines.Add(new(item.FoodId, food.MaDanhMuc, item.Quantity, food.Gia + validOptions.Sum(x => x.GiaThem)));
         }
@@ -56,6 +58,16 @@ public sealed class PromotionService(AppDbContext db)
         var dishes = await db.KhuyenMaiMonAns.Where(x => x.MaKhuyenMai == voucher.MaKhuyenMai).Select(x => x.MaMonAn).ToListAsync();
         var used = voucher.MoiKhachMotLan && await db.KhuyenMaiKhachDungs.AnyAsync(x => x.MaKhuyenMai == voucher.MaKhuyenMai && x.MaKH == customerId);
         return Evaluate(voucher, lines, storeId, shipping, at ?? VietnamNow, used, stores, categories, dishes) with { Lines = lines };
+    }
+
+    public static bool IsValidOptionSelection(IReadOnlyList<int> selectedIds, IReadOnlyCollection<TuyChonMon> validOptions)
+    {
+        var distinctIds = selectedIds.Distinct().ToList();
+        return selectedIds.Count == distinctIds.Count &&
+               distinctIds.Count == validOptions.Count &&
+               validOptions.All(x => distinctIds.Contains(x.MaTuyChon)) &&
+               validOptions.Count(x => x.Loai == "Size") <= 1 &&
+               validOptions.Count(x => x.Loai == "MucCay") <= 1;
     }
 
     public static PromotionResult Evaluate(KhuyenMai? voucher, IReadOnlyList<PromotionLine> lines, int storeId,

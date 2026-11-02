@@ -59,10 +59,20 @@
                         <CollectionView x:Name="DsChiTiet">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:MucGioHang">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Padding="0,2">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" Padding="0,4">
                                         <Label Grid.Column="0" Text="{Binding SoLuong, StringFormat='{0}x'}" FontAttributes="Bold" FontSize="13" />
-                                        <Label Grid.Column="1" Text="{Binding MonAn.TenMon}" FontSize="13" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                            <Label Text="{Binding MonAn.TenMon}" FontSize="13" FontAttributes="Bold" />
+                                            <Label Text="{Binding TuyChonHienThi}" IsVisible="{Binding CoTuyChon}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                            <Label Text="{Binding GhiChu, StringFormat='📝 {0}'}" IsVisible="{Binding CoGhiChu}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                            <Label Text="{Binding DonGia, StringFormat='Đơn giá: {0:N0}đ'}" FontSize="11" TextColor="{StaticResource TextGrey}" />
+                                        </VerticalStackLayout>
                                         <Label Grid.Column="2" Text="{Binding ThanhTien, StringFormat='{0:N0}đ'}" FontSize="13" />
+                                        <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Spacing="6" Margin="0,5,0,0">
+                                            <Button Text="−" WidthRequest="34" HeightRequest="30" Padding="0" FontSize="12" Clicked="OnGiamDong" CommandParameter="{Binding .}" />
+                                            <Button Text="+" WidthRequest="34" HeightRequest="30" Padding="0" FontSize="12" Clicked="OnTangDong" CommandParameter="{Binding .}" />
+                                            <Button Text="Xóa" HeightRequest="30" Padding="10,0" FontSize="11" Clicked="OnXoaDong" CommandParameter="{Binding .}" />
+                                        </HorizontalStackLayout>
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
